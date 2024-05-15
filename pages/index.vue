@@ -3,7 +3,5 @@
 </script>
 
 <template>
-    <NuxtLayout>
-        <p class="text-red-500">hello</p>
-    </NuxtLayout>
+    <p class="text-red-500">hello</p>
 </template>
