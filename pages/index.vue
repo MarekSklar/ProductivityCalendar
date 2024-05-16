@@ -66,7 +66,9 @@ const assignees: Assignee[] = [
 const startDragPos = ref(0);
 const relativeDragPos = ref(0);
 const tempDragPos = ref(0);
-const dragging = ref(false);
+
+const draggingCalendar = ref(false);
+const draggingTask = ref(false);
 
 function moveCalendar(event: MouseEvent) {
     // disable default dragging
@@ -74,7 +76,7 @@ function moveCalendar(event: MouseEvent) {
 
     // move calendar on drag
     if (!event.buttons) return;
-    dragging.value = true;
+    draggingCalendar.value = true;
     tempDragPos.value = event.screenX - startDragPos.value + relativeDragPos.value;
 }
 
@@ -83,8 +85,13 @@ function setStartDragPos(event: MouseEvent) {
 }
 
 function endCalendarDragging() {
-    dragging.value = false;
+    draggingCalendar.value = false;
     relativeDragPos.value = tempDragPos.value;
+}
+
+function moveTask(event: MouseEvent) {
+    if (!event.buttons) return;
+    console.log("moved task");
 }
 
 </script>
@@ -102,9 +109,9 @@ function endCalendarDragging() {
                 
             </div>
             <div class="">
-                <div @mousedown="setStartDragPos" @mousemove="moveCalendar" @mouseleave="endCalendarDragging" @mouseup="endCalendarDragging" class="grid overflow-hidden cursor-grab" :class="{'cursor-grabbing': dragging}">
+                <div @mousedown="setStartDragPos" @mousemove="moveCalendar" @mouseleave="endCalendarDragging" @mouseup="endCalendarDragging" class="grid overflow-hidden cursor-grab" :class="{'cursor-grabbing': draggingCalendar}">
                     <div v-for="row in 10" class="relative h-11 mb-0.5 bg-white">
-                        <div v-for="task in tasks.filter(task => task.row === row-1)" class="absolute flex w-3/12 h-full left-5 rounded-md" :style="{ backgroundColor: task.color, left: tempDragPos + 'px' }">
+                        <div v-for="task in tasks.filter(task => task.row === row-1)" @mousemove="moveTask" class="absolute flex w-3/12 h-full left-5 rounded-md" :style="{ backgroundColor: task.color, left: tempDragPos + 'px' }">
                             <div class="size-full">
                                 <div class="absolute left-0 z-20 w-3 h-full cursor-e-resize bg-red-300"></div>
                                 <div class="absolute right-0 z-20 w-3 h-full cursor-e-resize bg-red-300"></div>
