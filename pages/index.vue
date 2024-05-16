@@ -69,29 +69,62 @@ const tempDragPos = ref(0);
 
 const draggingCalendar = ref(false);
 const draggingTask = ref(false);
+const draggingTaskExtension = ref(false);
 
-function moveCalendar(event: MouseEvent) {
+
+// start dragging
+function startCalendarDragging(event: MouseEvent) {
+    draggingCalendar.value = true;
+    startDragPos.value = event.screenX;
+}
+
+function startTaskDragging() {
+    draggingTask.value = true;
+}
+
+function startTaskExtensionDragging() {
+    draggingTaskExtension.value = true;
+}
+
+// end dragging
+function endDragging() {
+    switch (true) {
+
+        case draggingCalendar.value:
+            draggingCalendar.value = false;
+            relativeDragPos.value = tempDragPos.value;
+
+        case draggingTask.value:
+            draggingTask.value = false;
+
+        case draggingTaskExtension.value:
+            draggingTaskExtension.value = false;
+    }
+    console.log("END", "cal", draggingCalendar.value, "task", draggingTask.value, "extens", draggingTaskExtension.value);
+}
+
+// dragging
+function moveCalendarComponents(event: MouseEvent) {
     // disable default dragging
     event.preventDefault ? event.preventDefault() : event.returnValue = false;
 
     // move calendar on drag
     if (!event.buttons) return;
-    draggingCalendar.value = true;
-    tempDragPos.value = event.screenX - startDragPos.value + relativeDragPos.value;
-}
 
-function setStartDragPos(event: MouseEvent) {
-    startDragPos.value = event.screenX;
-}
+    switch (true) {
 
-function endCalendarDragging() {
-    draggingCalendar.value = false;
-    relativeDragPos.value = tempDragPos.value;
-}
+        case draggingTaskExtension.value:
+            console.log("task extension dragging");
+            break;
 
-function moveTask(event: MouseEvent) {
-    if (!event.buttons) return;
-    console.log("moved task");
+        case draggingTask.value:
+            console.log("task dragging");
+            break;
+
+        case draggingCalendar.value:
+            tempDragPos.value = event.screenX - startDragPos.value + relativeDragPos.value;
+            break;
+    }
 }
 
 </script>
@@ -109,12 +142,12 @@ function moveTask(event: MouseEvent) {
                 
             </div>
             <div class="">
-                <div @mousedown="setStartDragPos" @mousemove="moveCalendar" @mouseleave="endCalendarDragging" @mouseup="endCalendarDragging" class="grid overflow-hidden cursor-grab" :class="{'cursor-grabbing': draggingCalendar}">
+                <div @mousedown="startCalendarDragging" @mousemove="moveCalendarComponents" @mouseleave="endDragging" @mouseup="endDragging" class="grid overflow-hidden cursor-grab" :class="{'cursor-grabbing': draggingCalendar}">
                     <div v-for="row in 10" class="relative h-11 mb-0.5 bg-white">
-                        <div v-for="task in tasks.filter(task => task.row === row-1)" @mousemove="moveTask" class="absolute flex w-3/12 h-full left-5 rounded-md" :style="{ backgroundColor: task.color, left: tempDragPos + 'px' }">
+                        <div v-for="task in tasks.filter(task => task.row === row-1)" @mousedown="startTaskDragging"class="absolute flex w-3/12 h-full left-5 rounded-md" :style="{ backgroundColor: task.color, left: tempDragPos + 'px' }">
                             <div class="size-full">
-                                <div class="absolute left-0 z-20 w-3 h-full cursor-e-resize bg-red-300"></div>
-                                <div class="absolute right-0 z-20 w-3 h-full cursor-e-resize bg-red-300"></div>
+                                <div @mousedown="startTaskExtensionDragging" class="absolute left-0 z-20 w-3 h-full cursor-e-resize bg-red-300 bg-opacity-15"></div>
+                                <div @mousedown="startTaskExtensionDragging" class="absolute right-0 z-20 w-3 h-full cursor-e-resize bg-red-300 bg-opacity-15"></div>
                                 <div class="size-full p-1 pl-2">
                                     <div class="relative size-full">
                                         <div class="flex items-center h-full">
