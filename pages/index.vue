@@ -5,7 +5,6 @@ interface CDate {
     month: number;
     year: number;
 }
-
 interface Task {
     uuid: string,
     color: string,
@@ -18,21 +17,29 @@ interface Task {
     assignees?: string[],
     description?: string
 }
-
 interface Assignee {
     uuid: string,
     image: string
 }
-
-
 const Title = "Timeline Title";
-
 const tasks: Task[] = [
     {
         uuid: "507b54ba-7df0-45cb-9bd5-0e631e85b5a8",
         color: "#6495ED",
-        name: "Test",
+        name: "Home Office",
         row: 2,
+        status: "",
+        from: {day: 3, month: 4, year: 2024},
+        to: {day: 5, month: 4, year: 2024},
+        createdBy: "Mark Uch",
+        assignees: ["507b54ba-7df0-45cb-9bd5-0e631e85b5a9"],
+        description: "Descrip"
+    },
+    {
+        uuid: "507b54ba-7df0-45cb-9bd5-0e631e85b5a8",
+        color: "#6495ED",
+        name: "Home Office",
+        row: 4,
         status: "",
         from: {day: 3, month: 4, year: 2024},
         to: {day: 5, month: 4, year: 2024},
@@ -41,7 +48,6 @@ const tasks: Task[] = [
         description: "Descrip"
     }
 ];
-
 const assignees: Assignee[] = [
     {
         uuid: "507b54ba-7df0-45cb-9bd5-0e631e85b5a9",
@@ -56,6 +62,31 @@ const assignees: Assignee[] = [
         image: "iVBORw0KGgoAAAANSUhEUgAAABkAAAAZCAYAAADE6YVjAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyJpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMy1jMDExIDY2LjE0NTY2MSwgMjAxMi8wMi8wNi0xNDo1NjoyNyAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNiAoV2luZG93cykiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6MEVBMTczNDg3QzA5MTFFNjk3ODM5NjQyRjE2RjA3QTkiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6MEVBMTczNDk3QzA5MTFFNjk3ODM5NjQyRjE2RjA3QTkiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDowRUExNzM0NjdDMDkxMUU2OTc4Mzk2NDJGMTZGMDdBOSIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDowRUExNzM0NzdDMDkxMUU2OTc4Mzk2NDJGMTZGMDdBOSIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PjjUmssAAAGASURBVHjatJaxTsMwEIbpIzDA6FaMMPYJkDKzVYU+QFeEGPIKfYU8AETkCYI6wANkZQwIKRNDB1hA0Jrf0rk6WXZ8BvWkb4kv99vn89kDrfVexBSYgVNwDA7AN+jAK3gEd+AlGMGIBFDgFvzouK3JV/lihQTOwLtOtw9wIRG5pJn91Tbgqk9kSk7GViADrTD4HCyZ0NQnomi51sb0fUyCMQEbp2WpU67IjfNjwcYyoUDhjJVcZBjYBy40j4wXgaobWoe8Z6Y80CJBwFpunepIzt2AUgFjtXXshNXjVmMh+K+zzp/CMs0CqeuzrxSRpbOKfdCkiMTS1VBQ41uxMyQR2qbrXiiwYN3ACh1FDmsdK2Eu4J6Tlo31dYVtCY88h5ELZIJJ+IRMzBHfyJINrigNkt5VsRiub9nXICdsYyVd2NcVvA3ScE5t2rb5JuEeyZnAhmLt9NK63vX1O5Pe8XaPSuGq1uTrfUgMEp9EJ+CQvr+BJ/AAKvAcCiAR+bf9CjAAluzmdX4AEIIAAAAASUVORK5CYII="
     }
 ];
+
+const startDragPos = ref(0);
+const relativeDragPos = ref(0);
+const tempDragPos = ref(0);
+const dragging = ref(false);
+
+function moveCalendar(event: MouseEvent) {
+    // disable default dragging
+    event.preventDefault ? event.preventDefault() : event.returnValue = false;
+
+    // move calendar on drag
+    if (!event.buttons) return;
+    dragging.value = true;
+    tempDragPos.value = event.screenX - startDragPos.value + relativeDragPos.value;
+}
+
+function setStartDragPos(event: MouseEvent) {
+    startDragPos.value = event.screenX;
+}
+
+function endCalendarDragging() {
+    dragging.value = false;
+    relativeDragPos.value = tempDragPos.value;
+}
+
 </script>
 
 <template>
@@ -71,15 +102,21 @@ const assignees: Assignee[] = [
                 
             </div>
             <div class="">
-                <div class="grid">
-                    <div class="bg-black bg-opacity-5">
-                        <div v-for="row in 10" class="relative h-11 mb-0.5 bg-white">
-                            <div v-for="task in tasks.filter(task => task.row === row-1)" class="absolute flex w-3/12 h-full left-4 p-1 rounded-md" :style="{ backgroundColor: task.color }">
-                                <div class="relative size-full">
-                                    <h3 class="h-full">{{ task.name }}</h3>
-                                    <div class="absolute right-0 top-0">
-                                        <div class="relative w-10 h-full">
-                                            <img v-for="num in 3" :src='"data:image/jpg;base64," + assignees[num-1].image' class="absolute size-7 rounded-full" :style="{ left: num + 'rem', 'z-index': num }">
+                <div @mousedown="setStartDragPos" @mousemove="moveCalendar" @mouseleave="endCalendarDragging" @mouseup="endCalendarDragging" class="grid overflow-hidden cursor-grab" :class="{'cursor-grabbing': dragging}">
+                    <div v-for="row in 10" class="relative h-11 mb-0.5 bg-white">
+                        <div v-for="task in tasks.filter(task => task.row === row-1)" class="absolute flex w-3/12 h-full left-5 rounded-md" :style="{ backgroundColor: task.color, left: tempDragPos + 'px' }">
+                            <div class="size-full">
+                                <div class="absolute left-0 z-20 w-3 h-full cursor-e-resize bg-red-300"></div>
+                                <div class="absolute right-0 z-20 w-3 h-full cursor-e-resize bg-red-300"></div>
+                                <div class="size-full p-1 pl-2">
+                                    <div class="relative size-full">
+                                        <div class="flex items-center h-full">
+                                            <h3 class="leading-none select-none">{{ task.name }}</h3>
+                                        </div>
+                                        <div class="absolute flex items-center h-full right-1 top-0">
+                                            <div class="relative size-8 select-none">
+                                                <img v-for="num in 3" :src='"data:image/jpg;base64," + assignees[num-1].image' class="absolute size-full rounded-full object-cover" :style="{ right: (num-1)*1.4 + 'rem', 'z-index': num+10 }">
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
