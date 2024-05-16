@@ -11,7 +11,9 @@ export const getDatabase = (path: string) => {
                 uuid TEXT PRIMARY KEY,
                 name TEXT NOT NULL,                
                 email TEXT NOT NULL,
-                password TEXT NOT NULL
+                password TEXT NOT NULL,
+                pfpPath TEXT NOT NULL,
+                sessionToken TEXT
             );`            
         );
         
@@ -21,8 +23,8 @@ export const getDatabase = (path: string) => {
                 name TEXT NOT NULL,
                 row INT NOT NULL,
                 status TEXT NOT NULL,
-                from DATE,
-                to DATE,
+                fromDate DATE,
+                toDate DATE,
                 createdBy TEXT NOT NULL,
                 assignees TEXT[],
                 description TEXT

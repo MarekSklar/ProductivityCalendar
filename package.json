@@ -10,8 +10,12 @@
     "postinstall": "nuxt prepare"
   },
   "devDependencies": {
+    "@types/image-to-base64": "^2.1.2",
+    "@types/resize-img": "^2.0.3",
+    "image-to-base64": "^2.2.0",
     "@nuxt/devtools": "latest",
     "nuxt": "^3.11.2",
+    "resize-img": "^2.0.0",
     "tailwindcss": "^3.4.1",
     "vue": "^3.4.27",
     "vue-router": "^4.3.2"

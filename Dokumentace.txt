@@ -1,0 +1,29 @@
+// return -> sessionToken : undefined
+const login = await $fetch(`/api/profiles/login`, {
+        method: 'post',
+        body: {
+            email: pEmail.value,
+            password: pPassword.value
+        }
+});
+
+// return -> profile : undefined
+const profile = await $fetch('/api/profiles/profilesCreate', {
+        method: 'post',
+        body: {
+            name: pName.value,
+            email: pEmail.value,
+            password: pPassword.value,
+            pfpFilename: "",
+            sessionToken: ""
+        }
+});
+
+// return -> filepath : emptyObj
+const upload = await $fetch('/api/upload', {
+        method: 'post',
+        body: fd,
+});
+
+// return -> list of objects (x = { profiles, tags, tasks ll})
+const { data: x } = await useFetch('/api/profiles/xList', { method: 'post' });
