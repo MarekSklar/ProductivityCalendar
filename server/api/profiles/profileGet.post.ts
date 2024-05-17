@@ -1,13 +1,13 @@
 import { getDatabase } from '~/server/src/database';
-import * as Tags from '~/server/src/tags'
+import * as Profiles from '~/server/src/profiles'
 
 export default defineEventHandler(async (event) => {
     try {
         const { databaseFilePath } = useRuntimeConfig();
         const db = await getDatabase(databaseFilePath);
         const body = await readBody(event);
-        return Tags.add(db, body);
+        return Profiles.get(db, body);
     } catch(error) {
         return;
-    }    
+    }
 });

@@ -10,10 +10,9 @@
     "postinstall": "nuxt prepare"
   },
   "devDependencies": {
+    "@nuxt/devtools": "latest",
     "@types/image-to-base64": "^2.1.2",
     "@types/resize-img": "^2.0.3",
-    "image-to-base64": "^2.2.0",
-    "@nuxt/devtools": "latest",
     "nuxt": "^3.11.2",
     "resize-img": "^2.0.0",
     "tailwindcss": "^3.4.1",
@@ -22,6 +21,7 @@
   },
   "dependencies": {
     "@databases/sqlite": "^4.0.2",
+    "@iconify/vue": "^4.1.2",
     "radix-vue": "^1.7.4",
     "zod": "^3.23.8"
   }

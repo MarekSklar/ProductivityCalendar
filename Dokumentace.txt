@@ -19,11 +19,19 @@ const profile = await $fetch('/api/profiles/profilesCreate', {
         }
 });
 
-// return -> filepath : emptyObj
+// return -> filepaths[abs256, abs48, cwd256, cwd48] : emptyObj
 const upload = await $fetch('/api/upload', {
         method: 'post',
         body: fd,
 });
 
-// return -> list of objects (x = { profiles, tags, tasks ll})
+// return -> list of objects (x = { profiles, tasks ll})
 const { data: x } = await useFetch('/api/profiles/xList', { method: 'post' });
+
+// get current logged profile
+const sessionToken = useCookie<string>('sessionToken');
+const { data: profileData } = await useFetch('/api/profiles/profileGet', { method: 'post', body: { sessionToken: sessionToken.value }});
+const profile = profileData.value?.at(0);
+
+// get pfp in base64 (256 or 48)
+const pfp = await useFetch('/api/getImage', { method: 'post', body: { path: profile.pfpPath256 }});
