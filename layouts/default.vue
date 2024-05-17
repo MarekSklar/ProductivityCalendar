@@ -1,5 +1,5 @@
 <template>
-        <!-- <p class="absolute">Hello world</p> -->
+    <!-- <p class="absolute">Hello world</p> -->
     <div>        
         <slot />
     </div>
