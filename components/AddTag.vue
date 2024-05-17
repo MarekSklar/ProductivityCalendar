@@ -4,13 +4,13 @@ const tColor = ref("");
 const tName = ref("");
 const tFailed = ref("");
 
-const { pending, data: tags } = useAsyncData(async () => $fetch('/api/tags/tagsList'));
+const { data: tags } = await useFetch('/api/tags/tagsList', { method: 'post' });
 
 const createTag = async () => {
     if(tags.value === null)
         return;
 
-    const login = await $fetch('/api/tags/tagsCreate', {
+    const createTag = await $fetch('/api/tags/tagsCreate', {
         method: 'post',
         body: {
             color: tColor.value,
@@ -18,11 +18,10 @@ const createTag = async () => {
         }
     });
 
-    if(login === undefined)   
+    if(createTag === undefined)   
         tFailed.value = "This tag already exists.";  
     else    
-        tFailed.value = "";
-    
+        tFailed.value = "";    
 };
 
 </script>

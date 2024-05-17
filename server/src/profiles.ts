@@ -1,18 +1,23 @@
 import { z } from 'zod';
-import { randomUUID } from 'node:crypto'
 import { DatabaseConnection, sql } from '@databases/sqlite';
+import { randomUUID } from 'node:crypto';
+import fs from 'fs';
+import path from 'path';
 
 interface Profile {
     uuid: string,
     name: string,
     email: string
-    password: string
+    password: string,
+    pfpPath: string,
+    sessionToken: string
 }
 
 interface ProfileAddOptions {
     name: string,
     email: string,
-    password: string
+    password: string,
+    pfpPath: string
 }
 
 interface ProfileLoginOptions {
@@ -23,7 +28,9 @@ interface ProfileLoginOptions {
 const profileAddOptionsSchema = z.object({
     name: z.string(),
     email: z.string().email(),
-    password: z.string()
+    password: z.string(),
+    pfpPath: z.string(),
+    sessionToken: z.string()
 });
 
 const profileLoginOptionsSchema = z.object({
@@ -43,6 +50,8 @@ export async function add(db: DatabaseConnection, options: ProfileAddOptions) {
         name: params.name,
         email: params.email,
         password: params.password,
+        pfpPath: params.pfpPath,
+        sessionToken: ""
     };
 
     if((await db.query(sql`SELECT * FROM profiles WHERE email = ${params.email}`)).length > 0)
@@ -52,12 +61,16 @@ export async function add(db: DatabaseConnection, options: ProfileAddOptions) {
             uuid,
             name,
             email,
-            password
+            password,
+            pfpPath,
+            sessionToken
         ) VALUES (
             ${profile.uuid},
             ${profile.name},
             ${profile.email},
-            ${profile.password}
+            ${profile.password},
+            ${profile.pfpPath},
+            ${profile.sessionToken}
         )
     `);
 
@@ -70,8 +83,12 @@ export async function login(db: DatabaseConnection, options: ProfileLoginOptions
     const loginResult = await db.query(sql`SELECT password FROM profiles WHERE email = ${params.email}`);
 
     if(loginResult.length == 0)
-        return false;
+        return;
 
     if(loginResult[0].password === params.password)
-        return true;
+    {
+        const sessionToken = randomUUID();
+        await db.query(sql`UPDATE profiles SET sessionToken = ${sessionToken} WHERE email = ${params.email}`);
+        return sessionToken;
+    }
 }

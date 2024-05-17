@@ -1,6 +1,6 @@
 <template>
-    <div>
         <!-- <p class="absolute">Hello world</p> -->
+    <div>        
         <slot />
     </div>
 </template>

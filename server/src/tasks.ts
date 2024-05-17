@@ -22,17 +22,20 @@ interface Task {
     name: string,
     row: number,
     status: string,
-    from: CDate,
-    to: CDate,
+    fromDate: CDate,
+    toDate: CDate,
     createdBy: string,
     assignees?: string[],
     description?: string
 }
 
 interface TaskAddOptions {
-    color: string
-    from: CDate,
-    to: CDate,
+    color: string,
+    name: string,
+    row: string,
+    fromDate: CDate,
+    toDate: CDate,
+    createdBy: string,
     assignees?: string[],
     description: string
 }
@@ -42,8 +45,8 @@ const taskAddOptionsSchema = z.object({
     name: z.string(),
     row: z.number(),
     status: z.any(),
-    from: z.any(),
-    to: z.any(),
+    fromDate: z.any(),
+    toDate: z.any(),
     createdBy: z.string(),
     assignees: z.string().array(),
     description: z.string()
@@ -58,8 +61,8 @@ export async function add(db: DatabaseConnection, options: TaskAddOptions) {
         name: params.name,
         row: params.row,
         status: params.status,
-        from: params.from,
-        to: params.to,
+        fromDate: params.fromDate,
+        toDate: params.toDate,
         createdBy: params.createdBy,
         assignees: params.assignees,
         description: params.description
@@ -67,11 +70,12 @@ export async function add(db: DatabaseConnection, options: TaskAddOptions) {
 
     db.query(sql`INSERT INTO tasks (
             uuid,
+            color,
             name,
             row,
             status,
-            from,
-            to,
+            fromDate,
+            toDate,
             createdBy,
             assignees,
             description         
@@ -81,11 +85,11 @@ export async function add(db: DatabaseConnection, options: TaskAddOptions) {
             ${task.name},
             ${task.row},
             ${task.status},
-            ${task.from},
-            ${task.to},
+            ${task.fromDate},
+            ${task.toDate},
             ${task.createdBy},
             ${task.assignees},
-            ${task.description},
+            ${task.description}
         )
     `);
 

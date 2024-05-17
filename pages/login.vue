@@ -4,7 +4,7 @@ const pEmail = ref("");
 const pPassword = ref("");
 const pFailed = ref("");
 
-const { pending, data: profiles } = useAsyncData(async () => $fetch('/api/profiles/profilesList'));
+const { data: profiles } = await useFetch('/api/profiles/profilesList', { method: 'post' });
 
 const login = async() => {
     if(profiles.value === null)
@@ -25,6 +25,8 @@ const login = async() => {
     else
     {
         pFailed.value = "";
+        const sessionToken = useCookie("sessionToken");
+        sessionToken.value = login;
         await navigateTo('/');
     }
 };
