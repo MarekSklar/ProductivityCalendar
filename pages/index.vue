@@ -237,9 +237,9 @@ onMounted(() => {
                 
             </div>
             <div class="">
-                <div @mousedown="startCalendarDragging" @mousemove="moveCalendarComponents" @mouseleave="endDragging" @mouseup="endDragging" class="grid overflow-hidden cursor-grab" :class="{'cursor-grabbing': draggingCalendar}">
+                <div @mousedown="startCalendarDragging" @mousemove="moveCalendarComponents" @mouseleave="endDragging" @mouseup="endDragging" class="grid overflow-hidden cursor-grab select-none" :class="{'cursor-grabbing': draggingCalendar}">
                     <div v-for="row in 10" class="relative h-11 mb-0.5 bg-white">
-                        <div v-for="task in tasks.filter(task => task.row === row-1)" @mousedown="startTaskDragging"class="absolute flex w-3/12 h-full left-5 rounded-md"
+                        <div v-for="task in tasks.filter(task => task.row === row-1)" @mousedown="startTaskDragging"class="absolute flex h-full left-5 rounded-md"
                             :style="{ backgroundColor: task.color, left: tempDragPos + (taskPlacementPos(task).from)*56 + 'px', width: taskPlacementPos(task).taskLength*56 + 'px' }"
                             >
                             <div class="size-full">
@@ -252,7 +252,7 @@ onMounted(() => {
                                         </div>
                                         <div class="absolute flex items-center h-full right-1 top-0">
                                             <div class="relative size-8 select-none">
-                                                <img v-for="num in 3" :src='"data:image/jpg;base64," + assignees[num-1].image' class="absolute size-full rounded-full object-cover" :style="{ right: (num-1)*1.4 + 'rem', 'z-index': num+10 }">
+                                                <img v-for="num in 3" :src='"data:image/jpg;base64," + assignees[num-1].image' class="absolute size-full rounded-full object-cover" :style="{ right: (num-1)*1.4 + 'rem', 'z-index': num+10 }" draggable="false">
                                             </div>
                                         </div>
                                     </div>
