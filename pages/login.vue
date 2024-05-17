@@ -43,7 +43,7 @@ const login = async() => {
             <input v-model="pPassword" type="password" id="password"><br>
 
             <button @click="login">Login</button>
-            <a href="" class="password">Forgot password</a>
+            
             
         </form>
         {{  pFailed }}
@@ -55,7 +55,7 @@ main{
     margin-left: 40%;
     margin-top: 25%;
     font-family: 'Roboto Mono', monospace;
-    font-size: 18px;
+    font-size: 20px;
 
 }
     input {
@@ -66,7 +66,7 @@ main{
 
     button {
         border-width: 1.5px;
-        padding: 3px;
+        padding: 5px;
         margin: 3px;
         margin-left: 15%;
         margin-top: 4%;

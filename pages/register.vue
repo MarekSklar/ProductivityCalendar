@@ -72,14 +72,20 @@ const addProfile = async () => {
 </template>
 
 <style>
+main{
+    font-family: 'Roboto Mono', monospace;
+    font-size: 20px;
+    
+}
     input {
         border-width: 1px;
         margin: 4px;
     }
 
     button {
-        border-width: 2px;
+        border-width: 1.5px;
         padding: 1px;
         margin: 3px;
+        background-color: rgb(140, 202, 221);
     }
 </style>
