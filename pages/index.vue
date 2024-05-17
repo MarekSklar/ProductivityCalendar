@@ -71,6 +71,12 @@ const draggingCalendar = ref(false);
 const draggingTask = ref(false);
 const draggingTaskExtension = ref(false);
 
+const datesOffset = ref(0);
+const datesPos = ref(0);
+
+
+const screenSize = ref({width: 1920, height: 1080});
+
 
 // start dragging
 function startCalendarDragging(event: MouseEvent) {
@@ -123,21 +129,75 @@ function moveCalendarComponents(event: MouseEvent) {
 
         case draggingCalendar.value:
             tempDragPos.value = event.screenX - startDragPos.value + relativeDragPos.value;
+
+            datesOffset.value = tempDragPos.value % 56;
+            datesPos.value = tempDragPos.value / 56 < 0 ? Math.ceil(tempDragPos.value / 56) : Math.floor(tempDragPos.value / 56);
+
             break;
     }
 }
+
+function getScreenSize() {
+    return {width: screen.width, height: screen.height};
+}
+
+function generateDate(dateNum: number) {
+    const date = new Date(new Date().getTime() + dateNum * 86000000);
+
+    const newDateNum = date.getDate();
+    let day = "";
+
+
+    switch (date.getDay()) {
+        case 0:
+            day = "S";
+            break;
+        case 1:
+            day = "M";
+            break;
+        case 2:
+            day = "T";
+            break;
+        case 3:
+            day = "W";
+            break;
+        case 4:
+            day = "T";
+            break;
+        case 5:
+            day = "F";
+            break;
+        case 6:
+            day = "S";
+            break;
+    }
+
+    return day + " " + newDateNum;
+}
+
+onMounted(() => {
+    screenSize.value = getScreenSize();
+})
 
 </script>
 
 <template>
     <div class="flex flex-col w-full h-screen">
-        <div class="p-4 shadow-md">
-            <h1>{{ Title }}</h1>
-            <div class="flex justify-between">
-                <p v-for="date in 30" class="mx-2">{{ date }}</p>
+        <div class="py-4 shadow-md">
+            <div class="px-4">
+                <h1>{{ Title }}</h1>
+            </div>
+            <div class="relative flex justify-center w-full py-3 overflow-hidden">
+                <p class="py-1 opacity-0">Dates</p>
+                <div class="absolute flex" :style="{left: datesOffset - 5 * 56 + 'px'}">
+                    <p v-for="date in Math.ceil(screenSize.width * 0.02 + 10)" class="w-14 py-1 text-center rounded-md text-gray-500 font-bold"
+                    :class="{'bg-red-100': !(date - datesPos - 9), 'text-gray-900': !(date - datesPos - 9)}">
+                        {{ generateDate(date - datesPos - 9) }}
+                    </p>
+                </div>
             </div>
         </div>
-        <div class="flex-auto min-w-full">
+        <div class="flex-auto min-w-full mt-4">
             <div>
                 
             </div>
@@ -146,8 +206,8 @@ function moveCalendarComponents(event: MouseEvent) {
                     <div v-for="row in 10" class="relative h-11 mb-0.5 bg-white">
                         <div v-for="task in tasks.filter(task => task.row === row-1)" @mousedown="startTaskDragging"class="absolute flex w-3/12 h-full left-5 rounded-md" :style="{ backgroundColor: task.color, left: tempDragPos + 'px' }">
                             <div class="size-full">
-                                <div @mousedown="startTaskExtensionDragging" class="absolute left-0 z-20 w-3 h-full cursor-e-resize bg-red-300 bg-opacity-15"></div>
-                                <div @mousedown="startTaskExtensionDragging" class="absolute right-0 z-20 w-3 h-full cursor-e-resize bg-red-300 bg-opacity-15"></div>
+                                <div @mousedown="startTaskExtensionDragging" class="absolute left-0 z-20 w-3 h-full cursor-e-resize"></div>
+                                <div @mousedown="startTaskExtensionDragging" class="absolute right-0 z-20 w-3 h-full cursor-e-resize"></div>
                                 <div class="size-full p-1 pl-2">
                                     <div class="relative size-full">
                                         <div class="flex items-center h-full">
