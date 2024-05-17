@@ -68,6 +68,8 @@ main{
         border-width: 1.5px;
         padding: 3px;
         margin: 3px;
+        margin-left: 15%;
+        margin-top: 4%;
         border-radius: 5px;
         font-size: 18px;
         background-color:rgb(140, 202, 221);
@@ -76,7 +78,7 @@ main{
     .password{
         font-size: 15px;
         color: rgb(7, 24, 99);
-        text-align: center;
+       
     }
 
 </style>
