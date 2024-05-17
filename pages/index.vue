@@ -46,6 +46,30 @@ const tasks: Task[] = [
         createdBy: "Mark Uch",
         assignees: ["507b54ba-7df0-45cb-9bd5-0e631e85b5a9"],
         description: "Descrip"
+    },
+    {
+        uuid: "507b54ba-7df0-45cb-9bd5-0e631e85b5a8",
+        color: "#6495ED",
+        name: "Home Office",
+        row: 3,
+        status: "",
+        from: {day: 3, month: 3, year: 2024},
+        to: {day: 24, month: 4, year: 2024},
+        createdBy: "Mark Uch",
+        assignees: ["507b54ba-7df0-45cb-9bd5-0e631e85b5a9"],
+        description: "Descrip"
+    },
+    {
+        uuid: "507b54ba-7df0-45cb-9bd5-0e631e85b5a8",
+        color: "#6495ED",
+        name: "Home Office",
+        row: 3,
+        status: "",
+        from: {day: 29, month: 11, year: 2023},
+        to: {day: 4, month: 0, year: 2024},
+        createdBy: "Mark Uch",
+        assignees: ["507b54ba-7df0-45cb-9bd5-0e631e85b5a9"],
+        description: "Descrip"
     }
 ];
 const assignees: Assignee[] = [
