@@ -41,8 +41,8 @@ const tasks: Task[] = [
         name: "Home Office",
         row: 4,
         status: "",
-        from: {day: 3, month: 4, year: 2024},
-        to: {day: 5, month: 4, year: 2024},
+        from: {day: 18, month: 4, year: 2024},
+        to: {day: 25, month: 4, year: 2024},
         createdBy: "Mark Uch",
         assignees: ["507b54ba-7df0-45cb-9bd5-0e631e85b5a9"],
         description: "Descrip"
@@ -142,7 +142,7 @@ function getScreenSize() {
 }
 
 function generateDate(dateNum: number) {
-    const date = new Date(new Date().getTime() + dateNum * 86000000);
+    const date = new Date(new Date().getTime() + dateNum * 86400000);
 
     const newDateNum = date.getDate();
     let day = "";
@@ -175,6 +175,17 @@ function generateDate(dateNum: number) {
     return day + " " + newDateNum;
 }
 
+function taskPlacementPos(task: Task) {
+    const todayDayTimestamp = Math.floor(new Date().getTime() / 86400000);
+    const taskStartDayTimestamp = Math.floor(new Date(task.from.year, task.from.month, task.from.day).getTime() / 86400000) + 4;
+    const taskEndDayTimestamp = Math.floor(new Date(task.to.year, task.to.month, task.to.day).getTime() / 86400000) + 4 + 1;
+
+    const taskLength = taskEndDayTimestamp - taskStartDayTimestamp;
+    const timeFromToday = taskStartDayTimestamp - todayDayTimestamp;
+
+    return {from: timeFromToday, to: timeFromToday + taskLength, taskLength};
+}
+
 onMounted(() => {
     screenSize.value = getScreenSize();
 })
@@ -188,9 +199,9 @@ onMounted(() => {
                 <h1>{{ Title }}</h1>
             </div>
             <div class="relative flex justify-center w-full py-3 overflow-hidden">
-                <p class="py-1 opacity-0">Dates</p>
+                <p class="py-0.5 opacity-0">Dates</p>
                 <div class="absolute flex" :style="{left: datesOffset - 5 * 56 + 'px'}">
-                    <p v-for="date in Math.ceil(screenSize.width * 0.02 + 10)" class="w-14 py-1 text-center rounded-md text-gray-500 font-bold"
+                    <p v-for="date in Math.ceil(screenSize.width * 0.02 + 10)" class="w-14 py-0.5 text-center rounded-md text-gray-500 font-bold"
                     :class="{'bg-red-100': !(date - datesPos - 9), 'text-gray-900': !(date - datesPos - 9)}">
                         {{ generateDate(date - datesPos - 9) }}
                     </p>
@@ -204,7 +215,9 @@ onMounted(() => {
             <div class="">
                 <div @mousedown="startCalendarDragging" @mousemove="moveCalendarComponents" @mouseleave="endDragging" @mouseup="endDragging" class="grid overflow-hidden cursor-grab" :class="{'cursor-grabbing': draggingCalendar}">
                     <div v-for="row in 10" class="relative h-11 mb-0.5 bg-white">
-                        <div v-for="task in tasks.filter(task => task.row === row-1)" @mousedown="startTaskDragging"class="absolute flex w-3/12 h-full left-5 rounded-md" :style="{ backgroundColor: task.color, left: tempDragPos + 'px' }">
+                        <div v-for="task in tasks.filter(task => task.row === row-1)" @mousedown="startTaskDragging"class="absolute flex w-3/12 h-full left-5 rounded-md"
+                            :style="{ backgroundColor: task.color, left: tempDragPos + (taskPlacementPos(task).from)*56 + 'px', width: taskPlacementPos(task).taskLength*56 + 'px' }"
+                            >
                             <div class="size-full">
                                 <div @mousedown="startTaskExtensionDragging" class="absolute left-0 z-20 w-3 h-full cursor-e-resize"></div>
                                 <div @mousedown="startTaskExtensionDragging" class="absolute right-0 z-20 w-3 h-full cursor-e-resize"></div>
