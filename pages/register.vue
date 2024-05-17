@@ -31,16 +31,18 @@ const addProfile = async () => {
         pFailed.value = "Invalid format.";
         return;
     }
-    
-    console.log(upload);
+
     const profile = await $fetch('/api/profiles/profilesCreate', {
         method: 'post',
         body: {
             name: pName.value,
             email: pEmail.value,
             password: pPassword.value,
-            pfpPath: upload,
-            sessionToken: ""
+            pfpPath256: upload[0],
+            pfpPath48: upload[1],
+            pfpPath256Cwd: upload[2],
+            pfpPath48Cwd: upload[3],
+            sessionToken: "null",
         }
     });
     if(profile === undefined)
