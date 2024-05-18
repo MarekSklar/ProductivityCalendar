@@ -44,7 +44,6 @@ function endDragging() {
         case draggingTaskExtension.value:
             draggingTaskExtension.value = false;
     }
-    console.log("END", "cal", draggingCalendar.value, "task", draggingTask.value, "extens", draggingTaskExtension.value);
 }
 
 // dragging
@@ -75,40 +74,11 @@ function moveCalendarComponents(event: MouseEvent) {
     }
 }
 
-function getScreenSize() {
-    return {width: screen.width, height: screen.height};
-}
-
 function generateDate(dateNum: number) {
     const date = new Date(new Date().getTime() + dateNum * 86400000);
 
     const newDateNum = date.getDate();
-    let day = "";
-
-
-    switch (date.getDay()) {
-        case 0:
-            day = "S";
-            break;
-        case 1:
-            day = "M";
-            break;
-        case 2:
-            day = "T";
-            break;
-        case 3:
-            day = "W";
-            break;
-        case 4:
-            day = "T";
-            break;
-        case 5:
-            day = "F";
-            break;
-        case 6:
-            day = "S";
-            break;
-    }
+    let day = getWeekDay(date.getDay());
 
     return day + " " + newDateNum;
 }
