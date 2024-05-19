@@ -7,23 +7,6 @@ const props = defineProps({
     tempDragPos: Number
 });
 
-interface CDate {
-    day: number;
-    month: number;
-    year: number;
-}
-interface Task {
-    uuid: string,
-    color: string,
-    name: string,
-    row: number,
-    status: string,
-    from: CDate,
-    to: CDate,
-    createdBy: string,
-    assignees?: string[],
-    description?: string
-}
 interface Assignee {
     uuid: string,
     image: string
@@ -36,8 +19,8 @@ const tasks: Task[] = [
         name: "Home Office",
         row: 2,
         status: "",
-        from: {day: 3, month: 4, year: 2024},
-        to: {day: 5, month: 4, year: 2024},
+        fromDate: {day: 3, month: 4, year: 2024},
+        toDate: {day: 5, month: 4, year: 2024},
         createdBy: "Mark Uch",
         assignees: ["507b54ba-7df0-45cb-9bd5-0e631e85b5a9"],
         description: "Descrip"
@@ -48,8 +31,8 @@ const tasks: Task[] = [
         name: "Home Office",
         row: 4,
         status: "",
-        from: {day: 18, month: 4, year: 2024},
-        to: {day: 25, month: 4, year: 2024},
+        fromDate: {day: 18, month: 4, year: 2024},
+        toDate: {day: 25, month: 4, year: 2024},
         createdBy: "Mark Uch",
         assignees: ["507b54ba-7df0-45cb-9bd5-0e631e85b5a9"],
         description: "Descrip"
@@ -60,8 +43,8 @@ const tasks: Task[] = [
         name: "Home Office",
         row: 3,
         status: "",
-        from: {day: 3, month: 3, year: 2024},
-        to: {day: 24, month: 4, year: 2024},
+        fromDate: {day: 3, month: 3, year: 2024},
+        toDate: {day: 24, month: 4, year: 2024},
         createdBy: "Mark Uch",
         assignees: ["507b54ba-7df0-45cb-9bd5-0e631e85b5a9"],
         description: "Descrip"
@@ -72,8 +55,8 @@ const tasks: Task[] = [
         name: "Home Office",
         row: 3,
         status: "",
-        from: {day: 29, month: 11, year: 2023},
-        to: {day: 4, month: 0, year: 2024},
+        fromDate: {day: 29, month: 11, year: 2023},
+        toDate: {day: 4, month: 0, year: 2024},
         createdBy: "Mark Uch",
         assignees: ["507b54ba-7df0-45cb-9bd5-0e631e85b5a9"],
         description: "Descrip"
@@ -96,8 +79,8 @@ const assignees: Assignee[] = [
 
 function taskPlacementPos(task: Task) {
     const todayDayTimestamp = Math.floor(new Date().getTime() / 86400000);
-    const taskStartDayTimestamp = Math.floor(new Date(task.from.year, task.from.month, task.from.day).getTime() / 86400000) + 4;
-    const taskEndDayTimestamp = Math.floor(new Date(task.to.year, task.to.month, task.to.day).getTime() / 86400000) + 4 + 1;
+    const taskStartDayTimestamp = Math.floor(new Date(task.fromDate.year, task.fromDate.month, task.fromDate.day).getTime() / 86400000) + 4;
+    const taskEndDayTimestamp = Math.floor(new Date(task.toDate.year, task.toDate.month, task.toDate.day).getTime() / 86400000) + 4 + 1;
 
     const taskLength = taskEndDayTimestamp - taskStartDayTimestamp;
     const timeFromToday = taskStartDayTimestamp - todayDayTimestamp;
