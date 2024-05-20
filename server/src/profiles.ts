@@ -21,9 +21,12 @@ const profileGetOptionsSchema = z.object({
     sessionToken: z.string()
 });
 
+const profileGetByUUIDOptionsSchema = z.object({
+    uuid: z.string()
+});
 
 export async function list(db: DatabaseConnection) {
-    return db.query(sql`SELECT * FROM profiles`);
+    return db.query(sql`SELECT * FROM profiles`);;
 }
 
 export async function add(db: DatabaseConnection, options: ProfileAddOptions) {
@@ -104,6 +107,27 @@ export async function get(db: DatabaseConnection, options: ProfileGetOptions) {
             return;
 
         if(result[0].sessionToken === params.sessionToken)    
+            return result;
+        
+        return;
+    } catch(error) {
+        return;
+    }
+}
+
+export async function getByUUID(db: DatabaseConnection, options: ProfileGetByUUIDOptions) {
+    try {
+        const params = profileGetByUUIDOptionsSchema.parse(options);
+
+        if(!params.uuid)
+            return;
+
+        const result = await db.query(sql`SELECT * FROM profiles WHERE uuid = ${params.uuid}`);
+
+        if(result.length == 0)
+            return;
+
+        if(result[0].uuid === params.uuid)    
             return result;
         
         return;

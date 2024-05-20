@@ -15,7 +15,18 @@ const taskAddOptionsSchema = z.object({
 });
 
 export async function list(db: DatabaseConnection) {
-    return db.query(sql`SELECT * FROM tasks`);
+    let tasks = db.query(sql`SELECT * FROM tasks`);
+    (await tasks).forEach((task) => {
+        const fromDates = task.fromDate.split('-');
+        task.fromDate = { day: fromDates[2], month: fromDates[1], year: fromDates[0] };
+
+        const toDates = task.toDate.split('-');
+        task.toDate = { day: toDates[2], month: toDates[1], year: toDates[0] };
+
+        task.assignees = task.assignees.split(',');
+    });
+
+    return tasks;
 }
 
 export async function add(db: DatabaseConnection, options: TaskAddOptions) {

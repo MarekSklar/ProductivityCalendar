@@ -25,3 +25,7 @@ interface ProfileLoginOptions {
 interface ProfileGetOptions {
     sessionToken: string
 }
+
+interface ProfileGetByUUIDOptions {
+    uuid: string
+}

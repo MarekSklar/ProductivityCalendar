@@ -57,11 +57,11 @@ function moveCalendarComponents(event: MouseEvent) {
     switch (true) {
 
         case draggingTaskExtension.value:
-            console.log("task extension dragging");
+            //console.log("task extension dragging");
             break;
 
         case draggingTask.value:
-            console.log("task dragging");
+            //console.log("task dragging");
             break;
 
         case draggingCalendar.value:

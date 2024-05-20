@@ -15,13 +15,12 @@ const { data: profileData } = await useFetch('/api/profiles/profileGet', { metho
 const profile = profileData.value?.at(0);
 
 const createTask = async () => {
-    if(profiles.value == null)
+    if(!profiles.value || !profile || !sessionToken.value)
         return;
 
     const dateFromFormat = tDateFrom.value.split('-');
     const dateToFormat = tDateTo.value.split('-');
-    
-    const createTask = await $fetch('/api/tasks/tasksCreate', {
+    const task = await $fetch('/api/tasks/tasksCreate', {
         method: 'post',
         body: {
             color: tColor.value,
@@ -36,11 +35,6 @@ const createTask = async () => {
         }
     });
 };
-
-const onClose = async () => {
-    console.log("ads");
-    closed = true;
-}
 
 </script>
 <template>
@@ -70,7 +64,7 @@ const onClose = async () => {
                     <br>
                     <label for="assignee">Assignee:</label>
                     <select v-model="tAssignees" name="assignee" id="assignee" multiple>
-                        <option v-for="profile in profiles" :key="profile.uuid">
+                        <option v-for="profile in profiles" :key="profile.uuid" :value="profile.uuid">
                             {{ profile.name }}
                         </option>
                     </select><br>
@@ -92,5 +86,20 @@ const onClose = async () => {
 </template>
 
 <style scoped>
+main{
+    font-family: 'Roboto Mono', monospace;
+    font-size: 20px;
+    
+}
+    input {
+        border-width: 1px;
+        margin: 4px;
+    }
 
+    button {
+        border-width: 1.5px;
+        padding: 1px;
+        margin: 3px;
+        background-color: rgb(140, 202, 221);
+    }
 </style>

@@ -26,7 +26,7 @@ const upload = await $fetch('/api/upload', {
 });
 
 // return -> list of objects (x = { profiles, tasks ll})
-const { data: x } = await useFetch('/api/profiles/xList', { method: 'post' });
+const { data: x } = await useFetch('/api/x/xList', { method: 'post' });
 
 // get current logged profile
 const sessionToken = useCookie<string>('sessionToken');
