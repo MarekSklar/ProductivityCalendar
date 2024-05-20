@@ -14,8 +14,6 @@ interface ProfileAddOptions {
     password: string,
     pfpPath256: string,
     pfpPath48: string,
-    pfpPath256Cwd:string,
-    pfpPath48Cwd:string,
     sessionToken: string
 }
 

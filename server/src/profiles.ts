@@ -9,8 +9,6 @@ const profileAddOptionsSchema = z.object({
     password: z.string(),
     pfpPath256: z.string(),
     pfpPath48: z.string(),
-    pfpPath256Cwd: z.string(),
-    pfpPath48Cwd: z.string(),
     sessionToken: z.string()
 });
 
@@ -36,8 +34,8 @@ export async function add(db: DatabaseConnection, options: ProfileAddOptions) {
         name: params.name,
         email: params.email,
         password: params.password,
-        pfpPath256: params.pfpPath256Cwd,
-        pfpPath48: params.pfpPath48Cwd,
+        pfpPath256: params.pfpPath256,
+        pfpPath48: params.pfpPath48,
         sessionToken: params.sessionToken
     };
 
@@ -82,7 +80,6 @@ export async function login(db: DatabaseConnection, options: ProfileLoginOptions
 
     if(loginResult[0].password === params.password)
     {   
-        console.log(loginResult[0].sessionToken);
         let sessionToken = "";
         if(loginResult[0].sessionToken !== "null")
             sessionToken = loginResult[0].sessionToken;
@@ -95,17 +92,24 @@ export async function login(db: DatabaseConnection, options: ProfileLoginOptions
 }
 
 export async function get(db: DatabaseConnection, options: ProfileGetOptions) {
-    const params = profileGetOptionsSchema.parse(options);
+    try {
+        const params = profileGetOptionsSchema.parse(options);
 
-    const result = await db.query(sql`SELECT * FROM profiles WHERE sessionToken = ${params.sessionToken}`);
+        if(!params.sessionToken)
+            return;
 
-    if(result.length == 0)
+        const result = await db.query(sql`SELECT * FROM profiles WHERE sessionToken = ${params.sessionToken}`);
+
+        if(result.length == 0)
+            return;
+
+        if(result[0].sessionToken === params.sessionToken)    
+            return result;
+        
         return;
-
-    if(result[0].sessionToken === params.sessionToken)    
-        return result;
-    
-    return;
+    } catch(error) {
+        return;
+    }
 }
 
 

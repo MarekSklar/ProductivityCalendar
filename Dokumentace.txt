@@ -19,7 +19,7 @@ const profile = await $fetch('/api/profiles/profilesCreate', {
         }
 });
 
-// return -> filepaths[abs256, abs48, cwd256, cwd48] : emptyObj
+// return -> filepaths[256, 48] : emptyObj
 const upload = await $fetch('/api/upload', {
         method: 'post',
         body: fd,

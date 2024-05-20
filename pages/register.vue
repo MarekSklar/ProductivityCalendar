@@ -40,15 +40,17 @@ const addProfile = async () => {
             password: pPassword.value,
             pfpPath256: upload[0],
             pfpPath48: upload[1],
-            pfpPath256Cwd: upload[2],
-            pfpPath48Cwd: upload[3],
             sessionToken: "null",
         }
     });
     if(profile === undefined)
         pFailed.value = "Your E-Mail is already registered.";
     else
+    {
         pFailed.value = "";
+
+        await navigateTo('/login');
+    }
 };
 
 </script>
