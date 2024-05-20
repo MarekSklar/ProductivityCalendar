@@ -12,8 +12,9 @@ export const getDatabase = (path: string) => {
                 name TEXT NOT NULL,                
                 email TEXT NOT NULL,
                 password TEXT NOT NULL,
-                pfpPath TEXT NOT NULL,
-                sessionToken TEXT
+                pfpPath256 TEXT NOT NULL,
+                pfpPath48 TEXT NOT NULL,
+                sessionToken TEXT NOT NULL
             );`            
         );
         
@@ -25,16 +26,9 @@ export const getDatabase = (path: string) => {
                 status TEXT NOT NULL,
                 fromDate DATE,
                 toDate DATE,
-                createdBy TEXT NOT NULL,
                 assignees TEXT[],
-                description TEXT
-            );`            
-        );
-
-        db.query(sql`CREATE TABLE IF NOT EXISTS tags (
-                uuid TEXT PRIMARY KEY,
-                color TEXT NOT NULL,            
-                name TEXT NOT NULL
+                description TEXT,
+                createdBy TEXT NOT NULL
             );`            
         );
 

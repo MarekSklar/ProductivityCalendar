@@ -2,52 +2,39 @@
 
 const tColor = ref("");
 const tName = ref("");
-const tTag = ref("");
-const tFromDay = ref();
-const tFromMonth = ref();
-const tFromYear = ref();
-const tToDay = ref();
-const tToMonth = ref();
-const tToYear = ref();
+const tStatus = ref("To-Do");
+const tDateFrom = ref("")
+const tDateTo = ref("");
+const tAssignees = ref([""]);
 const tDescription = ref("");
 const tFailed = ref("");
 
-const { data: tasks } = await useFetch('/api/tags/tagsList', { method: 'post' });
+const sessionToken = useCookie<string>('sessionToken');
 const { data: profiles } = await useFetch('/api/profiles/profilesList', { method: 'post' });
-const sessionToken = useCookie("sessionToken");
+const { data: profileData } = await useFetch('/api/profiles/profileGet', { method: 'post', body: { sessionToken: sessionToken.value }});
+const profile = profileData.value?.at(0);
 
 const createTask = async () => {
-    if(tasks.value === null || profiles.value == null)
+    if(profiles.value == null)
         return;
 
-    let name = "";    
-    profiles.value.forEach((profile) => {
-        if(profile.sessionToken === sessionToken)
-        {
-            name = profile.name;
-            return;
-        }
-    });
+    const dateFromFormat = tDateFrom.value.split('-');
+    const dateToFormat = tDateTo.value.split('-');
     
-    const createTask = await $fetch('/api/tags/tasksCreate', {
+    const createTask = await $fetch('/api/tasks/tasksCreate', {
         method: 'post',
         body: {
             color: tColor.value,
             name: tName.value,
             row: 0, // TODO
-            status: "To-Do",
-            fromDate: { day: tFromDay.value, month: tFromMonth.value, year: tFromYear.value },
-            toDate: { day: tToDay.value, month: tToMonth.value, year: tToYear.value },
-            createdBy: name,
-            assignees: ["sfdfsd", "dfsfsd"], // TODO
+            status: tStatus.value,
+            fromDate: { day: dateFromFormat[2], month: dateFromFormat[1], year: dateFromFormat[0] },
+            toDate: { day: dateToFormat[2], month: dateToFormat[1], year: dateToFormat[0] },
+            createdBy: profile.name,
+            assignees: tAssignees.value,
             description: tDescription.value
         }
     });
-
-    if(createTask === undefined)   
-        tFailed.value = "This tag already exists.";  
-    else    
-        tFailed.value = "";    
 };
 
 </script>
@@ -59,34 +46,30 @@ const createTask = async () => {
 
         <label for="name">Name:</label>
         <input v-model="tName" type="text" id="name"><br>
-        
-        <label for="tag">Tag:</label>
-        <select name="tag", id="tag">
-            <option v-for="task in tasks" :key="task.uuid">
-                {{ task.name }}
-            </option>
+
+        <label for="status">Status:</label>
+        <select v-model="tStatus" name="status" id="status">
+            <option>To-Do</option>
+            <option>No status</option>
+            <option>In progress</option>
+            <option>Blocked</option>
+            <option>Done.</option>
         </select><br>
 
+        <label for="dateFrom">From:</label>
+        <input v-model="tDateFrom" type="date" id="dateFrom"><br>
+        
+        <label for="dateTo">From:</label>
+        <input v-model="tDateTo" type="date" id="dateTo"><br>
 
-        <p>From:</p><br>
-        <label for="day">Day:</label>
-        <input v-model="tFromDay" type="number" id="day">
-
-        <label for="month">Month:</label>
-        <input v-model="tFromMonth" type="number" id="month">
-
-        <label for="year">Year:</label>
-        <input v-model="tFromYear" type="number" id="year"><br>
-        <p>To:</p><br>
-        <label for="day">Day:</label>
-        <input v-model="tToDay" type="number" id="day">
-
-        <label for="month">Month:</label>
-        <input v-model="tToMonth" type="number" id="month">
-
-        <label for="year">Year:</label>
-        <input v-model="tToYear" type="number" id="year"><br>
-
+        <br>
+        <label for="assignee">Assignee:</label>
+        <select v-model="tAssignees" name="assignee" id="assignee" multiple>
+            <option v-for="profile in profiles" :key="profile.uuid">
+                {{ profile.name }}
+            </option>
+        </select><br>
+        <br>
 
         <label for="description">Description:</label>
         <input v-model="tDescription" type="text" id="description"><br>

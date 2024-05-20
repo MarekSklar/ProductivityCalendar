@@ -2,55 +2,21 @@ import { z } from 'zod';
 import { DatabaseConnection, sql } from "@databases/sqlite";
 import { randomUUID } from 'node:crypto';
 
-const Status = [
-    "To-Do",
-    "No status",
-    "In progress",
-    "Blocked",
-    "Done"
-]
-
-type CDate = {
-    day: number,
-    month: number,
-    year: number
-}
-
-interface Task {
-    uuid: string,
-    color: string,
-    name: string,
-    row: number,
-    status: string,
-    fromDate: CDate,
-    toDate: CDate,
-    createdBy: string,
-    assignees?: string[],
-    description?: string
-}
-
-interface TaskAddOptions {
-    color: string,
-    name: string,
-    row: string,
-    fromDate: CDate,
-    toDate: CDate,
-    createdBy: string,
-    assignees?: string[],
-    description: string
-}
-
 const taskAddOptionsSchema = z.object({
     color: z.string(),
     name: z.string(),
     row: z.number(),
-    status: z.any(),
+    status: z.string(),
     fromDate: z.any(),
     toDate: z.any(),
-    createdBy: z.string(),
     assignees: z.string().array(),
-    description: z.string()
+    description: z.string(),
+    createdBy: z.string()
 });
+
+export async function list(db: DatabaseConnection) {
+    return db.query(sql`SELECT * FROM tasks`);
+}
 
 export async function add(db: DatabaseConnection, options: TaskAddOptions) {
     const params = taskAddOptionsSchema.parse(options);
@@ -63,10 +29,13 @@ export async function add(db: DatabaseConnection, options: TaskAddOptions) {
         status: params.status,
         fromDate: params.fromDate,
         toDate: params.toDate,
-        createdBy: params.createdBy,
         assignees: params.assignees,
-        description: params.description
+        description: params.description,
+        createdBy: params.createdBy
     };
+    
+    const sqlFromDate = task.fromDate.year + "-" + task.fromDate.month + "-" + task.fromDate.day;
+    const sqlToDate = task.toDate.year + "-" + task.toDate.month + "-" + task.toDate.day;
 
     db.query(sql`INSERT INTO tasks (
             uuid,
@@ -76,20 +45,20 @@ export async function add(db: DatabaseConnection, options: TaskAddOptions) {
             status,
             fromDate,
             toDate,
-            createdBy,
             assignees,
-            description         
+            description,      
+            createdBy
         ) VALUES (
             ${task.uuid},
             ${task.color},
             ${task.name},
             ${task.row},
             ${task.status},
-            ${task.fromDate},
-            ${task.toDate},
-            ${task.createdBy},
-            ${task.assignees},
-            ${task.description}
+            ${sqlFromDate},
+            ${sqlToDate},            
+            ${task.assignees?.toString()},
+            ${task.description},
+            ${task.createdBy}
         )
     `);
 

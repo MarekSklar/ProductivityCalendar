@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
 
     const filePath = path.join(
       process.cwd(),
-      'profilePics',
+      'assets/pfp',
       (id.toString() + '.' + format) as string,
     );
 
@@ -30,11 +30,18 @@ export default defineEventHandler(async (event) => {
       height: 48
     });
 
-    fs.writeFileSync(path.join(process.cwd(), 'profilePics', ('256_' + id.toString() + '.' + format) as string), image256);
-    fs.writeFileSync(path.join(process.cwd(), 'profilePics', ('48_' + id.toString() + '.' + format) as string), image48);
+    const paths = [
+      path.join(process.cwd(), 'assets/pfp', ('256_' + id.toString() + '.' + format) as string),
+      path.join(process.cwd(), 'assets/pfp', ('48_' + id.toString() + '.' + format) as string),
+      path.join('~/assets/pfp', ('256_' + id.toString() + '.' + format) as string),
+      path.join('~/assets/pfp', ('48_' + id.toString() + '.' + format) as string),
+    ];
+    
+    fs.writeFileSync(paths[0], image256);
+    fs.writeFileSync(paths[1], image48);
     fs.unlinkSync(filePath);
 
-    return filePath;
+    return paths;
   }
   else
   {
