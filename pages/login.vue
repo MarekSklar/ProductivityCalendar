@@ -34,49 +34,41 @@ const login = async() => {
 </script>
 
 <template>
-    <main>
-        <form @submit.prevent>
-            <label for="email">Email:</label>
-            <input v-model="pEmail" type="email" id="email"><br>
+    <div class="flex items-center justify-center w-screen h-screen bg-gray-50">
+        <div class="flex flex-col items-center gap-8 px-20 py-12 rounded-xl shadow-lg bg-white">
+            <h1 class="text-2xl text-gray-700 font-bold">Welcome back!</h1>
+            <div class="flex flex-col justify-center items-center w-full h-full">
+                <div class="flex flex-col justify-between">
+                    <form @submit.prevent class="flex flex-col gap-3">
+                        <div class="input-box">
+                            <label for="email">Email:</label>
+                            <input v-model="pEmail" type="email" class="border-2 border-gray-200 rounded-md">
+                        </div>
 
-            <label for="password">Password:</label>
-            <input v-model="pPassword" type="password" id="password"><br>
+                        <div class="input-box">
+                            <label for="password">Password:</label>
+                            <input v-model="pPassword" type="password">
+                        </div>
 
-            <button @click="login">Login</button>                      
-        </form>
-        {{  pFailed }}
-    </main>
+                        <div class="flex justify-center w-full">
+                            <button @click="login" class="w-4/5 mt-5 px-4 py-1 rounded-md bg-gray-400 hover:bg-gray-500 text-white">Login</button>
+                        </div>
+                        
+                    </form>
+                    {{  pFailed }}
+                </div>
+            </div>
+        </div>
+    </div>
 </template>
 
-<style>
-main{
-    margin-left: 40%;
-    margin-top: 25%;
-    font-family: 'Roboto Mono', monospace;
-    font-size: 20px;
-
+<style scoped>
+.input-box {
+    @apply flex items-center justify-between;
 }
-    input {
-        border-width: 1.5px;
-        margin: 5px;
-        border-radius: 5px;
-    }
 
-    button {
-        border-width: 1.5px;
-        padding: 5px;
-        margin: 3px;
-        margin-left: 15%;
-        margin-top: 4%;
-        border-radius: 5px;
-        font-size: 18px;
-        background-color:rgb(140, 202, 221);
-    }
-
-    .password{
-        font-size: 15px;
-        color: rgb(7, 24, 99);
-       
-    }
+input {
+    @apply ml-3 px-2 border-2 border-gray-200 rounded-md;
+}
 
 </style>
