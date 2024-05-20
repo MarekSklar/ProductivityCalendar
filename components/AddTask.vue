@@ -80,7 +80,7 @@ const createTask = async () => {
     {{ tFailed }}
 </template>
 
-<style>
+<style scoped>
     input {
         border-width: 1px;
         margin: 4px;

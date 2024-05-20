@@ -105,17 +105,20 @@ onMounted(() => {
                 </div>
             </div>
         </div>
-        <div class="flex-auto min-w-full mt-4">
-            <div>
-                
-            </div>
-            <div class="">
-                <div @mousedown="startCalendarDragging" @mousemove="moveCalendarComponents" @mouseleave="endDragging" @mouseup="endDragging" class="grid overflow-hidden cursor-grab select-none" :class="{'cursor-grabbing': draggingCalendar}">
-                    <div v-for="row in 10" class="relative h-11 mb-0.5 bg-white">
-                        <CalendarTask
-                            @start-task-extension-dragging="startTaskExtensionDragging" @start-task-dragging="startTaskDragging"
-                            :row="row" :tempDragPos="tempDragPos"
-                        />
+        <div class="relative flex-auto min-w-full">
+            <CalendarTaskEdit />
+            <div class="mt-4">
+                <div>
+                    
+                </div>
+                <div class="">
+                    <div @mousedown="startCalendarDragging" @mousemove="moveCalendarComponents" @mouseleave="endDragging" @mouseup="endDragging" class="grid overflow-hidden cursor-grab select-none" :class="{'cursor-grabbing': draggingCalendar}">
+                        <div v-for="row in 10" class="relative h-11 mb-0.5 bg-white">
+                            <CalendarTask
+                                @start-task-extension-dragging="startTaskExtensionDragging" @start-task-dragging="startTaskDragging"
+                                :row="row" :tempDragPos="tempDragPos"
+                            />
+                        </div>
                     </div>
                 </div>
             </div>
