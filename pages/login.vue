@@ -42,9 +42,7 @@ const login = async() => {
             <label for="password">Password:</label>
             <input v-model="pPassword" type="password" id="password"><br>
 
-            <button @click="login">Login</button>
-            
-            
+            <button @click="login">Login</button>                      
         </form>
         {{  pFailed }}
     </main>
