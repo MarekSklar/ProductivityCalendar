@@ -7,7 +7,7 @@ const profile = profileData.value?.at(0);
 
 let pfpPath = '';
 if(profile)
-    pfpPath = profile.pfpPath256;
+    pfpPath = profile.pfpPath48;
 
 const { data: pfp } = await useFetch('/api/getImage', { method: 'post', body: { path: pfpPath }});
 const pfpFormat = pfpPath.split('.').pop();
@@ -32,6 +32,10 @@ const sidebarIsActive = ref(false);
                         <NuxtLink to="/" @click="sidebarIsActive = false" class="group link-box">
                             <SvgCalendar class="icon" />
                             <p class="link-text">Calendar</p>
+                        </NuxtLink>
+                        <NuxtLink to="/" @click="sidebarIsActive = false" class="group link-box">
+                            <SvgGroup class="icon" />
+                            <p class="link-text">Users</p>
                         </NuxtLink>
                         <div class="group link-box">
                             <SvgModeDark class="icon" />
