@@ -1,4 +1,8 @@
 <script setup lang="ts">
+import { useDark, useToggle } from '@vueuse/core';
+
+const isDark = useDark();
+const toggleDark = useToggle(isDark);
 
 const sessionToken = useCookie<string>('sessionToken');
 
@@ -37,7 +41,7 @@ const sidebarIsActive = ref(false);
                             <SvgGroup class="icon" />
                             <p class="link-text">Users</p>
                         </NuxtLink>
-                        <div class="group link-box">
+                        <div @click="toggleDark()" class="group link-box">
                             <SvgModeDark class="icon" />
                             <p class="link-text">Dark mode</p>
                         </div>
