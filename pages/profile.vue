@@ -15,22 +15,22 @@ const pfpFormat = pfpPath.split('.').pop();
 </script>
 
 <template>
-    <div v-if="sessionToken && sessionToken !== 'null'" class="flex items-center justify-center w-screen h-screen bg-gray-50">
-        <div class="flex flex-col items-center gap-8 px-20 py-12 rounded-xl shadow-lg bg-white">
+    <div v-if="sessionToken && sessionToken !== 'null'" class="flex items-center justify-center w-screen h-screen bg-gray-50 dark:bg-gray-900">
+        <div class="flex flex-col items-center gap-8 px-20 py-12 rounded-xl shadow-lg bg-white dark:bg-gray-800 dark:shadow-md">
             <div class="flex justify-center items-center gap-6 w-full h-full">
                 <img :src="'data:image/' + pfpFormat + ';base64,' + pfp" class="size-36 rounded-full object-cover"/>
                 <div class="flex flex-col gap-4">
                     <div class="info-box">
-                        <SvgPerson class="info-icon" />
-                        <p class="info-text">{{ profile.name }}</p>
+                        <SvgPerson class="info-icon fill-gray-600 dark:fill-gray-100" />
+                        <p class="info-text text-gray-600 dark:text-gray-100">{{ profile.name }}</p>
                     </div>
                     <div class="info-box">
-                        <SvgRole class="info-icon" />
-                        <p class="info-text"> Admin </p>
+                        <SvgRole class="info-icon fill-gray-600 dark:fill-gray-100" />
+                        <p class="info-text text-gray-600 dark:text-gray-100"> Admin </p>
                     </div>
                     <div class="info-box">
-                        <SvgMail class="info-icon" />
-                        <p class="info-text">{{ profile.email }}</p>
+                        <SvgMail class="info-icon fill-gray-600 dark:fill-gray-100" />
+                        <p class="info-text text-gray-600 dark:text-gray-100">{{ profile.email }}</p>
                     </div>
                 </div>
             </div>
@@ -48,11 +48,11 @@ const pfpFormat = pfpPath.split('.').pop();
 
 <style scoped>
 .info-box {
-    @apply flex items-center gap-4 text-gray-600;
+    @apply flex items-center gap-4;
 }
 
 .info-icon {
-    @apply size-7 fill-gray-400;
+    @apply size-7;
 }
 
 .info-text {
