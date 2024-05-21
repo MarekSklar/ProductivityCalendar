@@ -33,7 +33,7 @@ const sidebarIsActive = ref(false);
                             <SvgCalendar class="icon" />
                             <p class="link-text">Calendar</p>
                         </NuxtLink>
-                        <NuxtLink to="/" @click="sidebarIsActive = false" class="group link-box">
+                        <NuxtLink to="/users" @click="sidebarIsActive = false" class="group link-box">
                             <SvgGroup class="icon" />
                             <p class="link-text">Users</p>
                         </NuxtLink>

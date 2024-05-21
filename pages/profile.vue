@@ -3,7 +3,7 @@
 const sessionToken = useCookie<string>('sessionToken');
 
 const { data: profileData } = await useFetch('/api/profiles/profileGet', { method: 'post', body: { sessionToken: sessionToken.value }});
-const profile = profileData.value?.at(0);
+const profile = profileData.value?.at(0) as Profile;
 
 let pfpPath = '';
 if(profile)

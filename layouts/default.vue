@@ -4,9 +4,7 @@
 
 <template>
     <DefaultSidebar />
-    <div>
-        <slot />
-    </div>
+    <slot />
 </template>
 
 <style scoped>
