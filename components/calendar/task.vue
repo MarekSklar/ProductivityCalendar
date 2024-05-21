@@ -35,25 +35,6 @@ tasks.value?.forEach((task) => {
     });
 });
 
-let draggingLeft = false;
-let draggingLeftStart = 0;
-function taskDragLeft(task: Task, e: MouseEvent) {
-    draggingLeft = true;
-    draggingLeftStart = e.screenX;
-}
-
-function taskUndragLeft(e: MouseEvent) {
-    draggingLeft = false;
-}
-
-function onMouseMove(task: Task, e: MouseEvent) {
-    if(draggingLeft) {
-        console.log(e.screenX);
-        if(draggingLeftStart - e.screenX > 5)
-            task.fromDate.day -= 1;
-    }
-}
-
 function taskPlacementPos(task: Task) {
     const todayDayTimestamp = Math.floor(new Date().getTime() / 86400000);
     const taskStartDayTimestamp = Math.floor(new Date(task.fromDate.year, task.fromDate.month - 1, task.fromDate.day).getTime() / 86400000) + 4;
@@ -72,8 +53,7 @@ function taskPlacementPos(task: Task) {
         <div v-for="task in tasks?.filter(task => task.row === row!-1)" @mousedown="emit('startTaskDragging', null)" class="absolute flex h-full left-5 rounded-md"
         :style="{ backgroundColor: task.color, left: tempDragPos! + (taskPlacementPos(task).from)*56 + 'px', width: taskPlacementPos(task).taskLength*56 + 'px' }">
             <div class="size-full">
-                <div @mousedown="(event) => taskDragLeft(task, event)" @mouseup="(event) => taskUndragLeft(event)" class="absolute left-0 z-20 w-3 h-full cursor-e-resize"></div>
-                <div @mousemove="(event) => onMouseMove(task, event)" class="w-full h-full absolute"></div>
+                <div @mousedown="emit('startTaskExtensionDragging', null)" class="absolute left-0 z-20 w-3 h-full cursor-e-resize"></div>
                 <div @mousedown="emit('startTaskExtensionDragging', null)" class="absolute right-0 z-20 w-3 h-full cursor-e-resize"></div>
                 <div class="size-full p-1 pl-2">
                     <div class="relative size-full">
