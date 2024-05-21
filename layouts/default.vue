@@ -1,6 +1,10 @@
+<script setup lang="ts">
+
+</script>
+
 <template>
-    <!-- <p class="absolute">Hello world</p> -->
-    <div>        
+    <DefaultSidebar />
+    <div>
         <slot />
     </div>
 </template>
