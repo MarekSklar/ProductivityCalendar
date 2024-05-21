@@ -15,11 +15,25 @@ const pfpFormat = pfpPath.split('.').pop();
 </script>
 
 <template>
-    <div v-if="sessionToken && sessionToken !== 'null'">
-        <div>
-            <img :src="'data:image/' + pfpFormat + ';base64,' + pfp" width="256" height="256" class="size-64 rounded-full object-cover"/>
-            <h2 class="text-3xl text-gray-800">{{ profile.name }}</h2>
-            <p>E-Mail: {{ profile.email }}</p>
+    <div v-if="sessionToken && sessionToken !== 'null'" class="flex items-center justify-center w-screen h-screen bg-gray-50">
+        <div class="flex flex-col items-center gap-8 px-20 py-12 rounded-xl shadow-lg bg-white">
+            <div class="flex justify-center items-center gap-6 w-full h-full">
+                <img :src="'data:image/' + pfpFormat + ';base64,' + pfp" class="size-36 rounded-full object-cover"/>
+                <div class="flex flex-col gap-4">
+                    <div class="info-box">
+                        <SvgPerson class="info-icon" />
+                        <p class="info-text">{{ profile.name }}</p>
+                    </div>
+                    <div class="info-box">
+                        <SvgRole class="info-icon" />
+                        <p class="info-text"> Admin </p>
+                    </div>
+                    <div class="info-box">
+                        <SvgMail class="info-icon" />
+                        <p class="info-text">{{ profile.email }}</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     <div v-else>
@@ -31,3 +45,18 @@ const pfpFormat = pfpPath.split('.').pop();
         </div>
     </div>
 </template>
+
+<style scoped>
+.info-box {
+    @apply flex items-center gap-4 text-gray-600;
+}
+
+.info-icon {
+    @apply size-7 fill-gray-400;
+}
+
+.info-text {
+    @apply text-lg font-semibold;
+}
+
+</style>

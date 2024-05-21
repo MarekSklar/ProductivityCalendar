@@ -1,5 +1,9 @@
 <script setup>
 
+definePageMeta({
+  layout: false,
+});
+
 const pName = ref("");
 const pEmail = ref("");
 const pPassword = ref("");
