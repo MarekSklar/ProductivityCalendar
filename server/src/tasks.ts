@@ -14,6 +14,19 @@ const taskAddOptionsSchema = z.object({
     createdBy: z.string()
 });
 
+const taskEditOptionsSchema = z.object({
+    uuid: z.string(),
+    color: z.string(),
+    name: z.string(),
+    row: z.number(),
+    status: z.string(),
+    fromDate: z.any(),
+    toDate: z.any(),
+    assignees: z.string().array(),
+    description: z.string(),
+    createdBy: z.string()
+});
+
 export async function list(db: DatabaseConnection) {
     let tasks = db.query(sql`SELECT * FROM tasks`);
     (await tasks).forEach((task) => {
@@ -48,29 +61,57 @@ export async function add(db: DatabaseConnection, options: TaskAddOptions) {
     const sqlFromDate = task.fromDate.year + "-" + task.fromDate.month + "-" + task.fromDate.day;
     const sqlToDate = task.toDate.year + "-" + task.toDate.month + "-" + task.toDate.day;
 
-    db.query(sql`INSERT INTO tasks (
-            uuid,
-            color,
-            name,
-            row,
-            status,
-            fromDate,
-            toDate,
-            assignees,
-            description,      
-            createdBy
-        ) VALUES (
-            ${task.uuid},
-            ${task.color},
-            ${task.name},
-            ${task.row},
-            ${task.status},
-            ${sqlFromDate},
-            ${sqlToDate},            
-            ${task.assignees?.toString()},
-            ${task.description},
-            ${task.createdBy}
-        )
+    await db.query(sql`INSERT INTO tasks (
+        uuid,
+        color,
+        name,
+        row,
+        status,
+        fromDate,
+        toDate,
+        assignees,
+        description,      
+        createdBy
+    ) VALUES (
+        ${task.uuid},
+        ${task.color},
+        ${task.name},
+        ${task.row},
+        ${task.status},
+        ${sqlFromDate},
+        ${sqlToDate},            
+        ${task.assignees?.toString()},
+        ${task.description},
+        ${task.createdBy}
+    )
+`);
+
+    return task;
+}
+
+export async function edit(db: DatabaseConnection, options: TaskEditOptions) {
+    const params = taskEditOptionsSchema.parse(options);
+
+    const taskData = await db.query(sql`SELECT * FROM tasks WHERE uuid = ${params.uuid}`);
+    const task = taskData.at(0);
+    if(!task)
+        return;
+
+    const sqlFromDate = params.fromDate.year + "-" + params.fromDate.month + "-" + params.fromDate.day;
+    const sqlToDate = params.toDate.year + "-" + params.toDate.month + "-" + params.toDate.day; 
+
+    await db.query(sql`UPDATE tasks SET
+        uuid = ${task.uuid},
+        color = ${task.color},
+        name = ${task.name},
+        row = ${task.row},
+        status = ${task.status},
+        fromDate = ${sqlFromDate},
+        toDate = ${sqlToDate},            
+        assignees = ${task.assignees?.toString()},
+        description = ${task.description},
+        createdBy = ${task.createdBy}
+        WHERE uuid = ${task.uuid}
     `);
 
     return task;

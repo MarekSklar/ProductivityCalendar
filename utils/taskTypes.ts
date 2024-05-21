@@ -27,3 +27,16 @@ interface TaskAddOptions {
     description: string,
     createdBy: string
 }
+
+interface TaskEditOptions {
+    uuid: string,
+    color: string,
+    name: string,
+    row: string,
+    status: string,
+    fromDate: CDate,
+    toDate: CDate,
+    assignees?: string[],
+    description: string,
+    createdBy: string
+}

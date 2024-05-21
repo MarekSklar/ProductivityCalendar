@@ -50,7 +50,7 @@ export async function add(db: DatabaseConnection, options: ProfileAddOptions) {
     }
     else
     {
-        db.query(sql`INSERT INTO profiles (
+        await db.query(sql`INSERT INTO profiles (
                 uuid,
                 name,
                 email,
