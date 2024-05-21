@@ -97,7 +97,7 @@ onMounted(() => {
             </div>
             <div class="relative flex justify-center w-full py-3 overflow-hidden">
                 <p class="py-0.5 opacity-0">Dates</p>
-                <div class="absolute flex" :style="{left: datesOffset - 5 * 56 + 'px'}">
+                <div class="absolute z-10 flex" :style="{left: datesOffset - 5 * 56 + 'px'}">
                     <p v-for="date in Math.ceil(screenSize.width * 0.02 + 10)" class="w-14 py-0.5 text-center rounded-md text-gray-500 font-bold"
                     :class="{'bg-red-100': !(date - datesPos - 9), 'text-gray-900': !(date - datesPos - 9)}">
                         {{ generateDate(date - datesPos - 9) }}

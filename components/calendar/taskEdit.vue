@@ -38,7 +38,7 @@ const createTask = async () => {
 
 </script>
 <template>
-    <div class="absolute right-0 z-50 w-128 h-full p-4 pl-6 bg-white shadow-lg">
+    <div class="absolute right-0 z-20 w-128 h-full p-4 pl-6 bg-white shadow-lg">
         <div class="flex justify-between">
             <div class="flex items-center">
                 <form @submit.prevent>
