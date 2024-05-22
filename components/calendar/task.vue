@@ -61,8 +61,8 @@ function taskPlacementPos(task: Task) {
                     </div>
                     <div class="absolute flex items-center h-full right-1 top-0">
                         <div class="relative size-8 select-none">
-                            <div v-for="num in Math.min(task.assignees.length, 3)">
-                                <img v-if="pfpMap.has(task.assignees[num-1]) && task.assignees[num]" :src="'data:image/jpg;base64,' + pfpMap.get(task.assignees[num-1])" class="absolute size-full rounded-full object-cover" :style="{ right: (num-1)*1.4 + 'rem', 'z-index': num+10 }" draggable="false">
+                            <div v-for="num in Math.min(task.assignees!.length, 3)">
+                                <img v-if="pfpMap.has(task.assignees![num-1]) && task.assignees![num]" :src="'data:image/jpg;base64,' + pfpMap.get(task.assignees![num-1])" class="absolute size-full rounded-full object-cover" :style="{ right: (num-1)*1.4 + 'rem', 'z-index': num+10 }" draggable="false">
                             </div>
                         </div>
                     </div>                
