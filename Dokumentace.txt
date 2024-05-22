@@ -35,3 +35,20 @@ const profile = profileData.value?.at(0);
 
 // get pfp in base64 (256 or 48)
 const pfp = await useFetch('/api/getImage', { method: 'post', body: { path: profile.pfpPath256 }});
+
+// get all pfps in interface Image { uuid, img } (img in base64)
+const { data: pfps } = await useFetch('/api/getAllImages', { method: 'post' });
+
+// get image by uuid using all pfps
+function getImageByUUID(pfps: Image[], uuid: string) {
+    let img: string = "";
+
+    pfps.forEach((pfp) => {
+        if(pfp.uuid === uuid) {
+            img = pfp.img;
+            return;
+        }            
+    });
+
+    return img;
+}

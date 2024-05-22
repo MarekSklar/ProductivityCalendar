@@ -20,13 +20,14 @@ const addProfile = async () => {
     if(profiles.value === null || pName.value === "" || pEmail.value === "" || pPassword.value === "")
         return;
 
+    let upload;
     if(files.value) {
         const fd = new FormData();
         Array.from(files.value).map((file, index) => {
             fd.append(index, file);
         });
 
-        const upload = await $fetch('/api/upload', {
+        upload = await $fetch('/api/upload', {
             method: 'post',
             body: fd,
         });

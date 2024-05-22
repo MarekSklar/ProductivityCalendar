@@ -8,32 +8,20 @@ const props = defineProps({
     tasks: Array as PropType<Task[]>
 });
 
-let pfpMap = new Map<string, string>();
+const { data: pfps } = await useFetch('/api/getAllImages', { method: 'post' });
+function getImageByUUID(pfps: Image[], uuid: string) {
+    let img: string = "";
 
-// xdd reseni
-let iMax = 0;
-props.tasks?.forEach((task) => {
-    task?.assignees?.forEach(() => {
-        iMax++
+    pfps.forEach((pfp) => {
+        if(pfp.uuid === uuid) {
+            img = pfp.img;
+            return;
+        }            
     });
-});
 
-let i = 0;
-props.tasks?.forEach((task) => {
-    task?.assignees?.forEach(async (assignee : string) => {
-        if(!pfpMap.has(assignee))
-        {
-            const profile = await $fetch('/api/profiles/profileGetByUUID', { method: 'post', body: { uuid: assignee }});
-            const pfp: string = await $fetch('/api/getImage', { method: 'post', body: { path: profile?.at(0).pfpPath48 }});
-            pfpMap.set(assignee, pfp);
-        }        
-        i++;
-        if(i === iMax)
-        {
-            await refreshNuxtData(); 
-        }
-    });
-});
+    return img;
+}
+
 
 function taskPlacementPos(task: Task) {
     const todayDayTimestamp = Math.floor(new Date().getTime() / 86400000);
@@ -62,7 +50,7 @@ function taskPlacementPos(task: Task) {
                     <div class="absolute flex items-center h-full right-1 top-0">
                         <div class="relative size-8 select-none">
                             <div v-for="num in Math.min(task.assignees!.length, 3)">
-                                <img v-if="pfpMap.has(task.assignees![num-1]) && task.assignees![num]" :src="'data:image/jpg;base64,' + pfpMap.get(task.assignees![num-1])" class="absolute size-full rounded-full object-cover" :style="{ right: (num-1)*1.4 + 'rem', 'z-index': num+10 }" draggable="false">
+                                <img v-if="task.assignees![num-1]" :src="'data:image/jpg;base64,' + getImageByUUID(pfps!, task.assignees![num-1])" class="absolute size-full rounded-full object-cover" :style="{ right: (num-1)*1.4 + 'rem', 'z-index': num+10 }" draggable="false">
                             </div>
                         </div>
                     </div>                

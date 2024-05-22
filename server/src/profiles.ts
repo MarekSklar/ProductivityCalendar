@@ -40,8 +40,13 @@ export async function add(db: DatabaseConnection, options: ProfileAddOptions) {
     }
     else {
         const format = params.pfpPath256.split('.').pop();
-        fs.renameSync(params.pfpPath256, path.join(process.cwd(), 'profilePics/256_' + uuid + '.' + format);
-        fs.renameSync(params.pfpPath48, path.join(process.cwd(), 'profilePics/48_' + uuid + '.' + format);
+        const path256 = path.join(process.cwd(), 'profilePics/256_' + uuid + '.' + format);
+        const path48 = path.join(process.cwd(), 'profilePics/48_' + uuid + '.' + format);
+        fs.renameSync(params.pfpPath256, path256);
+        fs.renameSync(params.pfpPath48, path48);
+
+        params.pfpPath256 = path256;
+        params.pfpPath48 = path48;
     }
 
     let profile: Profile = {
