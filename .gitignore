@@ -29,4 +29,5 @@ logs
 prisma/migrations
 
 # Profile pictures
-profilePics
+profilePics/*
+!profilePics/default
