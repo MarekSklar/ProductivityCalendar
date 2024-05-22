@@ -2,6 +2,21 @@
 
 const Title = "Timeline Title";
 
+let pending = true;
+let tasks: Task[];
+const taskIntervals: Map<string, TaskTimestampInterval>[] = [];
+for(let i = 0; i < 10; i++) {
+    taskIntervals.push(new Map());
+}
+
+await useFetch('/api/tasks/tasksList', { method: 'post' })!.then((value) => { 
+    pending = false; 
+    tasks = value.data.value as Task[];
+    tasks.forEach((task) => {
+        taskIntervals[task.row].set(task.uuid, { from: new Date(task.fromDate.year, task.fromDate.month - 1, task.fromDate.day).getTime(), to: new Date(task.toDate.year, task.toDate.month - 1, task.toDate.day).getTime() });
+    });
+});
+
 const startDragPosX = ref(0);
 const relativeDragPos = ref(0);
 const tempDragPos = ref(0);
@@ -14,7 +29,10 @@ const draggingValue = ref(Dragging.None);
 let currentEditedTask: Task;
 let draggedTask: HTMLElement
 let draggedTaskCopy: HTMLElement;
-let draggedTaskDate: CDate;
+let draggedTaskFromDate: CDate;
+let draggedTaskToDate: CDate;
+let prevDraggedTaskRow: number;
+let draggedTaskRow: number = -1;
 let differenceOfDays: number;
 let clickOffsetX: number;
 let clickOffsetY: number;
@@ -25,15 +43,47 @@ const datesPos = ref(0);
 const screenSize = ref({width: 1920, height: 1080});
 const columnWidth = 56;
 
+function CDateToDate(date: CDate) {
+    return new Date(date.year, date.month - 1, date.day);
+}
+
+async function taskAdded(task: Task) {
+    await $fetch('/api/tasks/tasksList', { method: 'post' })!.then((value) => {
+        tasks = value;
+        taskIntervals[task.row].set(task.uuid, { from: CDateToDate(task.fromDate).getTime(), to: CDateToDate(task.toDate).getTime() });
+    });
+    
+    refreshNuxtData();
+}
+
+function invalidRow(row: number, currentUUID: string, fromDate: CDate, toDate: CDate) {
+    let returnValue = false;
+    if(!taskIntervals[row])
+        return returnValue;
+    
+    taskIntervals[row].forEach((value: TaskTimestampInterval, key: string) => {
+        if(key == currentUUID)
+            return;
+
+        const fromTimeTimestamp = CDateToDate(fromDate).getTime();
+        const toTimeTimestamp = CDateToDate(toDate).getTime()
+        if((fromTimeTimestamp >= value.from && fromTimeTimestamp <= value.to) || (toTimeTimestamp <= value.to && toTimeTimestamp >= value.from) || (fromTimeTimestamp <= value.from && toTimeTimestamp >= value.to)) {
+            returnValue = true;
+        }
+    });
+
+    return returnValue;
+}
+
 function getDifferenceOfDays(fromDate: CDate, toDate: CDate) {
-    const fdate = new Date(fromDate.year, fromDate.month - 1, fromDate.day);
-    const tdate = new Date(toDate.year, toDate.month - 1, toDate.day);
+    const fdate = CDateToDate(fromDate);
+    const tdate = CDateToDate(toDate);
 
     return (tdate.getTime() - fdate.getTime()) / 86400000;
 }
 
 function changeDays(date: CDate, value: number) {
-    const newDate = new Date(date.year, date.month - 1, date.day);
+    const newDate = CDateToDate(date);
     newDate.setDate(newDate.getDate() + value);
 
     return { day: newDate.getDate(), month: newDate.getMonth() + 1, year: newDate.getFullYear() }
@@ -41,7 +91,7 @@ function changeDays(date: CDate, value: number) {
 
 function taskPlacementPos(date: CDate) {
     const todayDayTimestamp = Math.floor(new Date().getTime() / 86400000);
-    const taskStartDayTimestamp = Math.floor(new Date(date.year, date.month - 1, date.day).getTime() / 86400000) + 4;
+    const taskStartDayTimestamp = Math.floor(CDateToDate(date).getTime() / 86400000) + 4;
     const timeFromToday = taskStartDayTimestamp - todayDayTimestamp;
 
     return timeFromToday;
@@ -56,18 +106,17 @@ function startCalendarDragging(event: MouseEvent) {
     startDragPosX.value = event.screenX;
 }
 
-function startTaskDragging(event: MouseEvent, task: Task) {
+function startTaskDragging(event: MouseEvent, task: Task) {    
     if(draggingValue.value !== Dragging.None)
         return;
-    
-    draggedTask = document.getElementById(task.uuid)!;
+    draggedTask = document.getElementById(task.uuid)!;    
     if(!draggedTask)
         return;
     
     const draggedTaskCopyNode = draggedTask.cloneNode(true) as HTMLElement;
     draggedTaskCopyNode.id = "draggedTaskCopy";
     document.getElementById('draggingTaskHolder')!.after(draggedTaskCopyNode);
-    draggedTask.classList.add("opacity-40")
+    draggedTask.classList.add("opacity-40");
     clickOffsetX = event.offsetX;
     clickOffsetY = event.offsetY;
 
@@ -80,7 +129,14 @@ function startTaskDragging(event: MouseEvent, task: Task) {
     draggingValue.value = Dragging.Task;
     startDragPosX.value = event.pageX;
     currentEditedTask = task;
-    draggedTaskDate = currentEditedTask.fromDate;
+    draggedTaskFromDate = currentEditedTask.fromDate;
+    draggedTaskToDate = currentEditedTask.toDate;
+
+    if(draggedTaskRow === -1) {
+        draggedTaskRow = currentEditedTask.row;
+    }
+
+    prevDraggedTaskRow = draggedTaskRow;
 }
 
 function startTaskLeftResizeDragging(event: MouseEvent, task: Task) {  
@@ -121,17 +177,37 @@ function moveCalendarComponents(event: MouseEvent) {
         case Dragging.Task:
             draggedTaskCopy.style.left = (event.pageX - clickOffsetX).toString() + 'px';
             draggedTaskCopy.style.top = (event.pageY - clickOffsetY).toString() + 'px';
-            //console.log(startDragPosX.value - event.pageX);
+            
             if(startDragPosX.value - event.pageX > 49) {
-                draggedTaskDate = changeDays(draggedTaskDate, -1);
+                draggedTaskFromDate = changeDays(draggedTaskFromDate, -1);
+                draggedTaskToDate = changeDays(draggedTaskToDate, -1);
+
+                for(let i = 0; i < 10; i++) {
+                    if(!invalidRow(i, currentEditedTask.uuid, draggedTaskFromDate, draggedTaskToDate)) {
+                        draggedTaskRow = i;
+                        document.getElementById(draggedTaskRow.toString())!.appendChild(draggedTask);
+                        break;
+                    }
+                }               
+
                 relativeDragPos.value = tempDragPos.value;
-                draggedTask.style.left = (tempDragPos.value + taskPlacementPos(draggedTaskDate) * columnWidth).toString() + 'px';
-                startDragPosX.value = event.pageX;
+                draggedTask.style.left = (tempDragPos.value + taskPlacementPos(draggedTaskFromDate) * columnWidth).toString() + 'px';
+                startDragPosX.value = event.pageX;               
             } 
             else if(startDragPosX.value - event.pageX < -49) {
-                draggedTaskDate = changeDays(draggedTaskDate, 1);
+                draggedTaskFromDate = changeDays(draggedTaskFromDate, 1);
+                draggedTaskToDate = changeDays(draggedTaskToDate, 1);
+
+                for(let i = 0; i < 10; i++) {
+                    if(!invalidRow(i, currentEditedTask.uuid, draggedTaskFromDate, draggedTaskToDate)) {
+                        draggedTaskRow = i;
+                        document.getElementById(draggedTaskRow.toString())!.appendChild(draggedTask);
+                        break;
+                    }
+                }
+
                 relativeDragPos.value = tempDragPos.value;
-                draggedTask.style.left = (tempDragPos.value + taskPlacementPos(draggedTaskDate) * columnWidth).toString() + 'px';
+                draggedTask.style.left = (tempDragPos.value + taskPlacementPos(draggedTaskFromDate) * columnWidth).toString() + 'px';
                 startDragPosX.value = event.pageX;
             }
             break;
@@ -140,11 +216,13 @@ function moveCalendarComponents(event: MouseEvent) {
                 currentEditedTask.fromDate = changeDays(currentEditedTask.fromDate, -1);
                 startDragPosX.value = event.pageX;
                 differenceOfDays = getDifferenceOfDays(currentEditedTask.fromDate, currentEditedTask.toDate);
+                taskIntervals[currentEditedTask.row].set(currentEditedTask.uuid, { from: CDateToDate(currentEditedTask.fromDate).getTime(), to: CDateToDate(currentEditedTask.toDate).getTime() });
             } 
             else if(startDragPosX.value - event.pageX < -49 && differenceOfDays > 0) {
                 currentEditedTask.fromDate = changeDays(currentEditedTask.fromDate, 1);
                 startDragPosX.value = event.pageX;
                 differenceOfDays = getDifferenceOfDays(currentEditedTask.fromDate, currentEditedTask.toDate);
+                taskIntervals[currentEditedTask.row].set(currentEditedTask.uuid, { from: CDateToDate(currentEditedTask.fromDate).getTime(), to: CDateToDate(currentEditedTask.toDate).getTime() });
             }
             break;
         case Dragging.TaskRightResize:
@@ -152,11 +230,13 @@ function moveCalendarComponents(event: MouseEvent) {
                 currentEditedTask.toDate = changeDays(currentEditedTask.toDate, 1);
                 startDragPosX.value = event.pageX;
                 differenceOfDays = getDifferenceOfDays(currentEditedTask.fromDate, currentEditedTask.toDate);
+                taskIntervals[currentEditedTask.row].set(currentEditedTask.uuid, { from: CDateToDate(currentEditedTask.fromDate).getTime(), to: CDateToDate(currentEditedTask.toDate).getTime() });
             } 
             else if(event.pageX - startDragPosX.value < -49 && differenceOfDays > 0) {
                 currentEditedTask.toDate = changeDays(currentEditedTask.toDate, -1);
                 startDragPosX.value = event.pageX;
                 differenceOfDays = getDifferenceOfDays(currentEditedTask.fromDate, currentEditedTask.toDate);
+                taskIntervals[currentEditedTask.row].set(currentEditedTask.uuid, { from: CDateToDate(currentEditedTask.fromDate).getTime(), to: CDateToDate(currentEditedTask.toDate).getTime() });
             }
             break;     
     }
@@ -173,8 +253,11 @@ function endDragging() {
             document.getElementById(currentEditedTask.uuid)?.classList.remove("opacity-40");
             draggedTaskCopy.remove();
             draggingValue.value = Dragging.None;
-            currentEditedTask.toDate = changeDays(currentEditedTask.toDate, getDifferenceOfDays(currentEditedTask.fromDate, draggedTaskDate));
-            currentEditedTask.fromDate = draggedTaskDate;
+            currentEditedTask.fromDate = draggedTaskFromDate;
+            currentEditedTask.toDate = draggedTaskToDate;
+            taskIntervals[prevDraggedTaskRow].delete(currentEditedTask.uuid);
+            taskIntervals[draggedTaskRow].set(currentEditedTask.uuid, { from: CDateToDate(currentEditedTask.fromDate).getTime(), to: CDateToDate(currentEditedTask.toDate).getTime() });
+            prevDraggedTaskRow = draggedTaskRow;
 
             $fetch('/api/tasks/tasksEdit', {
                 method: 'post',
@@ -182,7 +265,7 @@ function endDragging() {
                     uuid: currentEditedTask.uuid,
                     color: currentEditedTask.color,
                     name: currentEditedTask.name,
-                    row: currentEditedTask.row,
+                    row: draggedTaskRow,
                     status: currentEditedTask.status,
                     fromDate: currentEditedTask.fromDate,
                     toDate: currentEditedTask.toDate,
@@ -200,7 +283,7 @@ function endDragging() {
                     uuid: currentEditedTask.uuid,
                     color: currentEditedTask.color,
                     name: currentEditedTask.name,
-                    row: currentEditedTask.row,
+                    row: draggedTaskRow,
                     status: currentEditedTask.status,
                     fromDate: currentEditedTask.fromDate,
                     toDate: currentEditedTask.toDate,
@@ -218,7 +301,7 @@ function endDragging() {
                     uuid: currentEditedTask.uuid,
                     color: currentEditedTask.color,
                     name: currentEditedTask.name,
-                    row: currentEditedTask.row,
+                    row: draggedTaskRow,
                     status: currentEditedTask.status,
                     fromDate: currentEditedTask.fromDate,
                     toDate: currentEditedTask.toDate,
@@ -247,7 +330,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="flex flex-col w-full h-screen" id="draggingTaskHolder" @mousemove="moveCalendarComponents" @mouseup="endDragging">
+    <div v-if="!pending" class="flex flex-col w-full h-screen" id="draggingTaskHolder" @mousemove="moveCalendarComponents" @mouseup="endDragging">
         <div class="py-4 shadow-md">
             <div class="px-4">
                 <h1>{{ Title }}</h1>
@@ -263,13 +346,13 @@ onMounted(() => {
             </div>
         </div>
         <div class="relative flex-auto min-w-full">
-            <CalendarTaskEdit />
+            <CalendarTaskAdd @task-added="taskAdded"/>
             <div class="mt-4">
                 <div @mousedown="startCalendarDragging" class="grid overflow-hidden cursor-grab select-none" :class="{'cursor-grabbing': draggingValue === Dragging.Calendar}">
-                    <div v-for="row in 10" class="relative h-11 mb-0.5 bg-white">
+                    <div v-for="row in 10" :id="(row - 1).toString()" class="relative h-11 mb-0.5 bg-white">
                         <CalendarTask
                             @start-task-left-resize-dragging="startTaskLeftResizeDragging" @start-task-right-resize-dragging="startTaskRightResizeDragging" @start-task-dragging="startTaskDragging"
-                            :row="row" :tempDragPos="tempDragPos"
+                            :row="row" :tempDragPos="tempDragPos" :tasks="tasks!"
                         />
                     </div>
                 </div>

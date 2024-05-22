@@ -4,23 +4,23 @@ const emit = defineEmits(['startTaskLeftResizeDragging', 'startTaskRightResizeDr
 
 const props = defineProps({
     row: Number,
-    tempDragPos: Number
+    tempDragPos: Number,
+    tasks: Array as PropType<Task[]>
 });
 
-const { data: tasks } = await useFetch('/api/tasks/tasksList', { method: 'post' });
 let pfpMap = new Map<string, string>();
 
 // xdd reseni
 let iMax = 0;
-tasks.value?.forEach((task) => {
-    task.assignees.forEach(() => {
+props.tasks?.forEach((task) => {
+    task?.assignees?.forEach(() => {
         iMax++
     });
 });
 
 let i = 0;
-tasks.value?.forEach((task) => {
-    task.assignees.forEach(async (assignee : string) => {
+props.tasks?.forEach((task) => {
+    task?.assignees?.forEach(async (assignee : string) => {
         if(!pfpMap.has(assignee))
         {
             const profile = await $fetch('/api/profiles/profileGetByUUID', { method: 'post', body: { uuid: assignee }});
@@ -61,8 +61,8 @@ function taskPlacementPos(task: Task) {
                     </div>
                     <div class="absolute flex items-center h-full right-1 top-0">
                         <div class="relative size-8 select-none">
-                            <div v-for="num in Math.min(task.assignees.length, 3)">
-                                <img v-if="pfpMap.has(task.assignees[num-1])" :src="'data:image/jpg;base64,' + pfpMap.get(task.assignees[num-1])" class="absolute size-full rounded-full object-cover" :style="{ right: (num-1)*1.4 + 'rem', 'z-index': num+10 }" draggable="false">
+                            <div v-for="num in Math.min(task.assignees!.length, 3)">
+                                <img v-if="pfpMap.has(task.assignees![num-1])" :src="'data:image/jpg;base64,' + pfpMap.get(task.assignees![num-1])" class="absolute size-full rounded-full object-cover" :style="{ right: (num-1)*1.4 + 'rem', 'z-index': num+10 }" draggable="false">
                             </div>
                         </div>
                     </div>                

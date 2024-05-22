@@ -4,6 +4,11 @@ type CDate = {
     year: number
 }
 
+interface TaskTimestampInterval {
+    from: number,
+    to: number
+}
+
 interface Task {
     uuid: string,
     color: string,

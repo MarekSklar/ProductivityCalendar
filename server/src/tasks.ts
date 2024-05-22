@@ -99,19 +99,19 @@ export async function edit(db: DatabaseConnection, options: TaskEditOptions) {
 
     const sqlFromDate = params.fromDate.year + "-" + params.fromDate.month + "-" + params.fromDate.day;
     const sqlToDate = params.toDate.year + "-" + params.toDate.month + "-" + params.toDate.day; 
-
+    
     await db.query(sql`UPDATE tasks SET
-        uuid = ${task.uuid},
-        color = ${task.color},
-        name = ${task.name},
-        row = ${task.row},
-        status = ${task.status},
+        uuid = ${params.uuid},
+        color = ${params.color},
+        name = ${params.name},
+        row = ${params.row},
+        status = ${params.status},
         fromDate = ${sqlFromDate},
         toDate = ${sqlToDate},            
-        assignees = ${task.assignees?.toString()},
-        description = ${task.description},
-        createdBy = ${task.createdBy}
-        WHERE uuid = ${task.uuid}
+        assignees = ${params.assignees?.toString()},
+        description = ${params.description},
+        createdBy = ${params.createdBy}
+        WHERE uuid = ${params.uuid}
     `);
 
     return task;

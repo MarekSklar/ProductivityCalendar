@@ -32,14 +32,20 @@ export async function list(db: DatabaseConnection) {
 
 export async function add(db: DatabaseConnection, options: ProfileAddOptions) {
     const params = profileAddOptionsSchema.parse(options);
+    const uuid = randomUUID();
 
     if(params.pfpPath256 === 'default') {
         params.pfpPath256 = path.join(process.cwd(), 'profilePics/default/256.jpg');
         params.pfpPath48 = path.join(process.cwd(), 'profilePics/default/48.jpg');
     }
-    
+    else {
+        const format = params.pfpPath256.split('.').pop();
+        fs.renameSync(params.pfpPath256, path.join(process.cwd(), 'profilePics/256_' + uuid + '.' + format);
+        fs.renameSync(params.pfpPath48, path.join(process.cwd(), 'profilePics/48_' + uuid + '.' + format);
+    }
+
     let profile: Profile = {
-        uuid: randomUUID(),
+        uuid: uuid,
         name: params.name,
         email: params.email,
         password: params.password,
