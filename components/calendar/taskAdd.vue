@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-const tColor = ref("");
+const tColor = ref("#977aff");
 const tName = ref("");
 const tStatus = ref("To-Do");
 const tDateFrom = ref("")
@@ -35,16 +35,19 @@ const createTask = async () => {
         }
     });
 };
-
 </script>
+
 <template>
     <div class="absolute right-0 z-20 w-128 h-full p-4 pl-6 bg-white shadow-lg">
         <div class="flex justify-between">
             <div class="flex items-center">
                 <form @submit.prevent>
-                    <input v-model="tColor" type="color">
-                    <label for="name">Name:</label>
-                    <input v-model="tName" type="text"><br>
+                    <div class="flex gap-2">
+                        <div class="relative size-7 rounded-full" :style="{backgroundColor: tColor}">
+                            <input v-model="tColor" type="color" class="size-full opacity-0 cursor-pointer">
+                        </div>
+                        <input v-model="tName" type="text" placeholder="Enter task name..." class="text-lg font-semibold text-gray-400 border-none outline-none">
+                    </div>
 
                     <label for="status">Status:</label>
                     <select v-model="tStatus" name="status">
