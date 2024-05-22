@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { DatabaseConnection, sql } from '@databases/sqlite';
 import { randomUUID } from 'node:crypto';
 import fs from 'fs';
+import path from 'path';
 
 const profileAddOptionsSchema = z.object({
     name: z.string(),
@@ -32,6 +33,11 @@ export async function list(db: DatabaseConnection) {
 export async function add(db: DatabaseConnection, options: ProfileAddOptions) {
     const params = profileAddOptionsSchema.parse(options);
 
+    if(params.pfpPath256 === 'default') {
+        params.pfpPath256 = path.join(process.cwd(), 'profilePics/default/256.jpg');
+        params.pfpPath48 = path.join(process.cwd(), 'profilePics/default/48.jpg');
+    }
+    
     let profile: Profile = {
         uuid: randomUUID(),
         name: params.name,

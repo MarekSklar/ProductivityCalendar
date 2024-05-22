@@ -20,21 +20,29 @@ const addProfile = async () => {
     if(profiles.value === null || pName.value === "" || pEmail.value === "" || pPassword.value === "")
         return;
 
-    const fd = new FormData();
-    Array.from(files.value).map((file, index) => {
-        fd.append(index, file);
-    });
+    let upload = [];
+    if(files.value) {
+        const fd = new FormData();
+        Array.from(files.value).map((file, index) => {
+            fd.append(index, file);
+        });
 
-    const upload = await $fetch('/api/upload', {
-        method: 'post',
-        body: fd,
-    });
+        upload = await $fetch('/api/upload', {
+            method: 'post',
+            body: fd,
+        });
 
-    if(upload === undefined || upload === null || upload.length === 0)
-    {
-        pFailed.value = "Invalid format.";
-        return;
+        if(upload === undefined || upload === null || upload.length === 0)
+        {
+            pFailed.value = "Invalid format.";
+            return;
+        }
     }
+    else {
+        upload[0] = 'default';
+        upload[1] = 'default';
+    }
+    
 
     const profile = await $fetch('/api/profiles/profilesCreate', {
         method: 'post',
