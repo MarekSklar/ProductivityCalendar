@@ -346,7 +346,7 @@ onMounted(() => {
             </div>
         </div>
         <div class="relative flex-auto min-w-full">
-            <CalendarTaskAdd @task-added="taskAdded"/>
+            <CalendarTaskEdit @task-added="taskAdded"/>
             <div class="mt-4">
                 <div @mousedown="startCalendarDragging" class="grid overflow-hidden cursor-grab select-none" :class="{'cursor-grabbing': draggingValue === Dragging.Calendar}">
                     <div v-for="row in 10" :id="(row - 1).toString()" class="relative h-11 mb-0.5 bg-white">
