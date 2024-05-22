@@ -3,38 +3,28 @@
 const { data } = await useFetch('/api/profiles/profilesList', { method: 'post' });
 const profiles = data as Ref<Profile[]>;
 
-let pfpMap = new Map<string, string>();
-
-function getProfilePics() {
-    if (profiles.value === null) return;
-
-    // xdd reseni
-    let iMax = profiles.value.length;
-
-    let i = 0;
-    profiles.value.forEach(async (profile) => {
-        if(!pfpMap.has(profile.uuid))
-        {
-            const pfp: string = await $fetch('/api/getImage', { method: 'post', body: { path: profile?.pfpPath48 }});
-            pfpMap.set(profile.uuid, pfp);
-        }        
-        i++;
-        if(i === iMax)
-        {
-            await refreshNuxtData();
-        }
-    });
+interface Pfp {
+    uuid: string;
+    img: string;
 }
 
-onMounted(async () => {
-    getProfilePics();
-});
+interface PfpObject {
+    [uuid: string]: string;
+}
+
+const pfpsObjectified = ref({} as PfpObject);
+const { data: pfps } = await useFetch('/api/getAllImages', { method: 'post' });
+for (let i = 0; i < pfps.value!.length; i++) {
+    const pfp: Pfp = pfps.value![i];
+    pfpsObjectified.value[pfp.uuid] = pfp.img;
+}
+
 </script>
 
 <template>
     <div>
-        <div v-for="profile in profiles">
-            <img v-if="pfpMap.has(profile.uuid)" :src="'data:image/jpg;base64,' + pfpMap.get(profile.uuid)" class="object-cover">
+        <div v-for="profile in profiles" class="flex items-center gap-3">
+            <img v-if="pfpsObjectified[profile.uuid]" :src="'data:image/jpg;base64,' + pfpsObjectified[profile.uuid]" class="rounded-full object-cover">
             <div>
                 <h3>{{ profile.name }}</h3>
             </div>

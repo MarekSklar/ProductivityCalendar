@@ -58,9 +58,22 @@ function addProfile(profile: Profile) {
     tAssignees.value.push(profile.uuid);
 }
 
-onMounted(() => {
-    
-});
+interface Pfp {
+    uuid: string;
+    img: string;
+}
+
+interface PfpObject {
+    [uuid: string]: string;
+}
+
+const pfpsObjectified = ref({} as PfpObject);
+const { data: pfps } = await useFetch('/api/getAllImages', { method: 'post' });
+for (let i = 0; i < pfps.value!.length; i++) {
+    const pfp: Pfp = pfps.value![i];
+    pfpsObjectified.value[pfp.uuid] = pfp.img;
+}
+
 </script>
 
 <template>
@@ -112,14 +125,18 @@ onMounted(() => {
                                 <div class="w-full max-h-44 overflow-auto select-none custom-scrollbar">
                                     <ul :class="{ hidden: !profilesActive.length }" class="flex flex-col gap-1">
                                         <li v-for="profile in profilesActive" @click="removeProfile(profile)" class="flex justify-between items-center text-ellipsis cursor-pointer">
-                                            <span>{{ profile.name }}</span>
+                                            <div class="flex items-center gap-3">
+                                                <img v-if="pfpsObjectified[profile.uuid]" :src="'data:image/jpg;base64,' + pfpsObjectified[profile.uuid]" class="size-7 rounded-full object-cover">
+                                                <span>{{ profile.name }}</span>
+                                            </div>
                                             <SvgCheck class="size-6" />
                                         </li>
                                     </ul>
                                     <div v-if="profilesActive.length > 0" class="h-0.5 my-2 mr-2 bg-gray-200"></div>
                                     <ul class="flex flex-col gap-1">
-                                        <li v-if="profilesInactive.length > 0" v-for="profile in profilesInactive" @click="addProfile(profile)" class="text-ellipsis cursor-pointer">
-                                            {{ profile.name }}
+                                        <li v-if="profilesInactive.length > 0" v-for="profile in profilesInactive" @click="addProfile(profile)" class="flex items-center gap-3 text-ellipsis cursor-pointer">
+                                            <img v-if="pfpsObjectified[profile.uuid]" :src="'data:image/jpg;base64,' + pfpsObjectified[profile.uuid]" class="size-7 rounded-full object-cover">
+                                            <span>{{ profile.name }}</span>
                                         </li>
                                         <p v-else>No assignees left</p>
                                     </ul>
