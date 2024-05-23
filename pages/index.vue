@@ -427,7 +427,7 @@ onMounted(() => {
     <div v-if="!pending" class="flex flex-col w-full h-screen" id="draggingTaskHolder">
         <div class="py-4 shadow-md">
             <div class="px-4">
-                <h1>{{ Title }}</h1>
+                <h1 class="font-bold text-gray-700">{{ Title }}</h1>
             </div>
             <div class="relative flex justify-center w-full py-3 overflow-hidden">
                 <p class="py-0.5 opacity-0">Dates</p>
