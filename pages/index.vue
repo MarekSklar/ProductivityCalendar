@@ -113,6 +113,15 @@ async function addTask(task: Task) {
     return data;
 }
 
+function onEditTask(task: Task) {
+    tasks.forEach((t) => {
+        if(t.uuid === task.uuid) {
+            t = task;
+            currentEditedTask = t;
+        }
+    });
+}
+
 // start dragging
 async function startCalendarEvent(event: MouseEvent) {
     if(draggingValue.value !== Dragging.None)
@@ -128,7 +137,7 @@ async function startCalendarEvent(event: MouseEvent) {
             color: "#977aff",
             name: "New",
             row: -1,
-            status: "To-Do",
+            status: TaskStatus.NoStatus,
             fromDate: currentDate,
             toDate: currentDate,
             assignees: [],
@@ -430,7 +439,7 @@ onMounted(() => {
             </div>
         </div>
         <div class="relative flex-auto min-w-full">
-            <CalendarTaskEdit v-if="edit" @close-edit="edit=false"/>
+            <CalendarTaskEdit v-if="edit" @close-edit="edit=false" @taskEdited="onEditTask" :edited-task="currentEditedTask"/>
             <div class="mt-4">
                 <div @mousedown="startCalendarEvent" class="grid overflow-hidden cursor-grab select-none" :class="{'cursor-grabbing': draggingValue === Dragging.Calendar}">
                     <div v-for="row in 10" :id="(row - 1).toString()" class="relative h-11 mb-0.5 bg-white">

@@ -1,15 +1,39 @@
 <script setup lang="ts">
 
-const today = new Date();
+const emit = defineEmits(['closeEdit', 'taskEdited']);
 
 const tColor = ref("#977aff");
 const tName = ref("");
-const tStatus = ref(TaskStatus.ToDo);
-const tDateFrom = ref(`${today.getFullYear()}-${(today.getMonth() < 10 ? '0' : '') + (today.getMonth()+1).toString()}-${(today.getDate() < 10 ? '0' : '') + today.getDate().toString()}`)
-const tDateTo = ref(`${today.getFullYear()}-${(today.getMonth() < 10 ? '0' : '') + (today.getMonth()+1).toString()}-${(today.getDate() < 10 ? '0' : '') + today.getDate().toString()}`);
+const tStatus = ref("");
+const tDateFrom = ref("");
+const tDateTo = ref("");
 const tAssignees = ref([] as string[]);
 const tDescription = ref("");
 const tFailed = ref("");
+
+const props = defineProps({    
+    editedTask: Object as PropType<Task>
+});
+
+function onTaskChange(task: Task) {
+    console.log("cauas");
+    const fromDate = new Date(task.fromDate.year, task.fromDate.month - 1, task.fromDate.day);
+    const toDate = new Date(task.toDate.year, task.toDate.month - 1, task.toDate.day);
+
+    tColor.value = task.color;
+    tName.value = task.name;
+    tStatus.value = task.status;
+    tDateFrom.value = `${fromDate.getFullYear()}-${(fromDate.getMonth() < 10 ? '0' : '') + (fromDate.getMonth()+1).toString()}-${(fromDate.getDate() < 10 ? '0' : '') + fromDate.getDate().toString()}`
+    tDateTo.value = `${toDate.getFullYear()}-${(toDate.getMonth() < 10 ? '0' : '') + (toDate.getMonth()+1).toString()}-${(toDate.getDate() < 10 ? '0' : '') + toDate.getDate().toString()}`;
+    tAssignees.value = task.assignees!;
+    tDescription.value = task.description;
+}
+
+watch(() => props.editedTask, () => {
+    console.log("cau");
+    onTaskChange(props.editedTask!);
+});
+
 
 const profilesActive = ref([] as Profile[]);
 const profilesInactive = ref([] as Profile[]);
@@ -20,6 +44,7 @@ profilesInactive.value = profiles.value as Profile[];
 const { data: profileData } = await useFetch('/api/profiles/profileGet', { method: 'post', body: { sessionToken: sessionToken.value }});
 const profile = profileData.value?.at(0);
 
+/*
 const createTask = async () => {
     if(!profiles.value || !profile || !sessionToken.value)
         return;
@@ -41,6 +66,30 @@ const createTask = async () => {
             description: tDescription.value
         }
     });
+};*/
+
+const editTask = async () => {
+    if(!profiles.value || !profile || !sessionToken.value)
+        return;
+
+    const dateFromFormat = tDateFrom.value.split('-');
+    const dateToFormat = tDateTo.value.split('-');
+    console.log(tAssignees.value);
+    await $fetch('/api/tasks/tasksEdit', {
+        method: 'post',
+        body: {
+            uuid: props.editedTask!.uuid,
+            color: tColor.value,
+            name: tName.value,
+            row: props.editedTask!.row,
+            status: tStatus.value,
+            fromDate: { day: dateFromFormat[2], month: dateFromFormat[1], year: dateFromFormat[0] },
+            toDate: { day: dateToFormat[2], month: dateToFormat[1], year: dateToFormat[0] },
+            createdBy: props.editedTask!.name,
+            assignees: tAssignees.value,
+            description: tDescription.value
+        }
+    }).then((task) => { emit('taskEdited', task); onTaskChange(task); });    
 };
 
 function removeProfile(profile: Profile) {
@@ -67,9 +116,9 @@ const { data: pfps } = await useFetch('/api/getAllImages', { method: 'post' });
     <div class="absolute right-0 z-20 w-128 h-full p-4 pl-6 bg-white shadow-lg">
         <div class="flex justify-between">
             <div class="flex items-start pt-1 text-xs font-semibold text-gray-500">
-                <span class="mr-0.5 font-bold">Created by {{ "David Raw" }}</span> | {{ "fa4673e2-117c-4171-b1c2-d33b6ce1fe30" }}
+                <span class="mr-0.5 font-bold">Created by {{ props.editedTask!.createdBy }}</span> | {{ props.editedTask!.uuid }}
             </div>
-            <div>
+            <div @click="emit('closeEdit')">
                 <SvgClose class="cursor-pointer"/>
             </div>
         </div>
@@ -77,15 +126,15 @@ const { data: pfps } = await useFetch('/api/getAllImages', { method: 'post' });
             <form @submit.prevent class="w-2/3">
                 <div class="flex gap-2 mt-3 mb-8">
                     <div class="relative size-7 rounded-full" :style="{backgroundColor: tColor}">
-                        <input v-model="tColor" type="color" class="size-full opacity-0 cursor-pointer">
+                        <input v-model="tColor" type="color" @change="editTask" class="size-full opacity-0 cursor-pointer">
                     </div>
-                    <input v-model="tName" type="text" placeholder="Enter task name..." class="text-lg font-semibold text-gray-400 border-none outline-none">
+                    <input v-model="tName" type="text" @change="editTask" placeholder="Enter task name..." class="text-lg font-semibold text-gray-400 border-none outline-none">
                 </div>
 
                 <div class="flex flex-col gap-4">
                     <div>
                         <label for="status">Status:</label>
-                        <select v-model="tStatus">
+                        <select v-model="tStatus" @change="editTask">
                             <option v-for="status in Object.values(TaskStatus)">{{ status }}</option>
                         </select>
                     </div>
@@ -93,11 +142,11 @@ const { data: pfps } = await useFetch('/api/getAllImages', { method: 'post' });
                     <div class="flex flex-col gap-2 w-full">
                         <div class="flex justify-between gap-2">
                             <label for="dateFrom">From:</label>
-                            <input v-model="tDateFrom" type="date">
+                            <input v-model="tDateFrom" type="date" @change="editTask">
                         </div>
                         <div class="flex justify-between gap-2">
                             <label for="dateTo">To:</label>
-                            <input v-model="tDateTo" type="date">
+                            <input v-model="tDateTo" type="date" @change="editTask">
                         </div>
                     </div>
 
@@ -107,7 +156,7 @@ const { data: pfps } = await useFetch('/api/getAllImages', { method: 'post' });
                             <div class="w-full p-2 rounded-md">
                                 <div class="w-full max-h-44 overflow-auto select-none custom-scrollbar">
                                     <ul :class="{ hidden: !profilesActive.length }" class="flex flex-col gap-1">
-                                        <li v-for="profile in profilesActive" @click="removeProfile(profile)" class="flex justify-between items-center text-ellipsis cursor-pointer">
+                                        <li v-for="profile in profilesActive" @click="removeProfile(profile), editTask" class="flex justify-between items-center text-ellipsis cursor-pointer">
                                             <div class="flex items-center gap-3">
                                                 <img v-if="pfps![profile.uuid]" :src="'data:image/jpg;base64,' + pfps![profile.uuid]" class="size-7 rounded-full object-cover">
                                                 <span>{{ profile.name }}</span>
@@ -117,7 +166,7 @@ const { data: pfps } = await useFetch('/api/getAllImages', { method: 'post' });
                                     </ul>
                                     <div v-if="profilesActive.length > 0" class="h-0.5 my-2 mr-2 bg-gray-200"></div>
                                     <ul class="flex flex-col gap-1">
-                                        <li v-if="profilesInactive.length > 0" v-for="profile in profilesInactive" @click="addProfile(profile)" class="flex items-center gap-3 text-ellipsis cursor-pointer">
+                                        <li v-if="profilesInactive.length > 0" v-for="profile in profilesInactive" @click="addProfile(profile), editTask" class="flex items-center gap-3 text-ellipsis cursor-pointer">
                                             <img v-if="pfps![profile.uuid]" :src="'data:image/jpg;base64,' + pfps![profile.uuid]" class="size-7 rounded-full object-cover">
                                             <span>{{ profile.name }}</span>
                                         </li>
@@ -130,10 +179,8 @@ const { data: pfps } = await useFetch('/api/getAllImages', { method: 'post' });
 
                     <div class="flex flex-col gap-1">
                         <label for="description">Description:</label>
-                        <input v-model="tDescription" type="text">
+                        <input v-model="tDescription" type="text" @change="editTask">
                     </div>
-
-                    <button @click="createTask">Add task</button>
                 </div>
             </form>
 

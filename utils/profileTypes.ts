@@ -1,4 +1,4 @@
-export interface Profile {
+interface Profile {
     uuid: string,
     name: string,
     email: string
@@ -8,7 +8,7 @@ export interface Profile {
     sessionToken: string
 }
 
-export interface ProfileAddOptions {
+interface ProfileAddOptions {
     name: string,
     email: string,
     password: string,
@@ -17,15 +17,15 @@ export interface ProfileAddOptions {
     sessionToken: string
 }
 
-export interface ProfileLoginOptions {
+interface ProfileLoginOptions {
     email: string,
     password: string
 }
 
-export interface ProfileGetOptions {
+interface ProfileGetOptions {
     sessionToken: string
 }
 
-export interface ProfileGetByUUIDOptions {
+interface ProfileGetByUUIDOptions {
     uuid: string
 }

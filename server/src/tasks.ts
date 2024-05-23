@@ -92,8 +92,8 @@ export async function add(db: DatabaseConnection, options: TaskAddOptions) {
 export async function edit(db: DatabaseConnection, options: TaskEditOptions) {
     const params = taskEditOptionsSchema.parse(options);
 
-    const taskData = await db.query(sql`SELECT * FROM tasks WHERE uuid = ${params.uuid}`);
-    const task = taskData.at(0);
+    let taskData = await db.query(sql`SELECT * FROM tasks WHERE uuid = ${params.uuid}`);
+    let task = taskData.at(0);
     if(!task)
         return;
 
@@ -113,6 +113,9 @@ export async function edit(db: DatabaseConnection, options: TaskEditOptions) {
         createdBy = ${params.createdBy}
         WHERE uuid = ${params.uuid}
     `);
+
+    taskData = await db.query(sql`SELECT * FROM tasks WHERE uuid = ${params.uuid}`);
+    task = taskData.at(0);
 
     return task;
 }

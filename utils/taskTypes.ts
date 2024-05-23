@@ -17,7 +17,7 @@ interface Task {
     status: string,
     fromDate: CDate,
     toDate: CDate,
-    assignees: string[],
+    assignees?: string[],
     description: string,
     createdBy: string
 }
@@ -28,7 +28,7 @@ interface TaskAddOptions {
     row: string,
     fromDate: CDate,
     toDate: CDate,
-    assignees: string[],
+    assignees?: string[],
     description: string,
     createdBy: string
 }
