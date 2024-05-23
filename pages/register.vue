@@ -75,22 +75,22 @@ const addProfile = async () => {
                 <div class="flex flex-col justify-between">
                     <form @submit.prevent class="flex flex-col gap-3">
                         <div class="input-box">
-                            <label for="lname">Full name:</label>
+                            <label for="lname">Full name<span class="ml-1 font-semibold text-red-300">*</span></label>
                             <input v-model="pName" type="text">
                         </div>
                         
                         <div class="input-box">
-                            <label for="email">Email:</label>
+                            <label for="email">Email<span class="ml-1 font-semibold text-red-300">*</span></label>
                             <input v-model="pEmail" type="email">
                         </div>
 
                         <div class="input-box">
-                            <label for="password">Password:</label>
+                            <label for="password">Password<span class="ml-1 font-semibold text-red-300">*</span></label>
                             <input v-model="pPassword" type="password">
                         </div>
                         
                         <div class="input-box">
-                            <label for="image">Your image:</label>
+                            <label for="image">Your image</label>
                             <input @change="handleFile($event, item)" type="file" class="file:hidden w-1/2 text-gray-700 cursor-pointer">
                         </div>
 

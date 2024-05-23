@@ -45,12 +45,12 @@ const login = async() => {
                 <div class="flex flex-col justify-between">
                     <form @submit.prevent class="flex flex-col gap-3">
                         <div class="input-box">
-                            <label for="email">Email:</label>
+                            <label for="email">Email<span class="ml-1 font-semibold text-red-300">*</span></label>
                             <input v-model="pEmail" type="email" class="border-2 border-gray-200 rounded-md">
                         </div>
 
                         <div class="input-box">
-                            <label for="password">Password:</label>
+                            <label for="password">Password<span class="ml-1 font-semibold text-red-300">*</span></label>
                             <input v-model="pPassword" type="password">
                         </div>
 
