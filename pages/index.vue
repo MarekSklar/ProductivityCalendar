@@ -424,14 +424,14 @@ onMounted(() => {
 </script>
 
 <template>
-    <div v-if="!pending" class="flex flex-col w-full h-screen" id="draggingTaskHolder" @mousemove="moveCalendarComponents" @mouseup="endDragging">
+    <div v-if="!pending" class="flex flex-col w-full h-screen" id="draggingTaskHolder">
         <div class="py-4 shadow-md">
             <div class="px-4">
                 <h1>{{ Title }}</h1>
             </div>
             <div class="relative flex justify-center w-full py-3 overflow-hidden">
                 <p class="py-0.5 opacity-0">Dates</p>
-                <div class="absolute z-5 flex" :style="{left: datesOffset - 5 * columnWidth + 'px'}">
+                <div class="absolute z-10 flex" :style="{left: datesOffset - 5 * columnWidth + 'px'}">
                     <p v-for="date in Math.ceil(screenSize.width * 0.02 + 10)" class="w-14 py-0.5 text-center rounded-md text-gray-500 font-bold"
                     :class="{'bg-red-100': !(date - datesPos - 9), 'text-gray-900': !(date - datesPos - 9)}">
                         {{ generateDate(date - datesPos - 9) }}
@@ -439,10 +439,13 @@ onMounted(() => {
                 </div>
             </div>
         </div>
-        <div class="relative flex-auto min-w-full">
+        <div class="relative flex-auto min-w-full h-full">
             <CalendarTaskEdit v-if="edit" @close-edit="edit=false" @task-edited="onEditTask" :edited-task="currentEditedTask"/>
-            <div class="mt-4">
-                <div @mousedown="startCalendarEvent" class="grid overflow-hidden cursor-grab select-none" :class="{'cursor-grabbing': draggingValue === Dragging.Calendar}">
+            <div @mousedown="startCalendarEvent" @mousemove="moveCalendarComponents" @mouseup="endDragging" class="w-full h-full overflow-x-hidden overflow-y-auto cursor-grab" :class="{'cursor-grabbing': draggingValue === Dragging.Calendar}">
+                <div class="relative mt-4 overflow-hidden select-none">
+                    <div class="absolute top-1/2 z-10" style="height: calc(100% - 1rem);">
+                        <div class="relative -top-1/2 flex justify-center items-center w-40 h-full px-4 text-left bg-white rounded-r-lg shadow-[0_0px_20px_-10px_rgba(0,0,0,0.3)]">Daily responsibility</div>
+                    </div>
                     <div v-for="row in 10" :id="(row - 1).toString()" class="relative h-11 mb-0.5 bg-white">
                         <CalendarTask
                             @start-task-left-resize-dragging="startTaskLeftResizeDragging" @start-task-right-resize-dragging="startTaskRightResizeDragging" @start-task-dragging="startTaskDragging"
