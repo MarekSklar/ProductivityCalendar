@@ -93,7 +93,7 @@ export async function edit(db: DatabaseConnection, options: TaskEditOptions) {
     const params = taskEditOptionsSchema.parse(options);
 
     let taskData = await db.query(sql`SELECT * FROM tasks WHERE uuid = ${params.uuid}`);
-    let task = taskData.at(0);
+    let task: Task = taskData.at(0);
     if(!task)
         return;
 
@@ -116,6 +116,14 @@ export async function edit(db: DatabaseConnection, options: TaskEditOptions) {
 
     taskData = await db.query(sql`SELECT * FROM tasks WHERE uuid = ${params.uuid}`);
     task = taskData.at(0);
+
+    const fromDates = taskData.at(0).fromDate.split('-');
+    task.fromDate = { day: fromDates[2], month: fromDates[1], year: fromDates[0] };
+
+    const toDates = taskData.at(0).toDate.split('-');
+    task.toDate = { day: toDates[2], month: toDates[1], year: toDates[0] };
+
+    task.assignees = taskData.at(0).assignees.split(',');
 
     return task;
 }

@@ -16,7 +16,6 @@ const props = defineProps({
 });
 
 function onTaskChange(task: Task) {
-    console.log("cauas");
     const fromDate = new Date(task.fromDate.year, task.fromDate.month - 1, task.fromDate.day);
     const toDate = new Date(task.toDate.year, task.toDate.month - 1, task.toDate.day);
 
@@ -71,7 +70,7 @@ const createTask = async () => {
 const editTask = async () => {
     if(!profiles.value || !profile || !sessionToken.value)
         return;
-
+    console.log("HA");
     const dateFromFormat = tDateFrom.value.split('-');
     const dateToFormat = tDateTo.value.split('-');
     console.log(tAssignees.value);
@@ -89,7 +88,7 @@ const editTask = async () => {
             assignees: tAssignees.value,
             description: tDescription.value
         }
-    }).then((task) => { emit('taskEdited', task); onTaskChange(task); });    
+    }).then((task) => { emit('taskEdited', task); onTaskChange(task!); });    
 };
 
 function removeProfile(profile: Profile) {

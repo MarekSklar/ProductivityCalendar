@@ -114,6 +114,7 @@ async function addTask(task: Task) {
 }
 
 function onEditTask(task: Task) {
+    console.log("hah", task);
     tasks.forEach((t) => {
         if(t.uuid === task.uuid) {
             t = task;
@@ -439,7 +440,7 @@ onMounted(() => {
             </div>
         </div>
         <div class="relative flex-auto min-w-full">
-            <CalendarTaskEdit v-if="edit" @close-edit="edit=false" @taskEdited="onEditTask" :edited-task="currentEditedTask"/>
+            <CalendarTaskEdit v-if="edit" @close-edit="edit=false" @task-edited="onEditTask" :edited-task="currentEditedTask"/>
             <div class="mt-4">
                 <div @mousedown="startCalendarEvent" class="grid overflow-hidden cursor-grab select-none" :class="{'cursor-grabbing': draggingValue === Dragging.Calendar}">
                     <div v-for="row in 10" :id="(row - 1).toString()" class="relative h-11 mb-0.5 bg-white">
