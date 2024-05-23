@@ -1,15 +1,15 @@
-type CDate = {
+export type CDate = {
     day: number,
     month: number,
     year: number
 }
 
-interface TaskTimestampInterval {
+export interface TaskTimestampInterval {
     from: number,
     to: number
 }
 
-interface Task {
+export interface Task {
     uuid: string,
     color: string,
     name: string,
@@ -22,7 +22,7 @@ interface Task {
     createdBy: string
 }
 
-interface TaskAddOptions {
+export interface TaskAddOptions {
     color: string,
     name: string,
     row: string,
@@ -33,7 +33,7 @@ interface TaskAddOptions {
     createdBy: string
 }
 
-interface TaskEditOptions {
+export interface TaskEditOptions {
     uuid: string,
     color: string,
     name: string,
@@ -44,4 +44,13 @@ interface TaskEditOptions {
     assignees?: string[],
     description: string,
     createdBy: string
+}
+
+export enum TaskStatus {
+    ToDo = "📄 To-Do",
+    InProgress = "🔧 In progress",
+    Blocked = "🚫 Blocked",
+    Closed = "❌ Closed",
+    Done = "✅ Done",
+    NoStatus = "  No status"
 }

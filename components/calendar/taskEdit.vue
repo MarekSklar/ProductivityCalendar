@@ -1,10 +1,12 @@
 <script setup lang="ts">
 
+const today = new Date();
+
 const tColor = ref("#977aff");
 const tName = ref("");
-const tStatus = ref("To-Do");
-const tDateFrom = ref("")
-const tDateTo = ref("");
+const tStatus = ref(TaskStatus.ToDo);
+const tDateFrom = ref(`${today.getFullYear()}-${(today.getMonth() < 10 ? '0' : '') + (today.getMonth()+1).toString()}-${(today.getDate() < 10 ? '0' : '') + today.getDate().toString()}`)
+const tDateTo = ref(`${today.getFullYear()}-${(today.getMonth() < 10 ? '0' : '') + (today.getMonth()+1).toString()}-${(today.getDate() < 10 ? '0' : '') + today.getDate().toString()}`);
 const tAssignees = ref([] as string[]);
 const tDescription = ref("");
 const tFailed = ref("");
@@ -59,7 +61,6 @@ function addProfile(profile: Profile) {
 }
 
 const { data: pfps } = await useFetch('/api/getAllImages', { method: 'post' });
-
 </script>
 
 <template>
@@ -84,12 +85,8 @@ const { data: pfps } = await useFetch('/api/getAllImages', { method: 'post' });
                 <div class="flex flex-col gap-4">
                     <div>
                         <label for="status">Status:</label>
-                        <select v-model="tStatus" name="status">
-                            <option>To-Do</option>
-                            <option>No status</option>
-                            <option>In progress</option>
-                            <option>Blocked</option>
-                            <option>Done.</option>
+                        <select v-model="tStatus">
+                            <option v-for="status in Object.values(TaskStatus)">{{ status }}</option>
                         </select>
                     </div>
 

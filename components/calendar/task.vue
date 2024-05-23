@@ -33,6 +33,7 @@ function taskPlacementPos(task: Task) {
             <div class="size-full p-1 pl-2">
                 <div class="relative size-full">
                     <div class="flex items-center h-full">
+                        <div>{{ task.status.slice(0,2) }}</div>
                         <h3 class="leading-none select-none">{{ task.name }}</h3>
                     </div>
                     <div class="absolute flex items-center h-full right-1 top-0">
