@@ -9,18 +9,6 @@ const props = defineProps({
 });
 
 const { data: pfps } = await useFetch('/api/getAllImages', { method: 'post' });
-function getImageByUUID(pfps: Image[], uuid: string) {
-    let img: string = "";
-
-    pfps.forEach((pfp) => {
-        if(pfp.uuid === uuid) {
-            img = pfp.img;
-            return;
-        }            
-    });
-
-    return img;
-}
 
 
 function taskPlacementPos(task: Task) {
@@ -50,7 +38,7 @@ function taskPlacementPos(task: Task) {
                     <div class="absolute flex items-center h-full right-1 top-0">
                         <div class="relative size-8 select-none">
                             <div v-for="num in Math.min(task.assignees!.length, 3)">
-                                <img v-if="task.assignees![num-1]" :src="'data:image/jpg;base64,' + getImageByUUID(pfps!, task.assignees![num-1])" class="absolute size-full rounded-full object-cover" :style="{ right: (num-1)*1.4 + 'rem', 'z-index': num+10 }" draggable="false">
+                                <img v-if="task.assignees![num-1]" :src="'data:image/jpg;base64,' + pfps![task.assignees![num-1]]" class="absolute size-full rounded-full object-cover" :style="{ right: (num-1)*1.4 + 'rem', 'z-index': num+10 }" draggable="false">
                             </div>
                         </div>
                     </div>                
