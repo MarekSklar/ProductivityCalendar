@@ -8,8 +8,9 @@ const props = defineProps({
     tasks: Array as PropType<Task[]>
 });
 
-const { data: pfps } = await useFetch('/api/getAllImages', { method: 'post' });
+const prps = toRefs(props);
 
+const { data: pfps } = await useFetch('/api/getAllImages', { method: 'post' });
 
 function taskPlacementPos(task: Task) {
     const todayDayTimestamp = Math.floor(new Date().getTime() / 86400000);
@@ -25,8 +26,8 @@ function taskPlacementPos(task: Task) {
 </script>
 
 <template>    
-    <div v-for="task in tasks?.filter(task => task.row === row!-1)" :id="task.uuid" @mousedown="emit('startTaskDragging', $event, task)" class="absolute flex h-full left-5 rounded-md"
-    :style="{ backgroundColor: task.color, left: tempDragPos! + (taskPlacementPos(task).from)*56 + 'px', width: taskPlacementPos(task).taskLength*56 + 'px' }">
+    <div v-for="task in prps.tasks!.value!.filter(task => task.row === prps.row?.value!-1)" :id="task.uuid" @mousedown="emit('startTaskDragging', $event, task)" class="absolute flex h-full left-5 rounded-md"
+    :style="{ backgroundColor: task.color, left: prps.tempDragPos?.value! + (taskPlacementPos(task).from)*56 + 'px', width: taskPlacementPos(task).taskLength*56 + 'px' }">
         <div class="size-full">
             <div @mousedown="emit('startTaskLeftResizeDragging', $event, task)" class="absolute left-0 z-20 w-3 h-full cursor-e-resize"></div>
             <div @mousedown="emit('startTaskRightResizeDragging', $event, task)" class="absolute right-0 z-20 w-3 h-full cursor-e-resize"></div>

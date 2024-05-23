@@ -4,15 +4,18 @@ const emit = defineEmits(['closeEdit', 'taskEdited']);
 
 const tColor = ref("#977aff");
 const tName = ref("");
-const tStatus = ref("");
+const tStatus = ref("No status");
 const tDateFrom = ref("");
 const tDateTo = ref("");
 const tAssignees = ref([] as string[]);
 const tDescription = ref("");
 const tFailed = ref("");
 
-const props = defineProps({    
-    editedTask: Object as PropType<Task>
+const props = defineProps({
+    editedTask: { 
+        type: Object as PropType<Task>,
+        deep: true
+    }
 });
 
 function onTaskChange(task: Task) {
@@ -28,8 +31,32 @@ function onTaskChange(task: Task) {
     tDescription.value = task.description;
 }
 
+const editTask = async () => {
+    if(!profiles.value || !profile || !sessionToken.value)
+        return;
+
+    const dateFromFormat = tDateFrom.value.split('-');
+    const dateToFormat = tDateTo.value.split('-');
+    console.log(tStatus.value);
+    await $fetch('/api/tasks/tasksEdit', {
+        method: 'post',
+        body: {
+            uuid: props.editedTask!.uuid,
+            color: tColor.value,
+            name: tName.value,
+            row: props.editedTask!.row,
+            status: tStatus.value,
+            fromDate: { day: dateFromFormat[2], month: dateFromFormat[1], year: dateFromFormat[0] },
+            toDate: { day: dateToFormat[2], month: dateToFormat[1], year: dateToFormat[0] },
+            createdBy: props.editedTask!.createdBy,
+            assignees: tAssignees.value,
+            description: tDescription.value
+        }
+    }).then((task) => { emit('taskEdited', task); onTaskChange(task!); });    
+};
+
+
 watch(() => props.editedTask, () => {
-    console.log("cau");
     onTaskChange(props.editedTask!);
 });
 
@@ -67,29 +94,6 @@ const createTask = async () => {
     });
 };*/
 
-const editTask = async () => {
-    if(!profiles.value || !profile || !sessionToken.value)
-        return;
-    console.log("HA");
-    const dateFromFormat = tDateFrom.value.split('-');
-    const dateToFormat = tDateTo.value.split('-');
-    console.log(tAssignees.value);
-    await $fetch('/api/tasks/tasksEdit', {
-        method: 'post',
-        body: {
-            uuid: props.editedTask!.uuid,
-            color: tColor.value,
-            name: tName.value,
-            row: props.editedTask!.row,
-            status: tStatus.value,
-            fromDate: { day: dateFromFormat[2], month: dateFromFormat[1], year: dateFromFormat[0] },
-            toDate: { day: dateToFormat[2], month: dateToFormat[1], year: dateToFormat[0] },
-            createdBy: props.editedTask!.name,
-            assignees: tAssignees.value,
-            description: tDescription.value
-        }
-    }).then((task) => { emit('taskEdited', task); onTaskChange(task!); });    
-};
 
 function removeProfile(profile: Profile) {
     profilesInactive.value.push(profile);
@@ -115,7 +119,7 @@ const { data: pfps } = await useFetch('/api/getAllImages', { method: 'post' });
     <div class="absolute right-0 z-20 w-128 h-full p-4 pl-6 bg-white shadow-lg">
         <div class="flex justify-between">
             <div class="flex items-start pt-1 text-xs font-semibold text-gray-500">
-                <span class="mr-0.5 font-bold">Created by {{ props.editedTask!.createdBy }}</span> | {{ props.editedTask!.uuid }}
+                <span class="mr-0.5 font-bold">Created by {{ props.editedTask?.createdBy }}</span> | {{ props.editedTask?.uuid }}
             </div>
             <div @click="emit('closeEdit')">
                 <SvgClose class="cursor-pointer"/>
@@ -125,9 +129,9 @@ const { data: pfps } = await useFetch('/api/getAllImages', { method: 'post' });
             <form @submit.prevent class="w-2/3">
                 <div class="flex gap-2 mt-3 mb-8">
                     <div class="relative size-7 rounded-full" :style="{backgroundColor: tColor}">
-                        <input v-model="tColor" type="color" @change="editTask" class="size-full opacity-0 cursor-pointer">
+                        <input v-model="tColor" type="color" @input="editTask" class="size-full opacity-0 cursor-pointer">
                     </div>
-                    <input v-model="tName" type="text" @change="editTask" placeholder="Enter task name..." class="text-lg font-semibold text-gray-400 border-none outline-none">
+                    <input v-model="tName" type="text" placeholder="Enter task name..." @input="editTask" class="text-lg font-semibold text-gray-400 border-none outline-none">
                 </div>
 
                 <div class="flex flex-col gap-4">
@@ -141,11 +145,11 @@ const { data: pfps } = await useFetch('/api/getAllImages', { method: 'post' });
                     <div class="flex flex-col gap-2 w-full">
                         <div class="flex justify-between gap-2">
                             <label for="dateFrom">From:</label>
-                            <input v-model="tDateFrom" type="date" @change="editTask">
+                            <input v-model="tDateFrom" type="date" @input="editTask">
                         </div>
                         <div class="flex justify-between gap-2">
                             <label for="dateTo">To:</label>
-                            <input v-model="tDateTo" type="date" @change="editTask">
+                            <input v-model="tDateTo" type="date" @input="editTask">
                         </div>
                     </div>
 
@@ -178,7 +182,7 @@ const { data: pfps } = await useFetch('/api/getAllImages', { method: 'post' });
 
                     <div class="flex flex-col gap-1">
                         <label for="description">Description:</label>
-                        <input v-model="tDescription" type="text" @change="editTask">
+                        <input v-model="tDescription" type="text" @input="editTask">
                     </div>
                 </div>
             </form>
