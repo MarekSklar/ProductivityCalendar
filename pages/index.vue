@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { date } from 'zod';
-
 
 const Title = "Timeline Title";
 
@@ -127,7 +125,7 @@ function startCalendarEvent(event: MouseEvent) {
         const todayDate = new Date();
         const val = event.screenX / columnWidth < 0 ? Math.ceil(event.screenX / columnWidth) : Math.floor(event.screenX / columnWidth)
         const currentDate = changeDays({ day: todayDate.getDate(), month: todayDate.getMonth() + 1, year: todayDate.getFullYear() }, val - datesPos.value - 3);
-        console.log(currentDate);
+ 
         const task: Task = {
             uuid: Date.now().toString(),
             color: "#977aff",
@@ -146,10 +144,11 @@ function startCalendarEvent(event: MouseEvent) {
         draggedTaskRow = currentEditedTask.row;
         draggedTask = document.getElementById(currentEditedTask.uuid)!;
 
-        startDragPosX.value = event.screenX;
-        draggingValue.value = Dragging.TaskCreate
+        startDragPosX.value = event.pageX;        
+        draggingValue.value = Dragging.TaskCreate;
     }
     else if(event.button === 1) {
+        startDragPosX.value = event.screenX;        
         draggingValue.value = Dragging.Calendar;
     }
 }
@@ -325,7 +324,6 @@ function endDragging() {
             break;
         case Dragging.TaskCreate:
             addTask(currentEditedTask);
-            relativeDragPos.value = tempDragPos.value;
             draggingValue.value = Dragging.None;
             break;
         case Dragging.TaskDrag:
