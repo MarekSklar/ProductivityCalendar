@@ -1,8 +1,8 @@
-interface Image {
+export interface Image {
     uuid: string,
     img: string
 };
 
-interface AllPfps {
+export interface AllPfps {
     [uuid: string]: string;
 }
