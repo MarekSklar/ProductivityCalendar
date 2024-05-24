@@ -159,7 +159,7 @@ async function startCalendarEvent(event: MouseEvent) {
             color: "#977aff",
             name: "New",
             row: -1,
-            status: "  No status",
+            status: "No status",
             fromDate: currentDate,
             toDate: currentDate,
             assignees: [],

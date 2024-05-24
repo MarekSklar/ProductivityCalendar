@@ -21,7 +21,7 @@ const props = defineProps({
 function onTaskChange(task: Task) {
     const fromDate = new Date(task.fromDate.year, task.fromDate.month - 1, task.fromDate.day);
     const toDate = new Date(task.toDate.year, task.toDate.month - 1, task.toDate.day);
-
+    
     tColor.value = task.color;
     tName.value = task.name;
     tStatus.value = task.status;
@@ -58,7 +58,7 @@ const editTask = async () => {
 
 watch(() => props.editedTask, () => {
     onTaskChange(props.editedTask!);
-});
+}, { deep: true });
 
 
 const profilesActive = ref([] as Profile[]);
@@ -159,7 +159,7 @@ const { data: pfps } = await useFetch('/api/getAllImages', { method: 'post' });
                             <div class="w-full p-2 rounded-md">
                                 <div class="w-full max-h-44 overflow-auto select-none custom-scrollbar">
                                     <ul :class="{ hidden: !profilesActive.length }" class="flex flex-col gap-1">
-                                        <li v-for="profile in profilesActive" @click="removeProfile(profile), editTask" class="flex justify-between items-center text-ellipsis cursor-pointer">
+                                        <li v-for="profile in profilesActive" @click="removeProfile(profile); editTask();" class="flex justify-between items-center text-ellipsis cursor-pointer">
                                             <div class="flex items-center gap-3">
                                                 <img v-if="pfps![profile.uuid]" :src="'data:image/jpg;base64,' + pfps![profile.uuid]" class="size-7 rounded-full object-cover">
                                                 <span>{{ profile.name }}</span>
@@ -169,7 +169,7 @@ const { data: pfps } = await useFetch('/api/getAllImages', { method: 'post' });
                                     </ul>
                                     <div v-if="profilesActive.length > 0" class="h-0.5 my-2 mr-2 bg-gray-200"></div>
                                     <ul class="flex flex-col gap-1">
-                                        <li v-if="profilesInactive.length > 0" v-for="profile in profilesInactive" @click="addProfile(profile), editTask" class="flex items-center gap-3 text-ellipsis cursor-pointer">
+                                        <li v-if="profilesInactive.length > 0" v-for="profile in profilesInactive" @click="addProfile(profile); editTask();" class="flex items-center gap-3 text-ellipsis cursor-pointer">
                                             <img v-if="pfps![profile.uuid]" :src="'data:image/jpg;base64,' + pfps![profile.uuid]" class="size-7 rounded-full object-cover">
                                             <span>{{ profile.name }}</span>
                                         </li>
