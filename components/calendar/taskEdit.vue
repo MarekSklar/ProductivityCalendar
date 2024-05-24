@@ -11,6 +11,9 @@ const tAssignees = ref([] as string[]);
 const tDescription = ref("");
 const tFailed = ref("");
 
+const profilesActive = ref([] as Profile[]);
+const profilesInactive = ref([] as Profile[]);
+
 const props = defineProps({
     editedTask: { 
         type: Object as PropType<Task>,
@@ -60,10 +63,6 @@ watch(() => props.editedTask, () => {
     onTaskChange(props.editedTask!);
 }, { deep: true });
 
-
-const profilesActive = ref([] as Profile[]);
-const profilesInactive = ref([] as Profile[]);
-
 const sessionToken = useCookie<string>('sessionToken');
 const { data: profiles } = await useFetch('/api/profiles/profilesList', { method: 'post' });
 profilesInactive.value = profiles.value as Profile[];
@@ -98,11 +97,11 @@ const createTask = async () => {
 function removeProfile(profile: Profile) {
     profilesInactive.value.push(profile);
     profilesActive.value = profilesActive.value.filter(elmnt => elmnt.uuid !== profile.uuid);
-
     tAssignees.value = [];
     profilesActive.value.forEach(activeProfile => {
         tAssignees.value.push(activeProfile.uuid);
     });
+    console.log(profilesActive, profilesInactive);
 }
 
 function addProfile(profile: Profile) {
