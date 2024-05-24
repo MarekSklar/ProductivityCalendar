@@ -149,13 +149,11 @@ async function startCalendarEvent(event: MouseEvent) {
     if(draggingValue.value !== Dragging.None)
         return;
 
-    if(event.button === 0) {
-        draggingValue.value = Dragging.TaskCreate;
-
+    if(event.button === 0) {        
         const todayDate = new Date();
         const val = event.pageX / columnWidth < 0 ? Math.ceil(event.pageX / columnWidth) : Math.floor(event.pageX / columnWidth)
         const currentDate = changeDays({ day: todayDate.getDate(), month: todayDate.getMonth() + 1, year: todayDate.getFullYear() }, val - datesPos.value - 3);
-
+        
         const task: Task = {
             uuid: "",
             color: "#977aff",
@@ -168,7 +166,7 @@ async function startCalendarEvent(event: MouseEvent) {
             description: "",
             createdBy: profile.name
         };
-
+        
         let row = -1;
         for(let i = 0; i < 10; i++) {
             if(!invalidRow(i, "", currentDate, currentDate)) {
@@ -180,9 +178,10 @@ async function startCalendarEvent(event: MouseEvent) {
 
         if(row !== -1) {
             task.row = row;
-
+            
             addTask(task).then((value) => { if(value) {
                 tasks.push(value); 
+                draggingValue.value = Dragging.TaskCreate;
                 currentEditedTask = tasks[tasks.length - 1];  
                 draggedTaskRow = currentEditedTask.row;
                 taskIntervals[value.row].set(currentEditedTask.uuid, { from: CDateToDate(currentEditedTask.fromDate).getTime(), to: CDateToDate(currentEditedTask.toDate).getTime() });
@@ -269,8 +268,6 @@ function moveCalendarComponents(event: MouseEvent) {
     // move calendar on drag
     if (!event.buttons) return;
     
-    if(currentEditedTask)
-        console.log(currentEditedTask.uuid, currentEditedTask.toDate);
     switch (draggingValue.value) {
         case Dragging.Calendar:
             tempDragPos.value = event.screenX - startDragPosX.value + relativeDragPos.value;
@@ -284,13 +281,15 @@ function moveCalendarComponents(event: MouseEvent) {
             if(currentEditedTask) {
                 if(startDragPosX.value - event.pageX > 49 && differenceOfDays > 0) {
                     currentEditedTask.toDate = changeDays(currentEditedTask.toDate, -1);
+                    draggedTaskToDate = currentEditedTask.toDate;
                     startDragPosX.value = event.pageX;
                     differenceOfDays = getDifferenceOfDays(currentEditedTask.fromDate, currentEditedTask.toDate);
-
+                    
                     taskIntervals[currentEditedTask.row].set(currentEditedTask.uuid, { from: CDateToDate(currentEditedTask.fromDate).getTime(), to: CDateToDate(currentEditedTask.toDate).getTime() });
                 } 
                 else if(startDragPosX.value - event.pageX < -49 && !invalidRow(currentEditedTask.row, currentEditedTask.uuid, currentEditedTask.fromDate, changeDays(currentEditedTask.toDate, 1))) {
                     currentEditedTask.toDate = changeDays(currentEditedTask.toDate, 1);
+                    draggedTaskToDate = currentEditedTask.toDate;
                     startDragPosX.value = event.pageX;
                     differenceOfDays = getDifferenceOfDays(currentEditedTask.fromDate, currentEditedTask.toDate);
                     
@@ -379,7 +378,6 @@ function endDragging() {
             break;
         case Dragging.TaskCreate:
             draggingValue.value = Dragging.None;
-            console.log(currentEditedTask);
             edit.value = true;            
             break;
         case Dragging.TaskDrag:
