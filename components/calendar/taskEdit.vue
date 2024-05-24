@@ -36,8 +36,8 @@ const editTask = async () => {
         return;
 
     const dateFromFormat = tDateFrom.value.split('-');
-    const dateToFormat = tDateTo.value.split('-');
-    console.log(tStatus.value);
+    const dateToFormat = tDateTo.value.split('-');       
+
     await $fetch('/api/tasks/tasksEdit', {
         method: 'post',
         body: {
