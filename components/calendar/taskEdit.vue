@@ -35,7 +35,7 @@ function onTaskChange(task: Task) {
 }
 
 const editTask = async () => {
-    if(!profiles.value || !profile || !sessionToken.value)
+    if (!profiles.value || !profile || !sessionToken.value)
         return;
 
     const dateFromFormat = tDateFrom.value.split('-');

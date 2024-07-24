@@ -10,7 +10,7 @@ const { data: profileData } = await useFetch('/api/profiles/profileGet', { metho
 const profile = profileData.value?.at(0);
 
 let pfpPath = '';
-if(profile)
+if (profile)
     pfpPath = profile.pfpPath48;
 
 const { data: pfp } = await useFetch('/api/getImage', { method: 'post', body: { path: pfpPath }});

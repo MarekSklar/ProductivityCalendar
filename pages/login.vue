@@ -11,7 +11,7 @@ const pFailed = ref("");
 const { data: profiles } = await useFetch('/api/profiles/profilesList', { method: 'post' });
 
 const login = async() => {
-    if(profiles.value === null)
+    if (profiles.value === null)
         return;
 
     const login = await $fetch(`/api/profiles/login`, {
@@ -22,12 +22,10 @@ const login = async() => {
         }
     });
 
-    if(login === undefined)
-    {
+    if (login === undefined) {
         pFailed.value = "Your E-Mail or password is incorrect.";
     }
-    else
-    {
+    else {
         pFailed.value = "";
         const sessionToken = useCookie("sessionToken");
         sessionToken.value = login;
@@ -59,7 +57,7 @@ const login = async() => {
                         </div>
                         
                     </form>
-                    {{  pFailed }}
+                    {{ pFailed }}
                 </div>
             </div>
         </div>

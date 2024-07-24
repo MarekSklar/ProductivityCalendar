@@ -17,11 +17,11 @@ function handleFile(e, item) {
 }
 
 const addProfile = async () => {
-    if(profiles.value === null || pName.value === "" || pEmail.value === "" || pPassword.value === "")
+    if (profiles.value === null || pName.value === "" || pEmail.value === "" || pPassword.value === "")
         return;
 
     let upload;
-    if(files.value) {
+    if (files.value) {
         const fd = new FormData();
         Array.from(files.value).map((file, index) => {
             fd.append(index, file);
@@ -32,8 +32,7 @@ const addProfile = async () => {
             body: fd,
         });
 
-        if(upload === undefined || upload === null || upload.length === 0)
-        {
+        if (upload === undefined || upload === null || upload.length === 0) {
             pFailed.value = "Invalid format.";
             return;
         }
@@ -55,10 +54,9 @@ const addProfile = async () => {
             sessionToken: "null",
         }
     });
-    if(profile === undefined)
+    if (profile === undefined)
         pFailed.value = "Your E-Mail is already registered.";
-    else
-    {
+    else {
         pFailed.value = "";
 
         await navigateTo('/login');
