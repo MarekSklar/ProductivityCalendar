@@ -3,6 +3,7 @@
 const emit = defineEmits(['startTaskLeftResizeDragging', 'startTaskRightResizeDragging', 'startTaskDragging']);
 
 const props = defineProps({
+    columnWidth: Number,
     row: Number,
     tempDragPos: Number,
     tasks: Array as PropType<Task[]>
@@ -26,9 +27,9 @@ function taskPlacementPos(task: Task) {
 </script>
 
 <template>    
-    <div v-for="task in prps.tasks!.value!.filter(task => task.row === prps.row?.value!-1)" :id="task.uuid" @mousedown="emit('startTaskDragging', $event, task)" class="absolute flex h-full left-5 rounded-md"
-    :style="{ backgroundColor: task.color, left: prps.tempDragPos?.value! + (taskPlacementPos(task).from)*56 + 'px', width: taskPlacementPos(task).taskLength*56 + 'px' }">
-        <div class="size-full">
+    <div v-for="task in prps.tasks!.value!.filter(task => task.row === prps.row?.value!-1)" :id="task.uuid" @mousedown="emit('startTaskDragging', $event, task)" class="absolute flex h-full left-5 px-px"
+    :style="{ left: prps.tempDragPos?.value! + (taskPlacementPos(task).from)*prps.columnWidth?.value! + 'px', width: taskPlacementPos(task).taskLength*prps.columnWidth?.value! + 'px' }">
+        <div class="size-full rounded-md" :style="{ backgroundColor: task.color}">
             <div @mousedown="emit('startTaskLeftResizeDragging', $event, task)" class="absolute left-0 z-20 w-3 h-full cursor-e-resize"></div>
             <div @mousedown="emit('startTaskRightResizeDragging', $event, task)" class="absolute right-0 z-20 w-3 h-full cursor-e-resize"></div>
             <div class="size-full p-1 pl-2">

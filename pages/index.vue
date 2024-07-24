@@ -510,7 +510,7 @@ onMounted(() => {
                     <div v-for="row in 10" :id="(row - 1).toString()" class="relative h-11 mb-0.5 bg-white">
                         <CalendarTask
                             @start-task-left-resize-dragging="startTaskLeftResizeDragging" @start-task-right-resize-dragging="startTaskRightResizeDragging" @start-task-dragging="startTaskDragging"
-                            :row="row" :tempDragPos="tempDragPos" :tasks="tasks!"
+                            :columnWidth="columnWidth" :row="row" :tempDragPos="tempDragPos" :tasks="tasks!"
                         />
                     </div>
                 </div>
