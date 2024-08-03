@@ -52,10 +52,12 @@ let clickOffsetY: number;
 let mouseDown = false;
 
 const datesOffset = ref(0);
+const weekOffset = ref(0);
 const datesPos = ref(0);
 
 const screenSize = ref({width: 1920, height: 1080});
 const columnWidth = 56;
+const dayTimestamp = 86400000;
 
 function CDateToDate(date: CDate) {
     return new Date(date.year, date.month - 1, date.day);
@@ -85,7 +87,7 @@ function getDifferenceOfDays(fromDate: CDate, toDate: CDate) {
     const fdate = CDateToDate(fromDate);
     const tdate = CDateToDate(toDate);
 
-    return (tdate.getTime() - fdate.getTime()) / 86400000;
+    return (tdate.getTime() - fdate.getTime()) / dayTimestamp;
 }
 
 function changeDays(date: CDate, value: number) {
@@ -100,8 +102,8 @@ function changeDays(date: CDate, value: number) {
 }
 
 function taskPlacementPos(date: CDate) {
-    const todayDayTimestamp = Math.floor(new Date().getTime() / 86400000);
-    const taskStartDayTimestamp = Math.floor(CDateToDate(date).getTime() / 86400000) + 4;
+    const todayDayTimestamp = Math.floor(new Date().getTime() / dayTimestamp);
+    const taskStartDayTimestamp = Math.floor(CDateToDate(date).getTime() / dayTimestamp) + 4;
     const timeFromToday = taskStartDayTimestamp - todayDayTimestamp;
 
     return timeFromToday;
@@ -255,7 +257,7 @@ function startTaskDragging(event: MouseEvent, task: Task) {
     }, 100);
 }
 
-function startTaskLeftResizeDragging(event: MouseEvent, task: Task) {  
+function startTaskLeftResizeDragging(event: MouseEvent, task: Task) {
     if (draggingValue.value !== Dragging.None || event.button !== 0)
         return;
 
@@ -290,6 +292,7 @@ function moveCalendarComponents(event: MouseEvent) {
             tempDragPos.value = event.screenX - startDragPosX.value + relativeDragPos.value;
             
             datesOffset.value = tempDragPos.value % columnWidth;
+            weekOffset.value = tempDragPos.value % (columnWidth*7);
             datesPos.value = tempDragPos.value / columnWidth < 0 ? Math.ceil(tempDragPos.value / columnWidth) : Math.floor(tempDragPos.value / columnWidth);
             break;
         case Dragging.TaskCreate:
@@ -313,7 +316,6 @@ function moveCalendarComponents(event: MouseEvent) {
                     taskIntervals[currentEditedTask.row].set(currentEditedTask.uuid, { from: CDateToDate(currentEditedTask.fromDate).getTime(), to: CDateToDate(currentEditedTask.toDate).getTime() });
                 }
             }
-            
             break;
         case Dragging.TaskDrag:
             if (!mouseDown) {
@@ -469,8 +471,12 @@ function endDragging() {
     }    
 }
 
+function getDate(dateNum: number) {
+    return new Date(new Date().getTime() + dateNum * 86400000);
+}
+
 function generateDate(dateNum: number) {
-    const date = new Date(new Date().getTime() + dateNum * 86400000);
+    const date = getDate(dateNum);
 
     const newDateNum = date.getDate();
     let day = getWeekDay(date.getDay());
@@ -494,7 +500,7 @@ onMounted(() => {
                 <p class="py-0.5 opacity-0">Dates</p>
                 <div class="absolute z-10 flex" :style="{left: datesOffset - 5 * columnWidth + 'px'}">
                     <p v-for="date in Math.ceil(screenSize.width * 0.02 + 10)" class="w-14 py-0.5 text-center rounded-md text-gray-500 font-bold"
-                    :class="{'bg-red-100': !(date - datesPos - 9), 'text-gray-900': !(date - datesPos - 9)}">
+                    :class="{'text-gray-300': getDate(date - datesPos - 9).getDay() === 0 || getDate(date - datesPos - 9).getDay() === 6, 'bg-red-100': !(date - datesPos - 9), 'text-gray-900': !(date - datesPos - 9)}">
                         {{ generateDate(date - datesPos - 9) }}
                     </p>
                 </div>
@@ -502,12 +508,15 @@ onMounted(() => {
         </div>
         <div class="relative flex-auto min-w-full h-full">
             <CalendarTaskEdit v-show="edit" @close-edit="edit=false" @task-edited="onEditTask" :edited-task="currentEditedTask"/>
-            <div @mousedown="startCalendarEvent" @mousemove="moveCalendarComponents" @mouseup="endDragging" class="w-full h-full overflow-x-hidden overflow-y-auto cursor-grab" :class="{'cursor-grabbing': draggingValue === Dragging.Calendar}">
+            <div @mousedown="startCalendarEvent" @mousemove="moveCalendarComponents" @mouseup="endDragging"
+                class="w-full h-full overflow-x-hidden overflow-y-auto cursor-grab"
+                :style="{backgroundImage: `repeating-linear-gradient(to right, #fff ${weekOffset}px, #fff ${2+weekOffset}px, #e7e7e7 ${2+weekOffset}px, #e7e7e7 ${112+weekOffset}px, #fff ${112+weekOffset}px, #fff ${392+weekOffset}px)`}"
+                :class="{'cursor-grabbing': draggingValue === Dragging.Calendar}">
                 <div class="relative mt-4 overflow-hidden select-none">
                     <div class="absolute top-1/2 z-10" style="height: calc(100% - 1rem);">
                         <div class="relative -top-1/2 flex justify-center items-center w-40 h-full px-4 text-left bg-white rounded-r-lg shadow-[0_0px_20px_-10px_rgba(0,0,0,0.3)]">Daily responsibility</div>
                     </div>
-                    <div v-for="row in 10" :id="(row - 1).toString()" class="relative h-11 mb-0.5 bg-white">
+                    <div v-for="row in 10" :id="(row - 1).toString()" class="relative h-11 mb-0.5">
                         <CalendarTask
                             @start-task-left-resize-dragging="startTaskLeftResizeDragging" @start-task-right-resize-dragging="startTaskRightResizeDragging" @start-task-dragging="startTaskDragging"
                             :columnWidth="columnWidth" :row="row" :tempDragPos="tempDragPos" :tasks="tasks!"
