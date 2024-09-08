@@ -19,7 +19,23 @@ interface Task {
     toDate: CDate,
     assignees?: string[],
     description: string,
-    createdBy: string
+    createdBy: string,
+}
+
+interface InactiveTask {
+    row: number,
+    fromDate: CDate,
+    toDate: CDate,
+}
+
+interface DraggedTask {
+    uuid: string,
+    name: string,
+    status: string,
+    color: string,
+    left: number,
+    top: number,
+    width: number
 }
 
 interface TaskAddOptions {

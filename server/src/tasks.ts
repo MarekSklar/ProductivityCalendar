@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { boolean, z } from 'zod';
 import { DatabaseConnection, sql } from "@databases/sqlite";
 import { randomUUID } from 'node:crypto';
 
@@ -37,6 +37,7 @@ export async function list(db: DatabaseConnection) {
         task.toDate = { day: toDates[2], month: toDates[1], year: toDates[0] };
 
         task.assignees = task.assignees.split(',');
+        task.active = true;
     });
 
     return tasks;
@@ -99,7 +100,7 @@ export async function edit(db: DatabaseConnection, options: TaskEditOptions) {
 
     const sqlFromDate = params.fromDate.year + "-" + params.fromDate.month + "-" + params.fromDate.day;
     const sqlToDate = params.toDate.year + "-" + params.toDate.month + "-" + params.toDate.day; 
-    
+
     await db.query(sql`UPDATE tasks SET
         uuid = ${params.uuid},
         color = ${params.color},

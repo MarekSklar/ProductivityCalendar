@@ -1,6 +1,9 @@
 <script setup lang="ts">
 
 const emit = defineEmits(['closeEdit', 'taskEdited']);
+defineExpose({
+    onTaskChange, onInactiveTask, hideEditor, showEditor
+});
 
 const tColor = ref("#977aff");
 const tName = ref("");
@@ -14,14 +17,12 @@ const tFailed = ref("");
 const profilesActive = ref([] as Profile[]);
 const profilesInactive = ref([] as Profile[]);
 
-const props = defineProps({
-    editedTask: { 
-        type: Object as PropType<Task>,
-        deep: true
-    }
-});
+let editedTask: Task;
+let editorVisibility = ref(false);
+let nameTimerRunning: boolean = false;
+let editTaskTimerRunning: boolean = false;
 
-function onTaskChange(task: Task) {
+async function onTaskChange(task: Task) {
     const fromDate = new Date(task.fromDate.year, task.fromDate.month - 1, task.fromDate.day);
     const toDate = new Date(task.toDate.year, task.toDate.month - 1, task.toDate.day);
     
@@ -32,42 +33,97 @@ function onTaskChange(task: Task) {
     tDateTo.value = `${toDate.getFullYear()}-${(toDate.getMonth() < 10 ? '0' : '') + (toDate.getMonth()+1).toString()}-${(toDate.getDate() < 10 ? '0' : '') + toDate.getDate().toString()}`;
     tAssignees.value = task.assignees!;
     tDescription.value = task.description;
+
+    editedTask = task;
 }
 
-const editTask = async () => {
-    if (!profiles.value || !profile || !sessionToken.value)
+async function onInactiveTask(task: InactiveTask) {
+    const fromDate = new Date(task.fromDate.year, task.fromDate.month - 1, task.fromDate.day);
+    const toDate = new Date(task.toDate.year, task.toDate.month - 1, task.toDate.day);
+    
+    tColor.value = "#977aff";
+    tName.value = "New";
+    tStatus.value = "No status";
+    tDateFrom.value = `${fromDate.getFullYear()}-${(fromDate.getMonth() < 10 ? '0' : '') + (fromDate.getMonth()+1).toString()}-${(fromDate.getDate() < 10 ? '0' : '') + fromDate.getDate().toString()}`
+    tDateTo.value = `${toDate.getFullYear()}-${(toDate.getMonth() < 10 ? '0' : '') + (toDate.getMonth()+1).toString()}-${(toDate.getDate() < 10 ? '0' : '') + toDate.getDate().toString()}`;
+    tAssignees.value = [];
+    tDescription.value = "";
+}
+
+async function hideEditor() {
+    editorVisibility.value = false;
+}
+
+async function showEditor() {
+    editorVisibility.value = true;
+}
+
+const editName = async () => {
+    if (!profiles.value || !profile || !sessionToken.value || nameTimerRunning)
         return;
 
-    const dateFromFormat = tDateFrom.value.split('-');
-    const dateToFormat = tDateTo.value.split('-');       
+    nameTimerRunning = true;
+    setTimeout(async () => {
+        const dateFromFormat = tDateFrom.value.split('-');
+        const dateToFormat = tDateTo.value.split('-');       
+        nameTimerRunning = false;
+        
+        await $fetch('/api/tasks/tasksEdit', {
+            method: 'post',
+            body: {
+                uuid: editedTask.uuid,
+                color: tColor.value,
+                name: tName.value,
+                row: editedTask.row,
+                status: tStatus.value,
+                fromDate: { day: dateFromFormat[2], month: dateFromFormat[1], year: dateFromFormat[0] },
+                toDate: { day: dateToFormat[2], month: dateToFormat[1], year: dateToFormat[0] },
+                createdBy: editedTask.createdBy,
+                assignees: tAssignees.value,
+                description: tDescription.value
+            }
+        }).then((task) => emit('taskEdited', task)).catch(err => {});    
+    }, 2000);
+}
 
-    await $fetch('/api/tasks/tasksEdit', {
-        method: 'post',
-        body: {
-            uuid: props.editedTask!.uuid,
-            color: tColor.value,
-            name: tName.value,
-            row: props.editedTask!.row,
-            status: tStatus.value,
-            fromDate: { day: dateFromFormat[2], month: dateFromFormat[1], year: dateFromFormat[0] },
-            toDate: { day: dateToFormat[2], month: dateToFormat[1], year: dateToFormat[0] },
-            createdBy: props.editedTask!.createdBy,
-            assignees: tAssignees.value,
-            description: tDescription.value
-        }
-    }).then((task) => { emit('taskEdited', task); onTaskChange(task!); });    
+const editTask = async () => { // TODO: [(fix from and to date edits, can be invalid), moving tasks dont have updated time)]
+    if (!profiles.value || !profile || !sessionToken.value || editTaskTimerRunning)
+        return;
+
+    editTaskTimerRunning = true;
+    setTimeout(async () => {
+        const dateFromFormat = tDateFrom.value.split('-');
+        const dateToFormat = tDateTo.value.split('-');       
+        editTaskTimerRunning = false;
+
+        await $fetch('/api/tasks/tasksEdit', {
+            method: 'post',
+            body: {
+                uuid: editedTask.uuid,
+                color: tColor.value,
+                name: tName.value,
+                row: editedTask.row,
+                status: tStatus.value,
+                fromDate: { day: dateFromFormat[2], month: dateFromFormat[1], year: dateFromFormat[0] },
+                toDate: { day: dateToFormat[2], month: dateToFormat[1], year: dateToFormat[0] },
+                createdBy: editedTask.createdBy,
+                assignees: tAssignees.value,
+                description: tDescription.value
+            }
+        }).then((task) => emit('taskEdited', task)).catch(err => {});
+    }, 50);  
 };
 
 
-watch(() => props.editedTask, () => {
-    onTaskChange(props.editedTask!);
-}, { deep: true });
-
+// TODO: PROPS
 const sessionToken = useCookie<string>('sessionToken');
 const { data: profiles } = await useFetch('/api/profiles/profilesList', { method: 'post' });
 profilesInactive.value = profiles.value as Profile[];
 const { data: profileData } = await useFetch('/api/profiles/profileGet', { method: 'post', body: { sessionToken: sessionToken.value }});
 const profile = profileData.value?.at(0);
+
+
+
 
 /*
 const createTask = async () => {
@@ -115,12 +171,12 @@ const { data: pfps } = await useFetch('/api/getAllImages', { method: 'post' });
 </script>
 
 <template>
-    <div class="absolute right-0 z-20 w-128 h-full p-4 pl-6 bg-white shadow-lg">
+    <div v-if="editorVisibility" class="absolute right-0 z-20 w-128 h-full p-4 pl-6 bg-white shadow-lg">
         <div class="flex justify-between">
             <div class="flex items-start pt-1 text-xs font-semibold text-gray-500">
-                <span class="mr-0.5 font-bold">Created by {{ props.editedTask?.createdBy }}</span> | {{ props.editedTask?.uuid }}
+                <span class="mr-0.5 font-bold">Created by {{ editedTask.createdBy }}</span> | {{ editedTask.uuid }}
             </div>
-            <div @click="emit('closeEdit')">
+            <div @click="editorVisibility = false">
                 <SvgClose class="cursor-pointer"/>
             </div>
         </div>
@@ -130,7 +186,7 @@ const { data: pfps } = await useFetch('/api/getAllImages', { method: 'post' });
                     <div class="relative size-7 rounded-full" :style="{backgroundColor: tColor}">
                         <input v-model="tColor" type="color" @input="editTask" class="size-full opacity-0 cursor-pointer">
                     </div>
-                    <input v-model="tName" type="text" placeholder="Enter task name..." @input="editTask" class="text-lg font-semibold text-gray-400 border-none outline-none">
+                    <input v-model="tName" type="text" placeholder="Enter task name..." @input="editName" class="text-lg font-semibold text-gray-400 border-none outline-none">
                 </div>
 
                 <div class="flex flex-col gap-4">

@@ -1,4 +1,5 @@
 import connect, { DatabaseConnection, sql } from "@databases/sqlite"
+import fs from 'fs'
 
 let db: DatabaseConnection;
 let initalized = false;
@@ -6,6 +7,14 @@ let initalized = false;
 export const getDatabase = (path: string) => {
     db = db || connect(path);
 
+    if(!fs.existsSync(path))
+    {
+        fs.mkdir(`${process.cwd()}/database`, (err) => { if(err) console.error(`Failed to create database folder (${err})`)});
+
+        if(!fs.existsSync(path))
+            fs.writeFile(`${process.cwd()}/database/db.sqlite`, '', (err) => { if(err) console.error(`Failed to create sqlite database (${err})`)});
+    }
+        
     if(!initalized) {
         db.query(sql`CREATE TABLE IF NOT EXISTS profiles (
                 uuid TEXT PRIMARY KEY,

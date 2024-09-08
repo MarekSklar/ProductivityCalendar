@@ -6,8 +6,8 @@ export default defineEventHandler(async (event) => {
         const { databaseFilePath } = useRuntimeConfig();
         const db = await getDatabase(databaseFilePath);
         const body = await readBody(event);
-        return Tasks.edit(db, body);
+        return await Tasks.edit(db, body);
     } catch(error) {
-        return;
+        console.log("Failed to edit task");
     }    
 });
