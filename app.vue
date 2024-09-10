@@ -1,7 +1,7 @@
 <script setup lang="ts">
 useHead({
     titleTemplate() {
-        return 'KOMPAN | calendar';
+        return 'Productivity calendar';
     }
 });
 </script>

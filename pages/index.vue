@@ -121,11 +121,12 @@ function onDraggedTaskChange(draggedTask: DraggedTask) {
     draggedTaskObject.value = draggedTask;
 }
 
-//
-
-
 onMounted(() => {
-    screenSize.value = getScreenSize();
+    const handleResize = () => {
+        screenSize.value = getScreenSize();
+    };
+
+    window.addEventListener('resize', handleResize);
 });
 
 </script>
