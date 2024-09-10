@@ -29,15 +29,15 @@ const login = async() => {
         pFailed.value = "";
         const sessionToken = useCookie("sessionToken");
         sessionToken.value = login;
-        await navigateTo('/');
+        navigateTo('/');
     }
 };
 
 </script>
 
 <template>
-    <div class="flex items-center justify-center w-screen h-screen bg-gray-50">
-        <div class="flex flex-col items-center gap-8 px-20 py-12 rounded-xl shadow-lg bg-white">
+    <div class="simpleCardBox">
+        <div class="card gap-8 px-20 py-12">
             <h1 class="text-2xl text-gray-700 font-bold">Welcome back!</h1>
             <div class="flex flex-col justify-center items-center w-full h-full">
                 <div class="flex flex-col justify-between">

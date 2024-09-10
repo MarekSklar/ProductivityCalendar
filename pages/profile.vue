@@ -16,8 +16,8 @@ const pfpFormat = pfpPath.split('.').pop();
 </script>
 
 <template>
-    <div v-if="sessionToken && sessionToken !== 'null'" class="flex items-center justify-center w-screen h-screen bg-gray-50 dark:bg-gray-900">
-        <div class="flex flex-col items-center gap-8 px-20 py-12 rounded-xl shadow-lg bg-white dark:bg-gray-800 dark:shadow-md">
+    <div v-if="sessionToken && sessionToken !== 'null'" class="simpleCardBox">
+        <div class="card gap-8 px-20 py-12">
             <div class="flex justify-center items-center gap-6 w-full h-full">
                 <img :src="'data:image/' + pfpFormat + ';base64,' + pfp" class="size-36 rounded-full object-cover"/>
                 <div class="flex flex-col gap-4">

@@ -507,7 +507,7 @@ async function mouseUpEvent() {
 
 <template>
     <div v-if="!pending" class="relative mt-4 overflow-hidden select-none" @mousedown="mousePressedEvent">
-        <div class="absolute top-1/2 z-10" style="height: calc(100% - 1rem);">
+        <div class="absolute top-1/2 z-30" style="height: calc(100% - 1rem);">
             <div class="relative -top-1/2 flex justify-center items-center w-40 h-full px-4 text-left bg-white rounded-r-lg shadow-[0_0px_20px_-10px_rgba(0,0,0,0.3)]">Daily responsibility</div>
         </div>
         <div v-for="(row, index) in rows" @mouseover="onRowChangeEvent(index)" class="relative h-11 mb-0.5">
