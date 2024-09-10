@@ -18,6 +18,13 @@ const pfpFormat = pfpPath.split('.').pop();
 
 const sidebarIsActive = ref(false);
 
+function logout() {
+    const sessionTokenCookie = useCookie('sessionToken');
+    sessionTokenCookie.value = null;
+
+    navigateTo('/invalidSession');
+}
+
 </script>
 
 <template>
@@ -46,7 +53,7 @@ const sidebarIsActive = ref(false);
                                 <SvgModeDark class="icon" />
                                 <p class="link-text">Dark mode</p>
                             </div>
-                            <NuxtLink to="/" @click="sidebarIsActive = false" class="group link-box">
+                            <NuxtLink to="/" @click="sidebarIsActive = false; logout()" class="group link-box">
                                 <SvgLogout class="icon" />
                                 <p class="link-text">Logout</p>
                             </NuxtLink>
