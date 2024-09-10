@@ -5,16 +5,17 @@ let db: DatabaseConnection;
 let initalized = false;
 
 export const getDatabase = (path: string) => {
-    db = db || connect(path);
-
     if(!fs.existsSync(path))
     {
-        fs.mkdir(`${process.cwd()}/database`, () => {});
-
-        if(!fs.existsSync(path))
-            fs.writeFile(`${process.cwd()}/database/db.sqlite`, '', () => {});
-    }
+        initalized = false;
+        fs.mkdir(`${process.cwd()}/database`, (err) => {});
         
+        if(!fs.existsSync(path))
+            fs.writeFile(`${process.cwd()}/database/db.sqlite`, '', (err) => {});
+    }
+
+    db = db || connect(path);
+
     if(!initalized) {
         db.query(sql`CREATE TABLE IF NOT EXISTS profiles (
                 uuid TEXT PRIMARY KEY,
