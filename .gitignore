@@ -1,3 +1,9 @@
+# database
+database
+
+#package lock
+package-lock.json
+
 # Nuxt dev/build outputs
 .data
 .nuxt
@@ -7,9 +13,6 @@ dist
 
 # Node dependencies
 node_modules
-
-#package lock
-package-lock.json
 
 # Logs
 logs
