@@ -1,6 +1,7 @@
 <script setup lang="ts">
 
 const sessionToken = useCookie<string>('sessionToken');
+if (!sessionToken.value || sessionToken.value === null) navigateTo('/invalidSession');
 
 const { data: profileData } = await useFetch('/api/profiles/profileGet', { method: 'post', body: { sessionToken: sessionToken.value }});
 const profile = profileData.value?.at(0) as Profile;

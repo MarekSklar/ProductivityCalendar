@@ -1,5 +1,8 @@
 <script setup lang="ts">
 
+const sessionToken = useCookie<string>('sessionToken');
+if (!sessionToken.value || sessionToken.value === null) navigateTo('/invalidSession');
+
 const { data } = await useFetch('/api/profiles/profilesList', { method: 'post' });
 const profiles = data as Ref<Profile[]>;
 

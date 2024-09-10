@@ -6,9 +6,9 @@ let pending = true;
 
 
 const sessionToken = useCookie<string>('sessionToken');
+if (!sessionToken.value || sessionToken.value === null) navigateTo('/invalidSession');
 const { data: profileData } = await useFetch('/api/profiles/profileGet', { method: 'post', body: { sessionToken: sessionToken.value }});
 const profile = profileData.value?.at(0);
-
 const startDragPosX = ref(0);
 const relativeDragPos = ref(0);
 const calendarDragPos = ref(0);

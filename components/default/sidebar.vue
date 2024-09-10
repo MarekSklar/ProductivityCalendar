@@ -21,46 +21,48 @@ const sidebarIsActive = ref(false);
 </script>
 
 <template>
-    <div @click="sidebarIsActive = true" class="absolute top-1/2 left-3 z-30 rounded-full bg-gray-100 cursor-pointer">
-        <SvgChevronRight class="size-10 fill-gray-600" />
-    </div>
-    <div v-if="sidebarIsActive" @click="sidebarIsActive = false" class="absolute z-40 w-screen h-screen bg-black bg-opacity-20"></div>
-    
-    <!-- sidebar -->
-    <div v-if="sidebarIsActive" class="absolute z-50 w-56 h-full bg-white">
-        <div class="relative size-full p-5">
-            <div class="flex flex-col justify-between h-full">
-                <div>
-                    <h2 class="mb-7 font-bold text-gray-500">Productivity calendar</h2>
-                    <div class="flex flex-col gap-5">
-                        <NuxtLink to="/" @click="sidebarIsActive = false" class="group link-box">
-                            <SvgCalendar class="icon" />
-                            <p class="link-text">Calendar</p>
-                        </NuxtLink>
-                        <NuxtLink to="/users" @click="sidebarIsActive = false" class="group link-box">
-                            <SvgGroup class="icon" />
-                            <p class="link-text">Users</p>
-                        </NuxtLink>
-                        <div @click="toggleDark()" class="group link-box">
-                            <SvgModeDark class="icon" />
-                            <p class="link-text">Dark mode</p>
+    <div v-if="sessionToken && sessionToken !== 'null'">
+        <div @click="sidebarIsActive = true" class="absolute top-1/2 left-3 z-30 rounded-full bg-gray-100 cursor-pointer">
+            <SvgChevronRight class="size-10 fill-gray-600" />
+        </div>
+        <div v-if="sidebarIsActive" @click="sidebarIsActive = false" class="absolute z-40 w-screen h-screen bg-black bg-opacity-20"></div>
+        
+        <!-- sidebar -->
+        <div v-if="sidebarIsActive" class="absolute z-50 w-56 h-full bg-white">
+            <div class="relative size-full p-5">
+                <div class="flex flex-col justify-between h-full">
+                    <div>
+                        <h2 class="mb-7 font-bold text-gray-500">Productivity calendar</h2>
+                        <div class="flex flex-col gap-5">
+                            <NuxtLink to="/" @click="sidebarIsActive = false" class="group link-box">
+                                <SvgCalendar class="icon" />
+                                <p class="link-text">Calendar</p>
+                            </NuxtLink>
+                            <NuxtLink to="/users" @click="sidebarIsActive = false" class="group link-box">
+                                <SvgGroup class="icon" />
+                                <p class="link-text">Users</p>
+                            </NuxtLink>
+                            <div @click="toggleDark()" class="group link-box">
+                                <SvgModeDark class="icon" />
+                                <p class="link-text">Dark mode</p>
+                            </div>
+                            <NuxtLink to="/" @click="sidebarIsActive = false" class="group link-box">
+                                <SvgLogout class="icon" />
+                                <p class="link-text">Logout</p>
+                            </NuxtLink>
                         </div>
-                        <NuxtLink to="/" @click="sidebarIsActive = false" class="group link-box">
-                            <SvgLogout class="icon" />
-                            <p class="link-text">Logout</p>
+                    </div>
+                    <div v-if="sessionToken && sessionToken !== 'null'">
+                        <NuxtLink to="/profile" @click="sidebarIsActive = false" class="group link-box">
+                            <img class="size-10 rounded-full object-cover" :src="'data:image/' + pfpFormat + ';base64,' + pfp">
+                            <p class="link-text">{{ profile.name }}</p>
                         </NuxtLink>
                     </div>
                 </div>
-                <div v-if="sessionToken && sessionToken !== 'null'">
-                    <NuxtLink to="/profile" @click="sidebarIsActive = false" class="group link-box">
-                        <img class="size-10 rounded-full object-cover" :src="'data:image/' + pfpFormat + ';base64,' + pfp">
-                        <p class="link-text">{{ profile.name }}</p>
-                    </NuxtLink>
-                </div>
-            </div>
 
-            <div @click="sidebarIsActive = false" class="absolute top-1/2 -right-14 z-30 rounded-full bg-gray-50 cursor-pointer">
-                <SvgChevronRight class="size-10 rotate-180 fill-gray-500" />
+                <div @click="sidebarIsActive = false" class="absolute top-1/2 -right-14 z-30 rounded-full bg-gray-50 cursor-pointer">
+                    <SvgChevronRight class="size-10 rotate-180 fill-gray-500" />
+                </div>
             </div>
         </div>
     </div>
