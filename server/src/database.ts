@@ -9,10 +9,10 @@ export const getDatabase = (path: string) => {
 
     if(!fs.existsSync(path))
     {
-        fs.mkdir(`${process.cwd()}/database`, (err) => { if(err) console.error(`Failed to create database folder (${err})`)});
+        fs.mkdir(`${process.cwd()}/database`, () => {});
 
         if(!fs.existsSync(path))
-            fs.writeFile(`${process.cwd()}/database/db.sqlite`, '', (err) => { if(err) console.error(`Failed to create sqlite database (${err})`)});
+            fs.writeFile(`${process.cwd()}/database/db.sqlite`, '', () => {});
     }
         
     if(!initalized) {
