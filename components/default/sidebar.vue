@@ -29,7 +29,7 @@ function logout() {
 
 <template>
     <div v-if="sessionToken && sessionToken !== 'null'">
-        <div @click="sidebarIsActive = true" class="absolute top-1/2 left-3 z-30 rounded-full bg-gray-100 cursor-pointer">
+        <div @click="sidebarIsActive = true" class="absolute top-1/2 left-3 z-40 rounded-full bg-gray-100 cursor-pointer">
             <SvgChevronRight class="size-10 fill-gray-600" />
         </div>
         <div v-if="sidebarIsActive" @click="sidebarIsActive = false" class="absolute z-40 w-screen h-screen bg-black bg-opacity-20"></div>
