@@ -200,14 +200,24 @@ function fixRow(task: Task, ignoreUUIDs: string[] = [], fromDate: CDate = undefi
     let tempFromDate: CDate = fromDate ? fromDate : task.fromDate;
     let tempToDate: CDate = toDate ? toDate : task.toDate;
 
-    while(task.row - 1 >= 0 && (!invalidRow(task.row - 1, task.uuid, tempFromDate, tempToDate) || !invalidRowIgnoreUUIDs(task.row - 1, ignoreUUIDs, tempFromDate, tempToDate))) {
+    let isInvalid: boolean = false;
+    if(ignoreUUIDs.length > 0)
+        isInvalid = !invalidRowIgnoreUUIDs(task.row - 1, ignoreUUIDs, tempFromDate, tempToDate);
+    else
+        isInvalid = !invalidRow(task.row - 1, task.uuid, tempFromDate, tempToDate);
+    
+    console.log(task.row, isInvalid);
+    while(task.row - 1 >= 0 && isInvalid) {
         changeRow(task.uuid, task.row, task.row - 1);
         taskIntervals[task.row].delete(task.uuid);
         taskIntervals[task.row - 1].set(task.uuid, { from: CDateToDate(task.fromDate).getTime(), to: CDateToDate(task.toDate).getTime() });
         task.row = task.row - 1; 
         
+        if(!changedTasks.includes(task))
+            changedTasks.push(task);
+        
         for(let i = Math.max(task.row, 1); i < rows.value.length; i++) {
-            if(invalidRow(i, task.uuid, tempFromDate, tempToDate)) {
+            if(invalidRow(i, task.uuid, tempFromDate, tempToDate) && invalidRow(i - 1, task.uuid, tempFromDate, tempToDate)) { // optimize by prevInvalid
                 findTasksInRow(i, tempFromDate, tempToDate).forEach((taskUUID) => {
                     let newTask: Task = findTaskByUUID(i, taskUUID);
                     
@@ -218,7 +228,10 @@ function fixRow(task: Task, ignoreUUIDs: string[] = [], fromDate: CDate = undefi
                         changeRow(newTask.uuid, i, i - 1);
                         taskIntervals[i].delete(newTask.uuid);
                         taskIntervals[i - 1].set(newTask.uuid, { from: CDateToDate(newTask.fromDate).getTime(), to: CDateToDate(newTask.toDate).getTime() });
-                        newTask.row = i - 1;                     
+                        newTask.row = i - 1;
+                        
+                        if(!changedTasks.includes(newTask))
+                            changedTasks.push(newTask);
                     }
                 })
             } else break;
@@ -445,6 +458,9 @@ async function mouseMoveEvent(mousePageX: number, mousePageY: number) { // TODO:
                                 taskIntervals[i + 1].set(task.uuid, { from: CDateToDate(task.fromDate).getTime(), to: CDateToDate(task.toDate).getTime() });
                                 task.row = i + 1;
                                 alreadyChangedTaskUUIDs.push(task.uuid);
+
+                                if(!changedTasks.includes(task))
+                                    changedTasks.push(task);
                             }
                         })
                     }
@@ -464,10 +480,13 @@ async function mouseMoveEvent(mousePageX: number, mousePageY: number) { // TODO:
                         taskIntervals[selectedTask.row].delete(task.uuid);
                         taskIntervals[selectedTask.row + 1].set(task.uuid, { from: CDateToDate(task.fromDate).getTime(), to: CDateToDate(task.toDate).getTime() });
                         task.row = selectedTask.row + 1;
+                        
+                        if(!changedTasks.includes(task))
+                            changedTasks.push(task);
                     }
                 });
             }   
-            else if(selectedTask.row !== 0 && !invalidRow(selectedTask.row - 1, selectedTask.uuid, tempFromDate, selectedTask.toDate)) {
+            /*else if(selectedTask.row !== 0 && !invalidRow(selectedTask.row - 1, selectedTask.uuid, tempFromDate, selectedTask.toDate)) {
                 fixRow(selectedTask);
             }
             else if(currentHoveredRow != selectedTask.row && currentHoveredRow != rows.value.length) {
@@ -569,7 +588,7 @@ async function mouseMoveEvent(mousePageX: number, mousePageY: number) { // TODO:
                     });
                 }
             }
-
+            */
             // moving
             if (startDragPosX - mousePageX > 49) {
                 let tasksUUIDs = findTasksInRow(selectedTask.row + 1, selectedTask.fromDate, selectedTask.toDate);
@@ -580,13 +599,9 @@ async function mouseMoveEvent(mousePageX: number, mousePageY: number) { // TODO:
                 startDragPosX = mousePageX;
                 taskIntervals[selectedTask.row].set(selectedTask.uuid, { from: CDateToDate(selectedTask.fromDate).getTime(), to: CDateToDate(selectedTask.toDate).getTime() });
 
-                tasksUUIDs.forEach((taskUUID) => {
-                    let task: Task = findTaskByUUID(selectedTask.row + 1, taskUUID);
-
-                    if(task && !invalidRow(selectedTask.row, "", task.fromDate, task.toDate)) {
-                        fixRow(task);
-                    }
-                });
+                if(!changedTasks.includes(selectedTask))
+                    changedTasks.push(selectedTask);
+                changedTasks.forEach((task) => { fixRow(task) });
             } 
             else if (startDragPosX - mousePageX < -49) {
                 let tasksUUIDs = findTasksInRow(selectedTask.row + 1, selectedTask.fromDate, selectedTask.toDate);
@@ -597,13 +612,9 @@ async function mouseMoveEvent(mousePageX: number, mousePageY: number) { // TODO:
                 startDragPosX = mousePageX;
                 taskIntervals[selectedTask.row].set(selectedTask.uuid, { from: CDateToDate(selectedTask.fromDate).getTime(), to: CDateToDate(selectedTask.toDate).getTime() });
 
-                tasksUUIDs.forEach((taskUUID) => {
-                    let task: Task = findTaskByUUID(selectedTask.row + 1, taskUUID);
-
-                    if(task && !invalidRow(selectedTask.row, "", task.fromDate, task.toDate)) {
-                        fixRow(task);
-                    }
-                });
+                if(!changedTasks.includes(selectedTask))
+                    changedTasks.push(selectedTask);
+                changedTasks.forEach((task) => { fixRow(task) });
             }
             break;
         case DragStatus.TaskLeftResize:
@@ -650,8 +661,9 @@ async function mouseUpEvent() {
         editing = false;     
         draggedTaskObject.value = undefined;
         emit('onDraggedTaskChange', draggedTaskObject.value);
-        console.log(changedTasks);
+        
         saveTask(selectedTask);
+        changedTasks = [];
     }
     
     dragStatus = DragStatus.None;
