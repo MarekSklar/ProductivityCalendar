@@ -10,57 +10,36 @@ const pPassword = ref("");
 const pFailed = ref("");
 const files = ref();
 
-const { data: profiles } = await useFetch('/api/profiles/profilesList', { method: 'post' });
-
-function handleFile(e, item) {
-  files.value = e.target.files;
-}
+const profiles = await fetchAllProfiles();
 
 const addProfile = async () => {
-    if (profiles.value === null || pName.value === "" || pEmail.value === "" || pPassword.value === "")
+    if (profiles === null || pName.value === "" || pEmail.value === "" || pPassword.value === "")
         return;
 
     let upload;
+    // set custom profile image
     if (files.value) {
-        const fd = new FormData();
-        Array.from(files.value).map((file, index) => {
-            fd.append(index, file);
-        });
-
-        upload = await $fetch('/api/upload', {
-            method: 'post',
-            body: fd,
-        });
+        upload = await fetchUploadProfileImages(files.value);
 
         if (upload === undefined || upload === null || upload.length === 0) {
             pFailed.value = "Invalid format.";
             return;
         }
-    }
-    else {
+    } else { // set default profile image
         upload[0] = 'default';
         upload[1] = 'default';
     }
     
+    const profile = await fetchRegister(
+        pName.value,
+        pEmail.value,
+        pPassword.value,
+        upload[0],
+        upload[1]
+    );
 
-    const profile = await $fetch('/api/profiles/profilesCreate', {
-        method: 'post',
-        body: {
-            name: pName.value,
-            email: pEmail.value,
-            password: pPassword.value,
-            pfpPath256: upload[0],
-            pfpPath48: upload[1],
-            sessionToken: "null",
-        }
-    });
-    if (profile === undefined)
-        pFailed.value = "Your E-Mail is already registered.";
-    else {
-        pFailed.value = "";
-
-        await navigateTo('/login');
-    }
+    if (profile === undefined) pFailed.value = "Your E-Mail is already registered.";
+    else login(pEmail.value, pPassword.value, profiles); // login
 };
 
 </script>
@@ -71,6 +50,8 @@ const addProfile = async () => {
             <h1 class="header text-2xl">Welcome!</h1>
             <div class="flex flex-col justify-center items-center w-full h-full">
                 <div class="flex flex-col justify-between">
+
+                    <!-- form -->
                     <form @submit.prevent class="flex flex-col gap-3">
                         <div class="input-box">
                             <label for="lname">Full name<span class="requiredAsterisk">*</span></label>
@@ -89,13 +70,16 @@ const addProfile = async () => {
                         
                         <div class="input-box">
                             <label for="image">Your image</label>
-                            <input @change="handleFile($event, item)" type="file" class="file:hidden w-1/2 text-gray-700 cursor-pointer">
+                            <input @change="files = handleInputFile($event, item)" type="file" class="file:hidden w-1/2 text-gray-700 cursor-pointer">
                         </div>
 
+                        <!-- submit button -->
                         <div class="flex justify-center w-full">
                             <button @click="addProfile" class="primaryButton w-4/5 mt-4 px-4 py-2">Register</button>
                         </div>
                     </form>
+
+                    <!-- fail message -->
                     {{ pFailed }}
                 </div>
             </div>

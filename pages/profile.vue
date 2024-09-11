@@ -1,17 +1,11 @@
 <script setup lang="ts">
 
-const sessionToken = useCookie<string>('sessionToken');
-if (!sessionToken.value || sessionToken.value === null) navigateTo('/invalidSession');
+// session token
+const sessionToken = getSessionToken();
+navigateToInvalidSessionPage(sessionToken);
 
-const { data: profileData } = await useFetch('/api/profiles/profileGet', { method: 'post', body: { sessionToken: sessionToken.value }});
-const profile = profileData.value?.at(0) as Profile;
-
-let pfpPath = '';
-if (profile)
-    pfpPath = profile.pfpPath256;
-
-const { data: pfp } = await useFetch('/api/getImage', { method: 'post', body: { path: pfpPath }});
-const pfpFormat = pfpPath.split('.').pop();
+const profile = await fetchProfile(sessionToken);
+const profileImage = await fetchProfileImage(profile ? profile.pfpPath256 : "");
 
 </script>
 
@@ -19,7 +13,7 @@ const pfpFormat = pfpPath.split('.').pop();
     <div v-if="sessionToken && sessionToken !== 'null'" class="simpleCardBox">
         <div class="card">
             <div class="flex justify-center items-center gap-6 w-full h-full">
-                <img :src="'data:image/' + pfpFormat + ';base64,' + pfp" class="size-36 rounded-full object-cover"/>
+                <img :src="'data:image/' + profileImage.format + ';base64,' + profileImage.data" class="size-36 rounded-full object-cover"/>
                 <div class="flex flex-col gap-4">
                     <div class="info-box">
                         <SvgPerson class="info-icon fill-gray-600 dark:fill-gray-100" />

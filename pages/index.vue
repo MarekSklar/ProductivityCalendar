@@ -1,20 +1,13 @@
 <script setup lang="ts">
-import resolveConfig from 'tailwindcss/resolveConfig';
-import tailwindConfig from '@/tailwind.config';
 
-const fullConfig = resolveConfig(tailwindConfig);
-const colorWhite = fullConfig.theme.colors.white;
-const colorGray = fullConfig.theme.colors.gray;
+// session token
+const sessionToken = getSessionToken();
+navigateToInvalidSessionPage(sessionToken);
 
-const Title = "Timeline Title";
+// tailwind config
+const tw = getTwConfig();
 
-let pending = true;
-
-
-const sessionToken = useCookie<string>('sessionToken');
-if (!sessionToken.value || sessionToken.value === null) navigateTo('/invalidSession');
-const { data: profileData } = await useFetch('/api/profiles/profileGet', { method: 'post', body: { sessionToken: sessionToken.value }});
-const profile = profileData.value?.at(0);
+const profile = await fetchProfile(sessionToken);
 const startDragPosX = ref(0);
 const relativeDragPos = ref(0);
 const calendarDragPos = ref(0);
@@ -36,7 +29,6 @@ const columnWidth = 56;
 const weekendOffset = ref(weekOffset.value - (todayWeekDay.value - 2) * columnWidth);
 
 // mouse events
-
 async function mouseDownEvent(event: MouseEvent) { // get rid of Dragging enum
     if (event.button === 1) {
         startDragPosX.value = event.screenX;
@@ -120,9 +112,9 @@ onMounted(() => {
 
 <template>
     <div v-if="sessionToken && sessionToken !== 'null'" class="flex flex-col w-full h-screen"
-    :style="{backgroundImage: `repeating-linear-gradient(to right, ${colorWhite} ${weekendOffset}px, ${colorWhite} ${2+weekendOffset}px, ${colorGray[50]} ${2+weekendOffset}px, ${colorGray[50]} ${112+weekendOffset}px, ${colorWhite} ${112+weekendOffset}px, ${colorWhite} ${392+weekendOffset}px)`}">
+    :style="{backgroundImage: `repeating-linear-gradient(to right, ${tw.colors.white} ${weekendOffset}px, ${tw.colors.white} ${2+weekendOffset}px, ${tw.colors.gray[50]} ${2+weekendOffset}px, ${tw.colors.gray[50]} ${112+weekendOffset}px, ${tw.colors.white} ${112+weekendOffset}px, ${tw.colors.white} ${392+weekendOffset}px)`}">
         <!-- Top date panel -->
-        <CalendarDates :Title = "Title" :datesOffset = "datesOffset" :columnWidth = "columnWidth" :screenSizeWidth = "screenSize.width" :datesPos = "datesPos" />
+        <CalendarDates :datesOffset = "datesOffset" :columnWidth = "columnWidth" :screenSizeWidth = "screenSize.width" :datesPos = "datesPos" />
 
         <div class="relative flex-auto min-w-full h-full">
             <!-- Task edit menu -->

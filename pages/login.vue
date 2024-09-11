@@ -8,31 +8,11 @@ const pEmail = ref("");
 const pPassword = ref("");
 const pFailed = ref("");
 
-const { data: profiles } = await useFetch('/api/profiles/profilesList', { method: 'post' });
+const profiles = await fetchAllProfiles();
 
-const login = async() => {
-    if (profiles.value === null)
-        return;
-
-    const login = await $fetch(`/api/profiles/login`, {
-        method: 'post',
-        body: {
-            email: pEmail.value,
-            password: pPassword.value
-        }
-    });
-
-    if (login === undefined) {
-        pFailed.value = "Your E-Mail or password is incorrect.";
-    }
-    else {
-        pFailed.value = "";
-        const sessionToken = useCookie("sessionToken");
-        sessionToken.value = login;
-        navigateTo('/');
-    }
-};
-
+async function loginLocal() {
+    pFailed.value = await login(pEmail.value, pPassword.value, profiles);
+}
 </script>
 
 <template>
@@ -41,6 +21,8 @@ const login = async() => {
             <h1 class="header text-2xl">Welcome back!</h1>
             <div class="flex flex-col justify-center items-center w-full h-full">
                 <div class="flex flex-col justify-between">
+
+                    <!-- form -->
                     <form @submit.prevent class="flex flex-col gap-3">
                         <div class="input-box">
                             <label for="email">Email<span class="requiredAsterisk">*</span></label>
@@ -52,11 +34,14 @@ const login = async() => {
                             <input v-model="pPassword" type="password">
                         </div>
 
+                        <!-- submit button -->
                         <div class="flex justify-center w-full">
-                            <button @click="login" class="primaryButton w-4/5 mt-4 px-4 py-2">Login</button>
+                            <button @click="loginLocal()" class="primaryButton w-4/5 mt-4 px-4 py-2">Login</button>
                         </div>
                         
                     </form>
+
+                    <!-- fail message -->
                     {{ pFailed }}
                 </div>
             </div>
