@@ -37,7 +37,7 @@ const login = async() => {
 
 <template>
     <div class="simpleCardBox">
-        <div class="card gap-8 px-20 py-12">
+        <div class="card">
             <h1 class="text-2xl text-gray-700 font-bold">Welcome back!</h1>
             <div class="flex flex-col justify-center items-center w-full h-full">
                 <div class="flex flex-col justify-between">

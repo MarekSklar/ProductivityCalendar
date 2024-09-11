@@ -5,7 +5,7 @@
 <template>
   <div class="simpleCardBox gap-6">
     <!-- login redirect -->
-    <div class="card gap-8 px-20 py-12">
+    <div class="card">
       <h2>Already have an account?</h2>
       <NuxtLink to="/login">
         <button class="px-6 py-3 rounded-md bg-green-200">Login</button>
