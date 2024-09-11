@@ -1,4 +1,10 @@
 <script setup lang="ts">
+import resolveConfig from 'tailwindcss/resolveConfig';
+import tailwindConfig from '@/tailwind.config';
+
+const fullConfig = resolveConfig(tailwindConfig);
+const colorWhite = fullConfig.theme.colors.white;
+const colorGray = fullConfig.theme.colors.gray;
 
 const Title = "Timeline Title";
 
@@ -113,16 +119,17 @@ onMounted(() => {
 </script>
 
 <template>
-    <div v-if="sessionToken && sessionToken !== 'null'" class="flex flex-col w-full h-screen">
+    <div v-if="sessionToken && sessionToken !== 'null'" class="flex flex-col w-full h-screen"
+    :style="{backgroundImage: `repeating-linear-gradient(to right, ${colorWhite} ${weekendOffset}px, ${colorWhite} ${2+weekendOffset}px, ${colorGray[50]} ${2+weekendOffset}px, ${colorGray[50]} ${112+weekendOffset}px, ${colorWhite} ${112+weekendOffset}px, ${colorWhite} ${392+weekendOffset}px)`}">
         <!-- Top date panel -->
         <CalendarDates :Title = "Title" :datesOffset = "datesOffset" :columnWidth = "columnWidth" :screenSizeWidth = "screenSize.width" :datesPos = "datesPos" />
 
-        <!-- Calendar -->
         <div class="relative flex-auto min-w-full h-full">
+            <!-- Task edit menu -->
             <CalendarTaskEdit ref="taskEditor" @taskEdited="onEditTask"/>
+            <!-- Calendar -->
             <div @mousedown="mouseDownEvent" @mousemove="mouseMoveEvent" @mouseup="mouseUpEvent"
                 class="w-full h-full overflow-x-hidden overflow-y-auto cursor-grab"
-                :style="{backgroundImage: `repeating-linear-gradient(to right, #fff ${weekendOffset}px, #fff ${2+weekendOffset}px, #e7e7e7 ${2+weekendOffset}px, #e7e7e7 ${112+weekendOffset}px, #fff ${112+weekendOffset}px, #fff ${392+weekendOffset}px)`}"
                 :class="{ 'cursor-grabbing': draggingCalendar }">
                 <CalendarSection @onDraggedTaskChange="onDraggedTaskChange" @taskEdit="taskEdit" @inactiveTaskEdit="inactiveTaskEdit" ref="sections" :columnWidth="columnWidth" :datesPos="datesPos" :calendarDragPos="calendarDragPos" :profile="profile"/>            
             </div>

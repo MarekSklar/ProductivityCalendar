@@ -61,6 +61,7 @@ export default {
         "wfa": "-webkit-fill-available"
       },
       spacing: {
+        "1px": "1px",
         112: "28rem",
         128: "32rem",
         160: "40rem",

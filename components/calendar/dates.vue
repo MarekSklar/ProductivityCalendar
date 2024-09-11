@@ -33,15 +33,20 @@ Date.prototype.getWeek = function() {
 </script>
 
 <template>
-  <div class="py-4 shadow-md">
-    <div class="relative flex justify-center w-full pt-16 pb-2 overflow-hidden">
-      <p class="py-0.5 opacity-0">Dates</p>
+  <div class="shadow-md bg-white">
+    <div class="relative flex justify-center w-full pt-10 pb-12 overflow-hidden">
       <div class="absolute z-10 flex" :style="{left: props.datesOffset! - 5 * props.columnWidth! + 'px'}">
-        <div v-for="date in Math.ceil(props.screenSizeWidth! / props.columnWidth! + 20)" class="w-14 text-center text-gray-500 font-bold">
+        <div v-for="date in Math.ceil(props.screenSizeWidth! / props.columnWidth! + 20)" class="relative w-14 text-center text-gray-500 font-bold">
+          <!-- month + year -->
+          <div v-if="getDate(getDateNum(date)).getDate() === 1" class="absolute -top-6 -left-12 flex flex-col items-center w-40 ">
+            <p class="text-xs text-red-400">{{ getDate(getDateNum(date)).toLocaleString('default', { month: 'long' }) + (!getDate(getDateNum(date)).getMonth() ? ("\n" + getDate(getDateNum(date)).getFullYear()) : "") }}</p>
+            <SvgTriangleDown class="size-5 -mt-1 fill-red-300" />
+          </div>
           <!-- week number -->
-          <p v-if="getDate(getDateNum(date)).getMonth() === 0 && getDate(getDateNum(date)).getDate() === 1" class="absolute -top-16">{{ getDate(getDateNum(date)).getFullYear() }}</p>
-          <p v-if="getDate(getDateNum(date)).getDate() === 1" class="absolute -top-10">{{ getDate(getDateNum(date)).toLocaleString('default', { month: 'long' }) }}</p>
-          <p v-if="getDate(getDateNum(date)).getDay() === 1" class="absolute -top-5">{{ getDate(getDateNum(date)).getWeek() }}</p>
+           <div v-if="getDate(getDateNum(date)).getDay() === 1" class="absolute -top-2 -left-2 flex flex-col items-center w-4">
+            <p class="text-xs text-gray-600 font-extralight">{{ getDate(getDateNum(date)).getWeek() }}</p>
+            <div class="w-1px h-4 bg-gray-300"></div>
+           </div>
           <!-- date -->
           <p :class="{
             'text-gray-300': getDate(getDateNum(date)).getDay() === 0 || getDate(getDateNum(date)).getDay() === 6,
