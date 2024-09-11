@@ -18,12 +18,16 @@ let taskEditor = ref(null);
 let draggedTaskObject = ref();
 let draggingCalendar: boolean = false;
 
+// time vatiables
 const datesOffset = ref(0);
 const weekOffset = ref(0);
 const datesPos = ref(0);
+const todayWeekDay = ref(new Date().getDay());
 
+// render variables
 const screenSize = ref({width: 1920, height: 1080});
 const columnWidth = 56;
+const weekendOffset = ref(weekOffset.value - (todayWeekDay.value - 2) * columnWidth);
 
 // mouse events
 
@@ -48,6 +52,7 @@ function mouseMoveEvent(event: MouseEvent) {
         
         datesOffset.value = calendarDragPos.value % columnWidth;
         weekOffset.value = calendarDragPos.value % (columnWidth*7);
+        weekendOffset.value = weekOffset.value - (todayWeekDay.value - 2) * columnWidth;
         datesPos.value = calendarDragPos.value / columnWidth < 0 ? Math.ceil(calendarDragPos.value / columnWidth) : Math.floor(calendarDragPos.value / columnWidth);        
     }
 }
@@ -117,7 +122,7 @@ onMounted(() => {
             <CalendarTaskEdit ref="taskEditor" @taskEdited="onEditTask"/>
             <div @mousedown="mouseDownEvent" @mousemove="mouseMoveEvent" @mouseup="mouseUpEvent"
                 class="w-full h-full overflow-x-hidden overflow-y-auto cursor-grab"
-                :style="{backgroundImage: `repeating-linear-gradient(to right, #fff ${weekOffset}px, #fff ${2+weekOffset}px, #e7e7e7 ${2+weekOffset}px, #e7e7e7 ${112+weekOffset}px, #fff ${112+weekOffset}px, #fff ${392+weekOffset}px)`}"
+                :style="{backgroundImage: `repeating-linear-gradient(to right, #fff ${weekendOffset}px, #fff ${2+weekendOffset}px, #e7e7e7 ${2+weekendOffset}px, #e7e7e7 ${112+weekendOffset}px, #fff ${112+weekendOffset}px, #fff ${392+weekendOffset}px)`}"
                 :class="{ 'cursor-grabbing': draggingCalendar }">
                 <CalendarSection @onDraggedTaskChange="onDraggedTaskChange" @taskEdit="taskEdit" @inactiveTaskEdit="inactiveTaskEdit" ref="sections" :columnWidth="columnWidth" :datesPos="datesPos" :calendarDragPos="calendarDragPos" :profile="profile"/>            
             </div>

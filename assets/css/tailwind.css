@@ -8,7 +8,7 @@
     }
 
     .card {
-        @apply flex flex-col items-center rounded-xl shadow-lg bg-white dark:bg-gray-800 dark:shadow-md;
+        @apply flex flex-col items-center gap-8 px-20 py-12 rounded-xl shadow-lg bg-white dark:bg-gray-800 dark:shadow-md;
     }
 
     .primaryButton {
