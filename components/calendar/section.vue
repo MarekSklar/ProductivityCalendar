@@ -206,7 +206,6 @@ function fixRow(task: Task, ignoreUUIDs: string[] = [], fromDate: CDate = undefi
     else
         isInvalid = !invalidRow(task.row - 1, task.uuid, tempFromDate, tempToDate);
     
-    console.log(task.row, isInvalid);
     while(task.row - 1 >= 0 && isInvalid) {
         changeRow(task.uuid, task.row, task.row - 1);
         taskIntervals[task.row].delete(task.uuid);
@@ -216,8 +215,8 @@ function fixRow(task: Task, ignoreUUIDs: string[] = [], fromDate: CDate = undefi
         if(!changedTasks.includes(task))
             changedTasks.push(task);
         
-        for(let i = Math.max(task.row, 1); i < rows.value.length; i++) {
-            if(invalidRow(i, task.uuid, tempFromDate, tempToDate) && invalidRow(i - 1, task.uuid, tempFromDate, tempToDate)) { // optimize by prevInvalid
+        for(let i = Math.max(task.row + 2, 1); i < rows.value.length; i++) {            
+            if(invalidRow(i, task.uuid, tempFromDate, tempToDate)) { // optimize by prevInvalid
                 findTasksInRow(i, tempFromDate, tempToDate).forEach((taskUUID) => {
                     let newTask: Task = findTaskByUUID(i, taskUUID);
                     
@@ -439,8 +438,6 @@ async function mouseMoveEvent(mousePageX: number, mousePageY: number) { // TODO:
                 let alreadyChangedTaskUUIDs: string[] = [];
 
                 for(let i = selectedTask.row + 1; i < rows.value.length; i++) {
-                    let leave: boolean = !invalidRow(i + 1, selectedTask.uuid, tempFromDate, tempToDate);
-                    
                     if(invalidRow(i, selectedTask.uuid, tempFromDate, tempToDate)) {
                         if(i === rows.value.length - 1) {
                             rows.value.push([]);
@@ -452,7 +449,8 @@ async function mouseMoveEvent(mousePageX: number, mousePageY: number) { // TODO:
                             
                             if(task && !alreadyChangedTaskUUIDs.includes(task.uuid)) {
                                 tempFromDate = CDateToTimestamp(task.fromDate) < CDateToTimestamp(tempFromDate) ? task.fromDate : tempFromDate;
-                                tempToDate = CDateToTimestamp(task.toDate) > CDateToTimestamp(tempToDate) ? task.toDate : tempToDate;
+                                tempToDate = CDateToTimestamp(task.toDate) > CDateToTimestamp(tempToDate) ? task.toDate : tempToDate;                                
+
                                 changeRow(task.uuid, i, i + 1);
                                 taskIntervals[i].delete(task.uuid);
                                 taskIntervals[i + 1].set(task.uuid, { from: CDateToDate(task.fromDate).getTime(), to: CDateToDate(task.toDate).getTime() });
@@ -465,7 +463,7 @@ async function mouseMoveEvent(mousePageX: number, mousePageY: number) { // TODO:
                         })
                     }
 
-                    if(leave)
+                    if(!invalidRowIgnoreUUIDs(i + 1, alreadyChangedTaskUUIDs, tempFromDate, tempToDate))
                         break;
                 }
                 
