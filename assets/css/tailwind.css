@@ -2,7 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+    font-family: 'Quicksand';
+    font-style: normal;
+    font-weight: normal;
+    src: url(../font/Quicksand/Quicksand-VariableFont_wght.ttf) format('truetype');
+}
+
 @layer base {
+
+    .header {
+        @apply text-xl text-center text-gray-900 font-Quicksand font-bold;
+    }
+
     .simpleCardBox {
         @apply flex items-center justify-center w-screen h-screen bg-gray-50 dark:bg-gray-900;
     }
@@ -12,11 +24,19 @@
     }
 
     .primaryButton {
+        @apply px-6 py-3 rounded-md bg-red-600 font-Quicksand font-bold text-white;
+    }
 
+    .primaryButton:hover {
+        @apply outline outline-2 outline-red-600 bg-white text-red-600;
     }
 
     .secondaryButton {
 
+    }
+
+    .requiredAsterisk {
+        @apply ml-1 font-semibold text-red-400;
     }
 }
 

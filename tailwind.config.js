@@ -53,6 +53,9 @@ export default {
       "black": "#000",
       "transparent": "transparent"
     },
+    fontFamily: {
+      Quicksand: ["Quicksand", "sans-serif"]
+    },
     extend: {
       width: {
         "wfa": "-webkit-fill-available"

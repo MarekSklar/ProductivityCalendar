@@ -37,23 +37,23 @@ const login = async() => {
 
 <template>
     <div class="simpleCardBox">
-        <div class="card">
-            <h1 class="text-2xl text-gray-700 font-bold">Welcome back!</h1>
+        <div class="card gap-8">
+            <h1 class="header text-2xl">Welcome back!</h1>
             <div class="flex flex-col justify-center items-center w-full h-full">
                 <div class="flex flex-col justify-between">
                     <form @submit.prevent class="flex flex-col gap-3">
                         <div class="input-box">
-                            <label for="email">Email<span class="ml-1 font-semibold text-red-300">*</span></label>
+                            <label for="email">Email<span class="requiredAsterisk">*</span></label>
                             <input v-model="pEmail" type="email" class="border-2 border-gray-200 rounded-md">
                         </div>
 
                         <div class="input-box">
-                            <label for="password">Password<span class="ml-1 font-semibold text-red-300">*</span></label>
+                            <label for="password">Password<span class="requiredAsterisk">*</span></label>
                             <input v-model="pPassword" type="password">
                         </div>
 
                         <div class="flex justify-center w-full">
-                            <button @click="login" class="w-4/5 mt-5 px-4 py-1 rounded-md bg-gray-400 hover:bg-gray-500 text-white">Login</button>
+                            <button @click="login" class="primaryButton w-4/5 mt-4 px-4 py-2">Login</button>
                         </div>
                         
                     </form>
