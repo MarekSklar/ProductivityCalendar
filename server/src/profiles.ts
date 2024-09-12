@@ -27,18 +27,19 @@ const profileGetByUUIDOptionsSchema = z.object({
 });
 
 export async function list(db: DatabaseConnection) {
-    return db.query(sql`SELECT * FROM profiles`);;
+    return db.query(sql`SELECT * FROM profiles`);
 }
 
 export async function add(db: DatabaseConnection, options: ProfileAddOptions) {
     const params = profileAddOptionsSchema.parse(options);
     const uuid = randomUUID();
+    let isPfpDefault = false;
 
-    if(params.pfpPath256 === 'default') {
+    if (params.pfpPath256 === 'default') {
+        isPfpDefault = true;
         params.pfpPath256 = path.join(process.cwd(), 'profilePics/default/256.jpg');
         params.pfpPath48 = path.join(process.cwd(), 'profilePics/default/48.jpg');
-    }
-    else {
+    } else {
         const format = params.pfpPath256.split('.').pop();
         const path256 = path.join(process.cwd(), 'profilePics/256_' + uuid + '.' + format);
         const path48 = path.join(process.cwd(), 'profilePics/48_' + uuid + '.' + format);
@@ -59,14 +60,15 @@ export async function add(db: DatabaseConnection, options: ProfileAddOptions) {
         sessionToken: params.sessionToken
     };
 
-    if((await db.query(sql`SELECT * FROM profiles WHERE email = ${params.email}`)).length > 0)
+    if ((await db.query(sql`SELECT * FROM profiles WHERE email = ${params.email}`)).length > 0)
     {
-        fs.unlinkSync(params.pfpPath256);
-        fs.unlinkSync(params.pfpPath48);
+        if (!isPfpDefault) {
+            fs.unlinkSync(params.pfpPath256);
+            fs.unlinkSync(params.pfpPath48);
+        }
         return;
-    }
-    else
-    {
+        
+    } else {
         await db.query(sql`INSERT INTO profiles (
                 uuid,
                 name,

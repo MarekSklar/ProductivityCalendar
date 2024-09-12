@@ -7,7 +7,10 @@ navigateToInvalidSessionPage(sessionToken);
 // tailwind config
 const tw = getTwConfig();
 
+const profiles = await fetchAllProfiles();
 const profile = await fetchProfile(sessionToken);
+const pfps = await fetchAllProfileImages();
+
 const startDragPosX = ref(0);
 const relativeDragPos = ref(0);
 const calendarDragPos = ref(0);
@@ -123,7 +126,7 @@ onMounted(() => {
 
         <div class="relative flex-auto min-w-full h-full">
             <!-- Task edit menu -->
-            <CalendarTaskEdit ref="taskEditor" @taskEdited="onEditTask" @createdTask="onCreatedTask"/>
+            <CalendarTaskEdit ref="taskEditor" @taskEdited="onEditTask" :session-token="sessionToken" :profiles="profiles" :profile="profile" :pfps="pfps"/>
             <!-- Calendar -->
             <div @mousedown="mouseDownEvent" @mousemove="mouseMoveEvent" @mouseup="mouseUpEvent"
                 class="w-full h-full overflow-x-hidden overflow-y-auto cursor-grab"

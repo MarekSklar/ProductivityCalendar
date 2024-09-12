@@ -5,7 +5,7 @@ const sessionToken = getSessionToken();
 navigateToInvalidSessionPage(sessionToken);
 
 const profiles = await fetchAllProfiles();
-const profileImages = await fetchAllPtofileImages();
+const profileImages = await fetchAllProfileImages();
 
 </script>
 

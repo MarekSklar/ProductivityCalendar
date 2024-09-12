@@ -5,6 +5,13 @@ defineExpose({
     onTaskChange, onInactiveTask, hideEditor, showEditor
 });
 
+const props = defineProps({
+  sessionToken: String,
+  profiles: Object,
+  profile: Object,
+  pfps: Object
+});
+
 const tColor = ref("#977aff");
 const tName = ref("");
 const tStatus = ref("No status");
@@ -25,6 +32,10 @@ let editedTask: Task;
 let editorVisibility = ref(false);
 let nameTimerRunning: boolean = false;
 let editTaskTimerRunning: boolean = false;
+
+// TODO: PROPS
+
+profilesInactive.value = props.profiles as Profile[];
 
 async function onTaskChange(task: Task) {
     const fromDate = new Date(task.fromDate.year, task.fromDate.month - 1, task.fromDate.day);
@@ -69,8 +80,8 @@ async function showEditor() {
     editorVisibility.value = true;
 }
 
-const createTask = async () => {
-    if(!profiles.value || !profile || !sessionToken.value)
+const editName = async () => {
+    if (!props.profiles || !props.profile || !props.sessionToken || nameTimerRunning)
         return;
 
     const dateFromFormat = tDateFrom.value.split('-');
@@ -150,7 +161,7 @@ const editName = async () => {
 }
 
 const editTask = async () => { // TODO: [(fix from and to date edits, can be invalid), moving tasks dont have updated time)]
-    if (!profiles.value || !profile || !sessionToken.value || editTaskTimerRunning)
+    if (!props.profiles || !props.profile || !props.sessionToken || editTaskTimerRunning)
         return;
 
     editTaskTimerRunning = true;
@@ -185,15 +196,6 @@ const editTask = async () => { // TODO: [(fix from and to date edits, can be inv
     }, 50);  
 };
 
-
-// TODO: PROPS
-const sessionToken = useCookie<string>('sessionToken');
-const { data: profiles } = await useFetch('/api/profiles/profilesList', { method: 'post' });
-profilesInactive.value = profiles.value as Profile[];
-const { data: profileData } = await useFetch('/api/profiles/profileGet', { method: 'post', body: { sessionToken: sessionToken.value }});
-const profile = profileData.value?.at(0);
-
-
 function removeProfile(profile: Profile) {
     profilesInactive.value.push(profile);
     profilesActive.value = profilesActive.value.filter(elmnt => elmnt.uuid !== profile.uuid);
@@ -201,7 +203,6 @@ function removeProfile(profile: Profile) {
     profilesActive.value.forEach(activeProfile => {
         tAssignees.value.push(activeProfile.uuid);
     });
-    console.log(profilesActive, profilesInactive);
 }
 
 function addProfile(profile: Profile) {
@@ -211,7 +212,6 @@ function addProfile(profile: Profile) {
     tAssignees.value.push(profile.uuid);
 }
 
-const { data: pfps } = await useFetch('/api/getAllImages', { method: 'post' });
 </script>
 
 <template>
@@ -262,7 +262,7 @@ const { data: pfps } = await useFetch('/api/getAllImages', { method: 'post' });
                                     <ul :class="{ hidden: !profilesActive.length }" class="flex flex-col gap-1">
                                         <li v-for="profile in profilesActive" @click="removeProfile(profile); editTask();" class="flex justify-between items-center text-ellipsis cursor-pointer">
                                             <div class="flex items-center gap-3">
-                                                <img v-if="pfps![profile.uuid]" :src="'data:image/jpg;base64,' + pfps![profile.uuid]" class="size-7 rounded-full object-cover">
+                                                <img v-if="props.pfps![profile.uuid]" :src="'data:image/jpg;base64,' + props.pfps![profile.uuid]" class="size-7 rounded-full object-cover">
                                                 <span>{{ profile.name }}</span>
                                             </div>
                                             <SvgCheck class="size-6" />
@@ -271,7 +271,7 @@ const { data: pfps } = await useFetch('/api/getAllImages', { method: 'post' });
                                     <div v-if="profilesActive.length > 0" class="h-0.5 my-2 mr-2 bg-gray-200"></div>
                                     <ul class="flex flex-col gap-1">
                                         <li v-if="profilesInactive.length > 0" v-for="profile in profilesInactive" @click="addProfile(profile); editTask();" class="flex items-center gap-3 text-ellipsis cursor-pointer">
-                                            <img v-if="pfps![profile.uuid]" :src="'data:image/jpg;base64,' + pfps![profile.uuid]" class="size-7 rounded-full object-cover">
+                                            <img v-if="props.pfps![profile.uuid]" :src="'data:image/jpg;base64,' + props.pfps![profile.uuid]" class="size-7 rounded-full object-cover">
                                             <span>{{ profile.name }}</span>
                                         </li>
                                         <p v-else>No assignees left</p>

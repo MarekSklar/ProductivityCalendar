@@ -1,6 +1,4 @@
 import { useDark, useToggle } from '@vueuse/core';
 
 const isDark = useDark();
-export function toggleDark() {
-    useToggle(isDark);
-}
+export const toggleDark = useToggle(isDark);
