@@ -1,15 +1,15 @@
-<script setup lang="ts">
+script setup lang="ts">
 
-const emit = defineEmits(['closeEdit', 'taskEdited, createdTask']);
+const emit = defineEmits(['closeEdit', 'taskEdited', 'createdTask']);
 defineExpose({
     onTaskChange, onInactiveTask, hideEditor, showEditor
 });
 
 const props = defineProps({
-  sessionToken: String,
-  profiles: Object,
-  profile: Object,
-  pfps: Object
+    sessionToken: String,
+    profiles: Object,
+    profile: Object,
+    pfps: Object
 });
 
 const tColor = ref("#977aff");
@@ -26,16 +26,13 @@ const createdBy = ref("");
 let inactiveTask: InactiveTask;
 
 const profilesActive = ref([] as Profile[]);
-const profilesInactive = ref([] as Profile[]);
+const profilesInactive = ref(props.profile as Profile[]);
 
 let editedTask: Task;
 let editorVisibility = ref(false);
 let nameTimerRunning: boolean = false;
 let editTaskTimerRunning: boolean = false;
 
-// TODO: PROPS
-
-profilesInactive.value = props.profiles as Profile[];
 
 async function onTaskChange(task: Task) {
     const fromDate = new Date(task.fromDate.year, task.fromDate.month - 1, task.fromDate.day);
@@ -80,7 +77,7 @@ async function showEditor() {
     editorVisibility.value = true;
 }
 
-const editName = async () => {
+const createTask = async () => {
     if (!props.profiles || !props.profile || !props.sessionToken || nameTimerRunning)
         return;
 
@@ -96,7 +93,7 @@ const editName = async () => {
             status: tStatus.value,
             fromDate: { day: dateFromFormat[2], month: dateFromFormat[1], year: dateFromFormat[0] },
             toDate: { day: dateToFormat[2], month: dateToFormat[1], year: dateToFormat[0] },
-            createdBy: profile.name,
+            createdBy: props.profile.name,
             assignees: tAssignees.value,
             description: tDescription.value
         }
@@ -104,28 +101,9 @@ const editName = async () => {
     
     return task;
 };
-/*
-const dateFromFormat = tDateFrom.value.split('-');
-        const dateToFormat = tDateTo.value.split('-');       
-        editTaskTimerRunning = false;
-
-        await $fetch('/api/tasks/taskEdit', {
-            method: 'post',
-            body: {
-                uuid: editedTask.uuid,
-                color: tColor.value,
-                name: tName.value,
-                row: editedTask.row,
-                status: tStatus.value,
-                fromDate: { day: dateFromFormat[2], month: dateFromFormat[1], year: dateFromFormat[0] },
-                toDate: { day: dateToFormat[2], month: dateToFormat[1], year: dateToFormat[0] },
-                createdBy: editedTask.createdBy,
-                assignees: tAssignees.value,
-                description: tDescription.value
-            }*/
 
 const editName = async () => {
-    if (!profiles.value || !profile || !sessionToken.value || nameTimerRunning)
+    if (!props.profiles || !props.profile || !props.sessionToken || nameTimerRunning)
         return;
 
     nameTimerRunning = true;
@@ -161,7 +139,7 @@ const editName = async () => {
 }
 
 const editTask = async () => { // TODO: [(fix from and to date edits, can be invalid), moving tasks dont have updated time)]
-    if (!props.profiles || !props.profile || !props.sessionToken || editTaskTimerRunning)
+    if (!props.profiles || !props.profile || !props.sessionToken || nameTimerRunning)
         return;
 
     editTaskTimerRunning = true;
@@ -196,6 +174,7 @@ const editTask = async () => { // TODO: [(fix from and to date edits, can be inv
     }, 50);  
 };
 
+
 function removeProfile(profile: Profile) {
     profilesInactive.value.push(profile);
     profilesActive.value = profilesActive.value.filter(elmnt => elmnt.uuid !== profile.uuid);
@@ -203,6 +182,7 @@ function removeProfile(profile: Profile) {
     profilesActive.value.forEach(activeProfile => {
         tAssignees.value.push(activeProfile.uuid);
     });
+    console.log(profilesActive, profilesInactive);
 }
 
 function addProfile(profile: Profile) {
@@ -212,6 +192,7 @@ function addProfile(profile: Profile) {
     tAssignees.value.push(profile.uuid);
 }
 
+const { data: pfps } = await useFetch('/api/getAllImages', { method: 'post' });
 </script>
 
 <template>
