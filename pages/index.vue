@@ -72,7 +72,12 @@ async function onEditTask(task: Task) {
         sections.value!.onEditTask(task);    
 }
 
-function taskEdit(task: Task) {
+async function onCreatedTask(task: Task) {
+    if(task && sections.value)
+        sections.value!.onCreateTask(task);
+}
+
+async function taskEdit(task: Task) {
     if(taskEditor.value)
     {
         if(task) {
@@ -85,7 +90,7 @@ function taskEdit(task: Task) {
     }
 }
 
-function inactiveTaskEdit(task: InactiveTask) {
+async function inactiveTaskEdit(task: InactiveTask) {
     if(taskEditor.value)
     {
         if(task) {
@@ -98,7 +103,7 @@ function inactiveTaskEdit(task: InactiveTask) {
     }
 }
 
-function onDraggedTaskChange(draggedTask: DraggedTask) {
+async function onDraggedTaskChange(draggedTask: DraggedTask) {
     draggedTaskObject.value = draggedTask;
 }
 
@@ -118,7 +123,7 @@ onMounted(() => {
 
         <div class="relative flex-auto min-w-full h-full">
             <!-- Task edit menu -->
-            <CalendarTaskEdit ref="taskEditor" @taskEdited="onEditTask"/>
+            <CalendarTaskEdit ref="taskEditor" @taskEdited="onEditTask" @createdTask="onCreatedTask"/>
             <!-- Calendar -->
             <div @mousedown="mouseDownEvent" @mousemove="mouseMoveEvent" @mouseup="mouseUpEvent"
                 class="w-full h-full overflow-x-hidden overflow-y-auto cursor-grab"

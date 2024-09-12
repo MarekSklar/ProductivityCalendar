@@ -61,3 +61,7 @@ interface TaskEditOptions {
     description: string,
     createdBy: string
 }
+
+interface TasksEditOptions {
+    tasks: Task[]
+}

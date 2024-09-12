@@ -27,6 +27,10 @@ const taskEditOptionsSchema = z.object({
     createdBy: z.string()
 });
 
+const tasksEditOptionsSchema = z.object({
+    tasks: z.any() // nevim jak to udelat pro objekt
+});
+
 export async function list(db: DatabaseConnection) {
     let tasks = db.query(sql`SELECT * FROM tasks`);
     (await tasks).forEach((task) => {
@@ -95,6 +99,7 @@ export async function edit(db: DatabaseConnection, options: TaskEditOptions) {
 
     let taskData = await db.query(sql`SELECT * FROM tasks WHERE uuid = ${params.uuid}`);
     let task: Task = taskData.at(0);
+    console.log(task);
     if(!task)
         return;
 
@@ -127,4 +132,44 @@ export async function edit(db: DatabaseConnection, options: TaskEditOptions) {
     task.assignees = taskData.at(0).assignees.split(',');
 
     return task;
+}
+
+export async function editArray(db: DatabaseConnection, options: TasksEditOptions) {
+    const params = tasksEditOptionsSchema.parse(options);
+    
+    params.tasks!.forEach(async (task: Task) => {
+        let taskData = await db.query(sql`SELECT * FROM tasks WHERE uuid = ${task.uuid}`);
+        if(!task)
+            return;
+
+        const sqlFromDate = task.fromDate.year + "-" + task.fromDate.month + "-" + task.fromDate.day;
+        const sqlToDate = task.toDate.year + "-" + task.toDate.month + "-" + task.toDate.day; 
+
+        await db.query(sql`UPDATE tasks SET
+            uuid = ${task.uuid},
+            color = ${task.color},
+            name = ${task.name},
+            row = ${task.row},
+            status = ${task.status},
+            fromDate = ${sqlFromDate},
+            toDate = ${sqlToDate},            
+            assignees = ${task.assignees?.toString()},
+            description = ${task.description},
+            createdBy = ${task.createdBy}
+            WHERE uuid = ${task.uuid}
+        `);
+
+        taskData = await db.query(sql`SELECT * FROM tasks WHERE uuid = ${task.uuid}`);
+        task = taskData.at(0);
+
+        const fromDates = taskData.at(0).fromDate.split('-');
+        task.fromDate = { day: fromDates[2], month: fromDates[1], year: fromDates[0] };
+
+        const toDates = taskData.at(0).toDate.split('-');
+        task.toDate = { day: toDates[2], month: toDates[1], year: toDates[0] };
+
+        task.assignees = taskData.at(0).assignees.split(',');
+    });
+
+    return params.tasks!;
 }

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-const emit = defineEmits(['closeEdit', 'taskEdited']);
+const emit = defineEmits(['closeEdit', 'taskEdited, createdTask']);
 defineExpose({
     onTaskChange, onInactiveTask, hideEditor, showEditor
 });
@@ -13,6 +13,10 @@ const tDateTo = ref("");
 const tAssignees = ref([] as string[]);
 const tDescription = ref("");
 const tFailed = ref("");
+
+const uuid = ref("");
+const createdBy = ref("");
+let inactiveTask: InactiveTask;
 
 const profilesActive = ref([] as Profile[]);
 const profilesInactive = ref([] as Profile[]);
@@ -34,6 +38,9 @@ async function onTaskChange(task: Task) {
     tAssignees.value = task.assignees!;
     tDescription.value = task.description;
 
+    uuid.value = task.uuid;
+    createdBy.value = task.createdBy;
+
     editedTask = task;
 }
 
@@ -48,6 +55,10 @@ async function onInactiveTask(task: InactiveTask) {
     tDateTo.value = `${toDate.getFullYear()}-${(toDate.getMonth() < 10 ? '0' : '') + (toDate.getMonth()+1).toString()}-${(toDate.getDate() < 10 ? '0' : '') + toDate.getDate().toString()}`;
     tAssignees.value = [];
     tDescription.value = "";
+
+    uuid.value = "-";
+    createdBy.value = "";
+    inactiveTask = task;
 }
 
 async function hideEditor() {
@@ -58,17 +69,36 @@ async function showEditor() {
     editorVisibility.value = true;
 }
 
-const editName = async () => {
-    if (!profiles.value || !profile || !sessionToken.value || nameTimerRunning)
+const createTask = async () => {
+    if(!profiles.value || !profile || !sessionToken.value)
         return;
 
-    nameTimerRunning = true;
-    setTimeout(async () => {
-        const dateFromFormat = tDateFrom.value.split('-');
+    const dateFromFormat = tDateFrom.value.split('-');
+    const dateToFormat = tDateTo.value.split('-');
+    
+    let task: Task = await $fetch('/api/tasks/tasksCreate', {
+        method: 'post',
+        body: {
+            color: tColor.value,
+            name: tName.value,
+            row: inactiveTask.row,
+            status: tStatus.value,
+            fromDate: { day: dateFromFormat[2], month: dateFromFormat[1], year: dateFromFormat[0] },
+            toDate: { day: dateToFormat[2], month: dateToFormat[1], year: dateToFormat[0] },
+            createdBy: profile.name,
+            assignees: tAssignees.value,
+            description: tDescription.value
+        }
+    });
+    
+    return task;
+};
+/*
+const dateFromFormat = tDateFrom.value.split('-');
         const dateToFormat = tDateTo.value.split('-');       
-        nameTimerRunning = false;
-        
-        await $fetch('/api/tasks/tasksEdit', {
+        editTaskTimerRunning = false;
+
+        await $fetch('/api/tasks/taskEdit', {
             method: 'post',
             body: {
                 uuid: editedTask.uuid,
@@ -81,8 +111,41 @@ const editName = async () => {
                 createdBy: editedTask.createdBy,
                 assignees: tAssignees.value,
                 description: tDescription.value
-            }
-        }).then((task) => emit('taskEdited', task)).catch(err => {});    
+            }*/
+
+const editName = async () => {
+    if (!profiles.value || !profile || !sessionToken.value || nameTimerRunning)
+        return;
+
+    nameTimerRunning = true;
+    setTimeout(async () => {
+        if(!editedTask) {
+            createTask().then(async (task) => {
+                emit("createdTask", task);              
+                onTaskChange(task); 
+            });
+        }
+        else {
+            const dateFromFormat = tDateFrom.value.split('-');
+            const dateToFormat = tDateTo.value.split('-');       
+            nameTimerRunning = false;
+            
+            await $fetch('/api/tasks/taskEdit', {
+                method: 'post',
+                body: {
+                    uuid: editedTask.uuid,
+                    color: tColor.value,
+                    name: tName.value,
+                    row: editedTask.row,
+                    status: tStatus.value,
+                    fromDate: { day: dateFromFormat[2], month: dateFromFormat[1], year: dateFromFormat[0] },
+                    toDate: { day: dateToFormat[2], month: dateToFormat[1], year: dateToFormat[0] },
+                    createdBy: editedTask.createdBy,
+                    assignees: tAssignees.value,
+                    description: tDescription.value
+                }
+            }).then((task) => emit('taskEdited', task)).catch(err => {});  
+    }      
     }, 2000);
 }
 
@@ -92,25 +155,33 @@ const editTask = async () => { // TODO: [(fix from and to date edits, can be inv
 
     editTaskTimerRunning = true;
     setTimeout(async () => {
-        const dateFromFormat = tDateFrom.value.split('-');
-        const dateToFormat = tDateTo.value.split('-');       
-        editTaskTimerRunning = false;
+        if(!editedTask) {
+            createTask().then(async (task) => {
+                emit("createdTask", task);              
+                onTaskChange(task); 
+            });
+        }
+        else {
+            const dateFromFormat = tDateFrom.value.split('-');
+            const dateToFormat = tDateTo.value.split('-');       
+            editTaskTimerRunning = false;
 
-        await $fetch('/api/tasks/tasksEdit', {
-            method: 'post',
-            body: {
-                uuid: editedTask.uuid,
-                color: tColor.value,
-                name: tName.value,
-                row: editedTask.row,
-                status: tStatus.value,
-                fromDate: { day: dateFromFormat[2], month: dateFromFormat[1], year: dateFromFormat[0] },
-                toDate: { day: dateToFormat[2], month: dateToFormat[1], year: dateToFormat[0] },
-                createdBy: editedTask.createdBy,
-                assignees: tAssignees.value,
-                description: tDescription.value
-            }
-        }).then((task) => emit('taskEdited', task)).catch(err => {});
+            await $fetch('/api/tasks/taskEdit', {
+                method: 'post',
+                body: {
+                    uuid: editedTask.uuid,
+                    color: tColor.value,
+                    name: tName.value,
+                    row: editedTask.row,
+                    status: tStatus.value,
+                    fromDate: { day: dateFromFormat[2], month: dateFromFormat[1], year: dateFromFormat[0] },
+                    toDate: { day: dateToFormat[2], month: dateToFormat[1], year: dateToFormat[0] },
+                    createdBy: editedTask.createdBy,
+                    assignees: tAssignees.value,
+                    description: tDescription.value
+                }
+            }).then((task) => emit('taskEdited', task)).catch(err => {});
+        }
     }, 50);  
 };
 
@@ -121,33 +192,6 @@ const { data: profiles } = await useFetch('/api/profiles/profilesList', { method
 profilesInactive.value = profiles.value as Profile[];
 const { data: profileData } = await useFetch('/api/profiles/profileGet', { method: 'post', body: { sessionToken: sessionToken.value }});
 const profile = profileData.value?.at(0);
-
-
-
-
-/*
-const createTask = async () => {
-    if(!profiles.value || !profile || !sessionToken.value)
-        return;
-
-    const dateFromFormat = tDateFrom.value.split('-');
-    const dateToFormat = tDateTo.value.split('-');
-    
-    await $fetch('/api/tasks/tasksCreate', {
-        method: 'post',
-        body: {
-            color: tColor.value,
-            name: tName.value,
-            row: 0, // TODO
-            status: tStatus.value,
-            fromDate: { day: dateFromFormat[2], month: dateFromFormat[1], year: dateFromFormat[0] },
-            toDate: { day: dateToFormat[2], month: dateToFormat[1], year: dateToFormat[0] },
-            createdBy: profile.name,
-            assignees: tAssignees.value,
-            description: tDescription.value
-        }
-    });
-};*/
 
 
 function removeProfile(profile: Profile) {
@@ -174,7 +218,9 @@ const { data: pfps } = await useFetch('/api/getAllImages', { method: 'post' });
     <div v-if="editorVisibility" class="absolute right-0 z-30 w-128 h-full p-4 pl-6 bg-white shadow-lg">
         <div class="flex justify-between">
             <div class="flex items-start pt-1 text-xs font-semibold text-gray-500">
-                <span class="mr-0.5 font-bold">Created by {{ editedTask.createdBy }}</span> | {{ editedTask.uuid }}
+                <span v-if="createdBy === ''" class="mr-0.5 font-bold">Not saved</span> 
+                <span v-else class="mr-0.5 font-bold">Created by {{ createdBy }}</span>
+                | {{ uuid }}
             </div>
             <div @click="editorVisibility = false">
                 <SvgClose class="cursor-pointer"/>
