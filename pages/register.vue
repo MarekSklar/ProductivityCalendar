@@ -25,10 +25,11 @@ const addProfile = async () => {
             pFailed.value = "Invalid format.";
             return;
         }
-    } else { // set default profile image
+    } else { // set default profile image       
+        upload = [];
         upload[0] = 'default';
         upload[1] = 'default';
-    }
+    }    
     
     const profile = await fetchRegister(
         pName.value,
