@@ -19,11 +19,11 @@ export async function fetchAllProfiles() {
  - returns: object with data and format of image
 */
 export async function fetchProfileImage(path: any) {
+    
+    const pfp = await $fetch('/api/getImage', { method: 'post', body: { path }});
+    const pfpFormat: string = path.split('.').pop();
 
-    const { data: pfp } = await useFetch('/api/getImage', { method: 'post', body: { path }});
-    const pfpFormat: string = path.split('.').pop(); 
-
-    return {data: pfp.value as string, format: pfpFormat};
+    return {data: pfp as string, format: pfpFormat};
 }
 
 export async function fetchAllProfileImages() {
