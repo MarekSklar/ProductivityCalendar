@@ -34,15 +34,15 @@ async function loginLocal() {
                             <input v-model="pPassword" type="password">
                         </div>
 
+                        <!-- fail message -->
+                        <p class="text-center text-red-600">{{ pFailed }}</p>
+
                         <!-- submit button -->
                         <div class="flex justify-center w-full">
                             <button @click="loginLocal()" class="primaryButton w-4/5 mt-4 px-4 py-2">Login</button>
                         </div>
                         
                     </form>
-
-                    <!-- fail message -->
-                    {{ pFailed }}
                 </div>
             </div>
         </div>
