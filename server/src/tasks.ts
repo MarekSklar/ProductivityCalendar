@@ -63,8 +63,8 @@ export async function add(db: DatabaseConnection, options: TaskAddOptions) {
         createdBy: params.createdBy
     };
     
-    const sqlFromDate = task.fromDate.year + "-" + task.fromDate.month + "-" + task.fromDate.day;
-    const sqlToDate = task.toDate.year + "-" + task.toDate.month + "-" + task.toDate.day;
+    const sqlFromDate = task.fromDate.year + "-" + (task.fromDate.month < 10 ? "0" + task.fromDate.month : task.fromDate.month) + "-" + (task.fromDate.day < 10 ? "0" + task.fromDate.day : task.fromDate.day);
+    const sqlToDate = task.toDate.year + "-" + (task.toDate.month < 10 ? "0" + task.toDate.month : task.toDate.month) + "-" + (task.toDate.day < 10 ? "0" + task.toDate.day : task.toDate.day); 
 
     await db.query(sql`INSERT INTO tasks (
         uuid,
@@ -96,15 +96,15 @@ export async function add(db: DatabaseConnection, options: TaskAddOptions) {
 
 export async function edit(db: DatabaseConnection, options: TaskEditOptions) {
     const params = taskEditOptionsSchema.parse(options);
-
+    
     let taskData = await db.query(sql`SELECT * FROM tasks WHERE uuid = ${params.uuid}`);
     let task: Task = taskData.at(0);
-    console.log(task);
+    
     if(!task)
         return;
 
-    const sqlFromDate = params.fromDate.year + "-" + params.fromDate.month + "-" + params.fromDate.day;
-    const sqlToDate = params.toDate.year + "-" + params.toDate.month + "-" + params.toDate.day; 
+    const sqlFromDate = task.fromDate.year + "-" + (task.fromDate.month < 10 ? "0" + task.fromDate.month : task.fromDate.month) + "-" + (task.fromDate.day < 10 ? "0" + task.fromDate.day : task.fromDate.day);
+    const sqlToDate = task.toDate.year + "-" + (task.toDate.month < 10 ? "0" + task.toDate.month : task.toDate.month) + "-" + (task.toDate.day < 10 ? "0" + task.toDate.day : task.toDate.day); 
 
     await db.query(sql`UPDATE tasks SET
         uuid = ${params.uuid},
@@ -130,7 +130,6 @@ export async function edit(db: DatabaseConnection, options: TaskEditOptions) {
     task.toDate = { day: toDates[2], month: toDates[1], year: toDates[0] };
 
     task.assignees = taskData.at(0).assignees.split(',');
-
     return task;
 }
 
@@ -142,8 +141,8 @@ export async function editArray(db: DatabaseConnection, options: TasksEditOption
         if(!task)
             return;
 
-        const sqlFromDate = task.fromDate.year + "-" + task.fromDate.month + "-" + task.fromDate.day;
-        const sqlToDate = task.toDate.year + "-" + task.toDate.month + "-" + task.toDate.day; 
+        const sqlFromDate = task.fromDate.year + "-" + (task.fromDate.month < 10 ? "0" + task.fromDate.month : task.fromDate.month) + "-" + (task.fromDate.day < 10 ? "0" + task.fromDate.day : task.fromDate.day);
+        const sqlToDate = task.toDate.year + "-" + (task.toDate.month < 10 ? "0" + task.toDate.month : task.toDate.month) + "-" + (task.toDate.day < 10 ? "0" + task.toDate.day : task.toDate.day); 
 
         await db.query(sql`UPDATE tasks SET
             uuid = ${task.uuid},
