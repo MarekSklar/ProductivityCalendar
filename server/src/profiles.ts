@@ -27,7 +27,13 @@ const profileGetByUUIDOptionsSchema = z.object({
 });
 
 export async function list(db: DatabaseConnection) {
-    return db.query(sql`SELECT * FROM profiles`);
+    const profileList = await db.query(sql`SELECT * FROM profiles`);
+    for (let i = 0; i < profileList.length; i++) {
+        profileList[i].password = null;
+        profileList[i].sessionToken = null;
+    }
+
+    return profileList;
 }
 
 export async function add(db: DatabaseConnection, options: ProfileAddOptions) {
