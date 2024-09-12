@@ -79,6 +79,11 @@ async function onCreatedTask(task: Task) {
         sections.value!.onCreateTask(task);
 }
 
+async function onCloseEdit() {
+    if(sections.value)
+        sections.value!.onCloseEdit();
+}
+
 async function taskEdit(task: Task) {
     if(taskEditor.value)
     {
@@ -125,7 +130,7 @@ onMounted(() => {
 
         <div class="relative flex-auto min-w-full h-full">
             <!-- Task edit menu -->
-            <CalendarTaskEdit ref="taskEditor" @taskEdited="onEditTask" @createdTask="onCreatedTask" :session-token="sessionToken" :profiles="profiles!" :profile="profile" :pfps="pfps"/>
+            <CalendarTaskEdit ref="taskEditor" @taskEdited="onEditTask" @createdTask="onCreatedTask" @closeEdit="onCloseEdit" :session-token="sessionToken" :profiles="profiles!" :profile="profile" :pfps="pfps"/>
             <!-- Calendar -->
             <div @mousedown="mouseDownEvent" @mousemove="mouseMoveEvent" @mouseup="mouseUpEvent"
                 class="w-full h-full overflow-x-hidden overflow-y-auto cursor-grab"

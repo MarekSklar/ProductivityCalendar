@@ -35,14 +35,11 @@ let editTaskTimerRunning: boolean = false;
 
 
 async function onTaskChange(task: Task) {
-    const fromDate = new Date(task.fromDate.year, task.fromDate.month - 1, task.fromDate.day);
-    const toDate = new Date(task.toDate.year, task.toDate.month - 1, task.toDate.day);
-    
     tColor.value = task.color;
     tName.value = task.name;
     tStatus.value = task.status;
-    tDateFrom.value = `${fromDate.getFullYear()}-${(fromDate.getMonth() < 10 ? '0' : '') + (fromDate.getMonth()+1).toString()}-${(fromDate.getDate() < 10 ? '0' : '') + fromDate.getDate().toString()}`
-    tDateTo.value = `${toDate.getFullYear()}-${(toDate.getMonth() < 10 ? '0' : '') + (toDate.getMonth()+1).toString()}-${(toDate.getDate() < 10 ? '0' : '') + toDate.getDate().toString()}`;
+    tDateFrom.value = `${task.fromDate.year}-${(task.fromDate.month < 10 ? '0' : '') + (task.fromDate.month).toString()}-${(task.fromDate.day < 10 ? '0' : '') + task.fromDate.day.toString()}`;
+    tDateTo.value = `${task.toDate.year}-${(task.toDate.month < 10 ? '0' : '') + (task.toDate.month).toString()}-${(task.toDate.day < 10 ? '0' : '') + task.toDate.day.toString()}`;
     tAssignees.value = task.assignees!;
     tDescription.value = task.description;
 
@@ -53,14 +50,11 @@ async function onTaskChange(task: Task) {
 }
 
 async function onInactiveTask(task: InactiveTask) {
-    const fromDate = new Date(task.fromDate.year, task.fromDate.month - 1, task.fromDate.day);
-    const toDate = new Date(task.toDate.year, task.toDate.month - 1, task.toDate.day);
-    
     tColor.value = "#977aff";
     tName.value = "New";
     tStatus.value = "No status";
-    tDateFrom.value = `${fromDate.getFullYear()}-${(fromDate.getMonth() < 10 ? '0' : '') + (fromDate.getMonth()+1).toString()}-${(fromDate.getDate() < 10 ? '0' : '') + fromDate.getDate().toString()}`
-    tDateTo.value = `${toDate.getFullYear()}-${(toDate.getMonth() < 10 ? '0' : '') + (toDate.getMonth()+1).toString()}-${(toDate.getDate() < 10 ? '0' : '') + toDate.getDate().toString()}`;
+    tDateFrom.value = `${task.fromDate.year}-${(task.fromDate.month < 10 ? '0' : '') + (task.fromDate.month).toString()}-${(task.fromDate.day < 10 ? '0' : '') + task.fromDate.day.toString()}`;
+    tDateTo.value = `${task.toDate.year}-${(task.toDate.month < 10 ? '0' : '') + (task.toDate.month).toString()}-${(task.toDate.day < 10 ? '0' : '') + task.toDate.day.toString()}`;
     tAssignees.value = [];
     tDescription.value = "";
 
@@ -79,12 +73,9 @@ async function showEditor() {
 }
 
 const createTask = async () => {
-    if (!props.profiles || !props.profile || !props.sessionToken || nameTimerRunning)
+    if (!props.profiles || !props.profile || !props.sessionToken)
         return;
 
-    const dateFromFormat = tDateFrom.value.split('-');
-    const dateToFormat = tDateTo.value.split('-');
-    console.log(inactiveTask.row);
     let task: Task = await $fetch('/api/tasks/tasksCreate', {
         method: 'post',
         body: {
@@ -92,14 +83,14 @@ const createTask = async () => {
             name: tName.value,
             row: inactiveTask.row,
             status: tStatus.value,
-            fromDate: { day: dateFromFormat[2], month: dateFromFormat[1], year: dateFromFormat[0] },
-            toDate: { day: dateToFormat[2], month: dateToFormat[1], year: dateToFormat[0] },
+            fromDate: inactiveTask.fromDate,
+            toDate: inactiveTask.toDate,
             createdBy: props.profile.name,
             assignees: tAssignees.value,
             description: tDescription.value
         }
-    });
-    
+    });  
+
     return task;
 };
 
@@ -109,9 +100,11 @@ const editName = async () => {
 
     nameTimerRunning = true;
     setTimeout(async () => {
+        nameTimerRunning = false;
+        
         if(!editedTask || editedTask === undefined) {
             createTask().then(async (task) => {
-                console.log(task);
+                editedTask = task;
                 onTaskChange(task); 
                 emit("createdTask", task);              
             });
@@ -119,7 +112,6 @@ const editName = async () => {
         else {
             const dateFromFormat = tDateFrom.value.split('-');
             const dateToFormat = tDateTo.value.split('-');       
-            nameTimerRunning = false;
             
             await $fetch('/api/tasks/taskEdit', {
                 method: 'post',
@@ -129,8 +121,8 @@ const editName = async () => {
                     name: tName.value,
                     row: editedTask.row,
                     status: tStatus.value,
-                    fromDate: { day: dateFromFormat[2], month: dateFromFormat[1], year: dateFromFormat[0] },
-                    toDate: { day: dateToFormat[2], month: dateToFormat[1], year: dateToFormat[0] },
+                    fromDate: { day: parseInt(dateFromFormat[2]), month: parseInt(dateFromFormat[1]), year: parseInt(dateFromFormat[0]) },
+                    toDate: { day: parseInt(dateToFormat[2]), month: parseInt(dateToFormat[1]), year: parseInt(dateToFormat[0]) },
                     createdBy: editedTask.createdBy,
                     assignees: tAssignees.value,
                     description: tDescription.value
@@ -140,22 +132,24 @@ const editName = async () => {
     }, 2000);
 }
 
-const editTask = async () => { // TODO: [(fix from and to date edits, can be invalid), moving tasks dont have updated time)]
-    if (!props.profiles || !props.profile || !props.sessionToken || nameTimerRunning)
+const editTask = async () => { // TODO: [(fix from and to date edits, can be invalid), resized tasks dont have updated time)]
+    if (!props.profiles || !props.profile || !props.sessionToken || editTaskTimerRunning)
         return;
 
     editTaskTimerRunning = true;
     setTimeout(async () => {
-        if(!editedTask) {
+        editTaskTimerRunning = false;
+
+        if(!editedTask || editedTask === undefined) {
             createTask().then(async (task) => {
-                emit("createdTask", task);              
+                editedTask = task;
                 onTaskChange(task); 
+                emit("createdTask", task);              
             });
         }
         else {
             const dateFromFormat = tDateFrom.value.split('-');
             const dateToFormat = tDateTo.value.split('-');       
-            editTaskTimerRunning = false;
 
             await $fetch('/api/tasks/taskEdit', {
                 method: 'post',
@@ -165,13 +159,13 @@ const editTask = async () => { // TODO: [(fix from and to date edits, can be inv
                     name: tName.value,
                     row: editedTask.row,
                     status: tStatus.value,
-                    fromDate: { day: dateFromFormat[2], month: dateFromFormat[1], year: dateFromFormat[0] },
-                    toDate: { day: dateToFormat[2], month: dateToFormat[1], year: dateToFormat[0] },
+                    fromDate: { day: parseInt(dateFromFormat[2]), month: parseInt(dateFromFormat[1]), year: parseInt(dateFromFormat[0]) },
+                    toDate: { day: parseInt(dateToFormat[2]), month: parseInt(dateToFormat[1]), year: parseInt(dateToFormat[0]) },
                     createdBy: editedTask.createdBy,
                     assignees: tAssignees.value,
                     description: tDescription.value
                 }
-            }).then((task) => emit('taskEdited', task)).catch(err => {});
+            }).then((task) => { emit('taskEdited', task)}).catch(err => {});
         }
     }, 50);  
 };
@@ -204,7 +198,7 @@ function addProfile(profile: Profile) {
                 <span v-else class="mr-0.5 font-bold">Created by {{ createdBy }}</span>
                 | {{ uuid }}
             </div>
-            <div @click="editorVisibility = false">
+            <div @click="editorVisibility = false; inactiveTask = undefined; emit('closeEdit');">
                 <SvgClose class="cursor-pointer"/>
             </div>
         </div>

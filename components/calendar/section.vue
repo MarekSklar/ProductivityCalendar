@@ -3,7 +3,7 @@
 const emit = defineEmits(['taskEdit', 'onDraggedTaskChange', 'inactiveTaskEdit']);
 
 defineExpose({
-    mouseMoveEvent, mouseUpEvent, onEditTask, onCreateTask
+    mouseMoveEvent, mouseUpEvent, onEditTask, onCreateTask, onCloseEdit
 });
 
 const props = defineProps({
@@ -286,6 +286,11 @@ async function onCreateTask(task: Task) {
     inactiveTask.value = {};
 
     rows.value[task.row].push(task);
+    taskIntervals[task.row].set(task.uuid, { from: CDateToTimestamp(task.fromDate), to: CDateToTimestamp(task.toDate) });
+}
+
+async function onCloseEdit() {
+    inactiveTask.value = {};
 }
 
 async function onRowChangeEvent(index: number) {
@@ -548,7 +553,6 @@ async function mouseMoveEvent(mousePageX: number, mousePageY: number) { // TODO:
                         });    
 
                         if(canSwap) {
-                            console.log(targetTasks, thisRowTasks);
                             targetTasks.forEach((task) => {
                                 changeRow(task.uuid, currentHoveredRow, selectedTask.row);
                                 taskIntervals[currentHoveredRow].delete(task.uuid);
@@ -619,6 +623,9 @@ async function mouseMoveEvent(mousePageX: number, mousePageY: number) { // TODO:
                     changedTasks.push(selectedTask);
 
                 changedTasks.forEach((task) => fixRow(task));
+
+                if(editing)
+                    emit("taskEdit", selectedTask);
             } 
             else if (startDragPosX - mousePageX < -49) {
                 let prevFromDate: CDate = selectedTask.fromDate;
@@ -641,6 +648,9 @@ async function mouseMoveEvent(mousePageX: number, mousePageY: number) { // TODO:
                     changedTasks.push(selectedTask);
 
                 changedTasks.forEach((task) => fixRow(task));
+
+                if(editing)
+                    emit("taskEdit", selectedTask);
             }
             break;
         case DragStatus.TaskLeftResize:
