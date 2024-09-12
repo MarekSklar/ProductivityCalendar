@@ -59,7 +59,7 @@ async function showEditor() {
 }
 
 const editName = async () => {
-    if (!profiles.value || !profile || !sessionToken.value || nameTimerRunning)
+    if (!profiles || !profile || !sessionToken.value || nameTimerRunning)
         return;
 
     nameTimerRunning = true;
@@ -87,7 +87,7 @@ const editName = async () => {
 }
 
 const editTask = async () => { // TODO: [(fix from and to date edits, can be invalid), moving tasks dont have updated time)]
-    if (!profiles.value || !profile || !sessionToken.value || editTaskTimerRunning)
+    if (!profiles || !profile || !sessionToken.value || editTaskTimerRunning)
         return;
 
     editTaskTimerRunning = true;
@@ -117,8 +117,9 @@ const editTask = async () => { // TODO: [(fix from and to date edits, can be inv
 
 // TODO: PROPS
 const sessionToken = useCookie<string>('sessionToken');
-const { data: profiles } = await useFetch('/api/profiles/profilesList', { method: 'post' });
-profilesInactive.value = profiles.value as Profile[];
+const profiles = await fetchAllProfiles();
+// console.log("profile", profiles);
+profilesInactive.value = profiles as Profile[];
 const { data: profileData } = await useFetch('/api/profiles/profileGet', { method: 'post', body: { sessionToken: sessionToken.value }});
 const profile = profileData.value?.at(0);
 
@@ -157,7 +158,7 @@ function removeProfile(profile: Profile) {
     profilesActive.value.forEach(activeProfile => {
         tAssignees.value.push(activeProfile.uuid);
     });
-    console.log(profilesActive, profilesInactive);
+    // console.log(profilesActive, profilesInactive);
 }
 
 function addProfile(profile: Profile) {
@@ -167,7 +168,9 @@ function addProfile(profile: Profile) {
     tAssignees.value.push(profile.uuid);
 }
 
-const { data: pfps } = await useFetch('/api/getAllImages', { method: 'post' });
+const pfps = await fetchAllProfileImages();
+// console.log("images", pfps);
+
 </script>
 
 <template>

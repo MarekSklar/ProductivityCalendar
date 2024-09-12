@@ -10,6 +10,7 @@ export async function fetchProfile(sessionToken: string) {
 
 export async function fetchAllProfiles() {
     const { data: profiles } = await useFetch('/api/profiles/profilesList', { method: 'post' })
+    
     return profiles.value;
 }
 
@@ -25,9 +26,10 @@ export async function fetchProfileImage(path: any) {
     return {data: pfp.value as string, format: pfpFormat};
 }
 
-export async function fetchAllPtofileImages() {
+export async function fetchAllProfileImages() {
     const { data: pfps } = await useFetch('/api/getAllImages', { method: 'post' });
-    return pfps;
+    
+    return pfps.value;
 }
 
 export async function fetchLogin(email: string, password: string) {
