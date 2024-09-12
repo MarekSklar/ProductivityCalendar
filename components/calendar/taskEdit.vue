@@ -1,4 +1,4 @@
-script setup lang="ts">
+<script setup lang="ts">
 
 const emit = defineEmits(['closeEdit', 'taskEdited', 'createdTask']);
 defineExpose({
@@ -67,6 +67,7 @@ async function onInactiveTask(task: InactiveTask) {
     uuid.value = "-";
     createdBy.value = "";
     inactiveTask = task;
+    editedTask = undefined;
 }
 
 async function hideEditor() {
@@ -83,7 +84,7 @@ const createTask = async () => {
 
     const dateFromFormat = tDateFrom.value.split('-');
     const dateToFormat = tDateTo.value.split('-');
-    
+    console.log(inactiveTask.row);
     let task: Task = await $fetch('/api/tasks/tasksCreate', {
         method: 'post',
         body: {
@@ -108,10 +109,11 @@ const editName = async () => {
 
     nameTimerRunning = true;
     setTimeout(async () => {
-        if(!editedTask) {
+        if(!editedTask || editedTask === undefined) {
             createTask().then(async (task) => {
-                emit("createdTask", task);              
+                console.log(task);
                 onTaskChange(task); 
+                emit("createdTask", task);              
             });
         }
         else {
@@ -192,7 +194,6 @@ function addProfile(profile: Profile) {
     tAssignees.value.push(profile.uuid);
 }
 
-const { data: pfps } = await useFetch('/api/getAllImages', { method: 'post' });
 </script>
 
 <template>
