@@ -648,12 +648,14 @@ async function startTaskDragging(e: MouseEvent, task: Task) {
             clickOffsetY = e.offsetY;
             startDragPosX = e.pageX;
             emit('onDraggedTaskChange', draggedTaskObject.value);
+            emit('taskEdit', undefined);
+            editing = false;
         }
         else {
             emit('taskEdit', selectedTask);
             editing = true;
         }        
-    }, 100);
+    }, 200);
 }
 
 async function startTaskLeftResizeDragging(e: MouseEvent, task: Task) {
@@ -864,13 +866,23 @@ async function mouseUpEvent() {
     if(dragStatus === DragStatus.None)
         return;
     
-    if(dragStatus === DragStatus.TaskCreate) { //&& inactiveTask !== undefined) {
+    if(dragStatus === DragStatus.TaskCreate && inactiveTask !== undefined) {
         emit('inactiveTaskEdit', inactiveTask.value);
         editing = true;        
     }
+    else if(dragStatus === DragStatus.TaskDrag) {
+        draggedTaskObject.value = undefined;
+        emit('onDraggedTaskChange', draggedTaskObject.value);
+        
+        if(!arrayIncludesTask(changedTasks, selectedTask))
+            changedTasks.push(selectedTask);
+
+        saveTasks(changedTasks);
+        changedTasks = [];
+    }
     else {
         emit('taskEdit', undefined);
-        editing = false;     
+        editing = false;
         draggedTaskObject.value = undefined;
         emit('onDraggedTaskChange', draggedTaskObject.value);
         
