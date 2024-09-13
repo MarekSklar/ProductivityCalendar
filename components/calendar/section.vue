@@ -179,7 +179,7 @@ function fixRow(task: Task) {
         taskIntervals[task.row].delete(task.uuid);
         taskIntervals[task.row - 1].set(task.uuid, { from: CDateToDate(task.fromDate).getTime(), to: CDateToDate(task.toDate).getTime() });
         task.row = task.row - 1; 
-        console.log(task.uuid);
+
         if(!arrayIncludesTask(changedTasks, task))
             changedTasks.push(task);
         
@@ -414,7 +414,7 @@ function checkSwitchRow(switchTask: Task) {
                     }
                 });    
 
-                if(canSwap) {
+                if(canSwap && thisRowTasks.length === 1) {
                     targetTasks.forEach((task) => {
                         changeRow(task.uuid, currentHoveredRow, switchTask.row);
                         taskIntervals[currentHoveredRow].delete(task.uuid);
