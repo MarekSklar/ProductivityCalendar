@@ -79,7 +79,7 @@ const addProfile = async () => {
                         
                         <div class="input-box">
                             <label for="image">Your image</label>
-                            <input @change="files = handleInputFile($event, item)" type="file" class="file:hidden w-1/2 text-gray-700 cursor-pointer">
+                            <input @change="files = handleInputFile($event)" type="file" class="file:hidden w-1/2 text-gray-700 cursor-pointer">
                         </div>
 
                         <!-- fail message -->
