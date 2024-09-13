@@ -23,12 +23,12 @@ const tFailed = ref("");
 
 const uuid = ref("");
 const createdBy = ref("");
-let inactiveTask: InactiveTask;
+let inactiveTask: InactiveTask | undefined = undefined;
 
 const profilesActive = ref([] as Profile[]);
 const profilesInactive = ref(props.profile as Profile[]);
 
-let editedTask: Task;
+let editedTask: Task | undefined;
 let editorVisibility = ref(false);
 let nameTimerRunning: boolean = false;
 let editTaskTimerRunning: boolean = false;
@@ -38,8 +38,8 @@ async function onTaskChange(task: Task) {
     tColor.value = task.color;
     tName.value = task.name;
     tStatus.value = task.status;
-    tDateFrom.value = `${task.fromDate.year}-${(task.fromDate.month).toString().length != 2 ? '0' + parseInt(task.fromDate.month).toString() : task.fromDate.month.toString()}-${task.fromDate.day.toString().length != 2 ? '0' + parseInt(task.fromDate.day).toString() : task.fromDate.day.toString()}`;
-    tDateTo.value = `${task.toDate.year}-${(task.toDate.month).toString().length != 2 ? '0' + parseInt(task.toDate.month).toString() : task.toDate.month.toString()}-${task.toDate.day.toString().length != 2 ? '0' + parseInt(task.toDate.day).toString() : task.toDate.day.toString()}`;
+    tDateFrom.value = `${task.fromDate.year}-${(task.fromDate.month).toString().length != 2 ? '0' + task.fromDate.month.toString() : task.fromDate.month.toString()}-${task.fromDate.day.toString().length != 2 ? '0' + task.fromDate.day.toString() : task.fromDate.day.toString()}`;
+    tDateTo.value = `${task.toDate.year}-${(task.toDate.month).toString().length != 2 ? '0' + task.toDate.month.toString() : task.toDate.month.toString()}-${task.toDate.day.toString().length != 2 ? '0' + task.toDate.day.toString() : task.toDate.day.toString()}`;
     tAssignees.value = task.assignees!;
     tDescription.value = task.description;
     
@@ -50,18 +50,20 @@ async function onTaskChange(task: Task) {
 }
 
 async function onInactiveTask(task: InactiveTask) {
-    tColor.value = "#977aff";
-    tName.value = "New";
-    tStatus.value = "No status";
-    tDateFrom.value = `${task.fromDate.year}-${(task.fromDate.month).toString().length != 2 ? '0' + task.fromDate.month.toString() : task.fromDate.month.toString()}-${task.fromDate.day.toString().length != 2 ? '0' + task.fromDate.day.toString() : task.fromDate.day.toString()}`;
-    tDateTo.value = `${task.toDate.year}-${(task.toDate.month).toString().length != 2 ? '0' + task.toDate.month.toString() : task.toDate.month.toString()}-${task.toDate.day.toString().length != 2 ? '0' + task.toDate.day.toString() : task.toDate.day.toString()}`;
-    tAssignees.value = [];
-    tDescription.value = "";
+    if(inactiveTask) {
+        tColor.value = "#977aff";
+        tName.value = "New";
+        tStatus.value = "No status";
+        tDateFrom.value = `${task.fromDate.year}-${(task.fromDate.month).toString().length != 2 ? '0' + task.fromDate.month.toString() : task.fromDate.month.toString()}-${task.fromDate.day.toString().length != 2 ? '0' + task.fromDate.day.toString() : task.fromDate.day.toString()}`;
+        tDateTo.value = `${task.toDate.year}-${(task.toDate.month).toString().length != 2 ? '0' + task.toDate.month.toString() : task.toDate.month.toString()}-${task.toDate.day.toString().length != 2 ? '0' + task.toDate.day.toString() : task.toDate.day.toString()}`;
+        tAssignees.value = [];
+        tDescription.value = "";
 
-    uuid.value = "-";
-    createdBy.value = "";
-    inactiveTask = task;
-    editedTask = undefined;
+        uuid.value = "-";
+        createdBy.value = "";
+        inactiveTask = task;
+        editedTask = undefined;
+    }
 }
 
 async function hideEditor() {
@@ -73,7 +75,7 @@ async function showEditor() {
 }
 
 const createTask = async () => {
-    if (!props.profiles || !props.profile || !props.sessionToken && inactiveTask)
+    if (!props.profiles || !props.profile || !props.sessionToken || !inactiveTask)
         return;
 
     let task: Task = await $fetch('/api/tasks/tasksCreate', {
@@ -89,9 +91,9 @@ const createTask = async () => {
             assignees: tAssignees.value,
             description: tDescription.value
         }
-    });  
-   
-    return task;
+    });
+
+    return task; 
 };
 
 const editName = async () => {
@@ -104,8 +106,10 @@ const editName = async () => {
         
         if(!editedTask || editedTask === undefined) {
             createTask().then(async (task) => {
-                onTaskChange(task); 
-                emit("createdTask", task);
+                if(task) {
+                    onTaskChange(task); 
+                    emit("createdTask", task);
+                }
             });
         }
         else {
@@ -141,8 +145,10 @@ const editTask = async () => {
 
         if(!editedTask || editedTask === undefined) {
             createTask().then(async (task) => {
-                onTaskChange(task); 
-                emit("createdTask", task); 
+                if(task) {
+                    onTaskChange(task); 
+                    emit("createdTask", task);
+                } 
             });
         }
         else {

@@ -14,8 +14,8 @@ const startDragPosX = ref(0);
 const relativeDragPos = ref(0);
 const calendarDragPos = ref(0);
 
-let sections = ref(null); // make array
-let taskEditor = ref(null);
+let sections = ref<any>(null); // make array
+let taskEditor = ref<any>(null);
 let draggedTaskObject = ref();
 let draggingCalendar: boolean = false;
 
@@ -45,7 +45,7 @@ function mouseMoveEvent(event: MouseEvent) {
     if (!event.buttons) return;
 
     if(sections.value)
-        sections.value!.mouseMoveEvent(event.pageX, event.pageY);
+        sections.value.mouseMoveEvent(event.pageX, event.pageY);
 
     if(draggingCalendar) {
         calendarDragPos.value = event.screenX - startDragPosX.value + relativeDragPos.value;
@@ -59,7 +59,7 @@ function mouseMoveEvent(event: MouseEvent) {
 
 async function mouseUpEvent() {
     if(sections.value)
-        sections.value!.mouseUpEvent();
+        sections.value.mouseUpEvent();
 
     if(draggingCalendar) {
         relativeDragPos.value = calendarDragPos.value;
@@ -76,28 +76,28 @@ function CDateToTimestamp(date: CDate) {
 
 async function onEditTask(task: Task) {
     if(task && sections.value)
-        sections.value!.onEditTask(task);    
+        sections.value.onEditTask(task);    
 }
 
 async function onCreatedTask(task: Task) {
     if(task && sections.value)
-        sections.value!.onCreateTask(task);
+        sections.value.onCreateTask(task);
 }
 
 async function onCloseEdit() {
     if(sections.value)
-        sections.value!.onCloseEdit();
+        sections.value.onCloseEdit();
 }
 
 async function taskEdit(task: Task) {
     if(taskEditor.value)
     {
         if(task) {
-            taskEditor.value!.showEditor();
-            taskEditor.value!.onTaskChange(task);
+            taskEditor.value.showEditor();
+            taskEditor.value.onTaskChange(task);
         }
         else {
-            taskEditor.value!.hideEditor();
+            taskEditor.value.hideEditor();
         }
     }
 }
@@ -151,7 +151,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <div v-if="sessionToken && sessionToken !== 'null'" class="flex flex-col w-full h-screen"
+    <div v-if="sessionToken && sessionToken !== 'null' && pfps && profiles && profile" class="flex flex-col w-full h-screen"
     :style="{backgroundImage: `repeating-linear-gradient(to right, ${tw.colors.white} ${weekendOffset}px, ${tw.colors.white} ${2+weekendOffset}px, ${tw.colors.gray[50]} ${2+weekendOffset}px, ${tw.colors.gray[50]} ${112+weekendOffset}px, ${tw.colors.white} ${112+weekendOffset}px, ${tw.colors.white} ${392+weekendOffset}px)`}">
         <!-- Top date panel -->
         <CalendarDates :datesOffset = "datesOffset" :columnWidth = "columnWidth" :screenSizeWidth = "screenSize.width" :datesPos = "datesPos" />

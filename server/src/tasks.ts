@@ -35,10 +35,10 @@ export async function list(db: DatabaseConnection) {
     let tasks = db.query(sql`SELECT * FROM tasks`);
     (await tasks).forEach((task) => {
         const fromDates = task.fromDate.split('-');
-        task.fromDate = { day: fromDates[2], month: fromDates[1], year: fromDates[0] };
+        task.fromDate = { day: parseInt(fromDates[2]), month: parseInt(fromDates[1]), year: parseInt(fromDates[0]) };
 
         const toDates = task.toDate.split('-');
-        task.toDate = { day: toDates[2], month: toDates[1], year: toDates[0] };
+        task.toDate = { day: parseInt(toDates[2]), month: parseInt(toDates[1]), year: parseInt(toDates[0]) };
         
         task.assignees = task.assignees.split(',');
         task.active = true;
@@ -105,6 +105,7 @@ export async function edit(db: DatabaseConnection, options: TaskEditOptions) {
 
     const sqlFromDate = params.fromDate.year + "-" + (params.fromDate.month < 10 ? "0" + params.fromDate.month : params.fromDate.month) + "-" + (params.fromDate.day < 10 ? "0" + params.fromDate.day : params.fromDate.day);
     const sqlToDate = params.toDate.year + "-" + (params.toDate.moFlognth < 10 ? "0" + params.toDate.month : params.toDate.month) + "-" + (params.toDate.day < 10 ? "0" + params.toDate.day : params.toDate.day); 
+
     await db.query(sql`UPDATE tasks SET
         uuid = ${params.uuid},
         color = ${params.color},
@@ -124,10 +125,10 @@ export async function edit(db: DatabaseConnection, options: TaskEditOptions) {
     task = taskData.at(0);
      
     const fromDates = taskData.at(0).fromDate.split('-');
-    task.fromDate = { day: fromDates[2], month: fromDates[1], year: fromDates[0] };
+    task.fromDate = { day: parseInt(fromDates[2]), month: parseInt(fromDates[1]), year: parseInt(fromDates[0]) };
 
     const toDates = taskData.at(0).toDate.split('-');
-    task.toDate = { day: toDates[2], month: toDates[1], year: toDates[0] };
+    task.toDate = { day: parseInt(toDates[2]), month: parseInt(toDates[1]), year: parseInt(toDates[0]) };
     
     task.assignees = taskData.at(0).assignees.split(',');
     return task;
@@ -162,10 +163,10 @@ export async function editArray(db: DatabaseConnection, options: TasksEditOption
         task = taskData.at(0);
 
         const fromDates = taskData.at(0).fromDate.split('-');
-        task.fromDate = { day: fromDates[2], month: fromDates[1], year: fromDates[0] };
+        task.fromDate = { day: parseInt(fromDates[2]), month: parseInt(fromDates[1]), year: parseInt(fromDates[0]) };
 
         const toDates = taskData.at(0).toDate.split('-');
-        task.toDate = { day: toDates[2], month: toDates[1], year: toDates[0] };
+        task.toDate = { day: parseInt(toDates[2]), month: parseInt(toDates[1]), year: parseInt(toDates[0]) };
 
         task.assignees = taskData.at(0).assignees.split(',');
     });
