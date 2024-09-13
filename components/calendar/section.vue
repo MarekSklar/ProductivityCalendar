@@ -179,7 +179,7 @@ function fixRow(task: Task) {
         taskIntervals[task.row].delete(task.uuid);
         taskIntervals[task.row - 1].set(task.uuid, { from: CDateToDate(task.fromDate).getTime(), to: CDateToDate(task.toDate).getTime() });
         task.row = task.row - 1; 
-        
+        console.log(task.uuid);
         if(!arrayIncludesTask(changedTasks, task))
             changedTasks.push(task);
         
@@ -382,7 +382,9 @@ function checkSwitchRow(switchTask: Task) {
                                 changedTasks.push(task);
                         }
                     });
-                }                  
+
+                    changedTasks.forEach((changedTask) => fixRow(changedTask));
+                }
             }
             else if(Math.abs(switchTask.row - currentHoveredRow) === 1) {
                 let canSwap: boolean = false;
@@ -432,6 +434,8 @@ function checkSwitchRow(switchTask: Task) {
                         if(!arrayIncludesTask(changedTasks, task))
                             changedTasks.push(task);
                     });
+
+                    changedTasks.forEach((changedTask) => fixRow(changedTask));
                 }        
             }
         } 
@@ -458,6 +462,8 @@ function checkSwitchRow(switchTask: Task) {
                         fixRow(task);
                 });
             }
+
+            changedTasks.forEach((changedTask) => fixRow(changedTask));
         }
     }
 }
@@ -607,29 +613,30 @@ async function mousePressedEvent(e: MouseEvent) {
         };
 
         let row = -1;
-        for (let i = 0; i < rows.value.length; i++) {
-            if (!invalidRow(i, "", currentDate, currentDate)) {
-                row = i;
+        for (let i = currentHoveredRow; i >= 0; i--) {
+            if (invalidRow(i, "", currentDate, currentDate)) {
+                row = i + 1;
                 break;
             }
         }
-        
-        if(row === -1)
+
+        if(row === -1) {
+            row = 0;
+        }        
+        else if(row === currentHoveredRow && rows.value.length - 1 === row)
         {
             rows.value.push([]);
             taskIntervals.push(new Map<string, TaskTimestampInterval>);
-            row = rows.value.length - 1;
         }
 
         inactiveTask.value.row = row;
-        editing = true;
     }
 }
 
 async function startTaskDragging(e: MouseEvent, task: Task) {
     if (dragStatus !== DragStatus.None || e.button !== 0)
         return;
-
+    
     mouseButtonDown = true;
     selectedTask = task;
     inactiveTask.value = undefined;
@@ -638,8 +645,8 @@ async function startTaskDragging(e: MouseEvent, task: Task) {
     setTimeout(() => {
         if (mouseButtonDown) {
             draggedTaskObject.value = { uuid: selectedTask.uuid, name: selectedTask.name, status: selectedTask.status, color: selectedTask.color, width: taskPlacementPos(task).taskLength * props.columnWidth! };
-            //draggedTaskObject.value.left = mousePageX - clickOffsetX;
-            //draggedTaskObject.value.top = mousePageY - clickOffsetY;
+            draggedTaskObject.value.left = e.pageX - e.offsetX;
+            draggedTaskObject.value.top = e.pageY - e.offsetY;
             mouseButtonDown = false;
             clickOffsetX = e.offsetX;
             clickOffsetY = e.offsetY;
@@ -863,9 +870,9 @@ async function mouseUpEvent() {
     if(dragStatus === DragStatus.None)
         return;
     
-    if(dragStatus === DragStatus.TaskCreate && inactiveTask !== undefined) {
+    if(dragStatus === DragStatus.TaskCreate && inactiveTask) {
         emit('inactiveTaskEdit', inactiveTask.value);
-        editing = true;        
+        editing = true;
     }
     else if(dragStatus === DragStatus.TaskDrag) {
         draggedTaskObject.value = undefined;
@@ -880,6 +887,7 @@ async function mouseUpEvent() {
     else {
         emit('taskEdit', undefined);
         editing = false;
+        
         draggedTaskObject.value = undefined;
         emit('onDraggedTaskChange', draggedTaskObject.value);
         

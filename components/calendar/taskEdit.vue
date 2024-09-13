@@ -26,7 +26,7 @@ const createdBy = ref("");
 let inactiveTask: InactiveTask | undefined = undefined;
 
 const profilesActive = ref([] as Profile[]);
-const profilesInactive = ref(props.profile as Profile[]);
+const profilesInactive = ref(props.profiles as Profile[]);
 
 let editedTask: Task | undefined;
 let editorVisibility = ref(false);
@@ -40,30 +40,40 @@ async function onTaskChange(task: Task) {
     tStatus.value = task.status;
     tDateFrom.value = `${task.fromDate.year}-${(task.fromDate.month).toString().length != 2 ? '0' + task.fromDate.month.toString() : task.fromDate.month.toString()}-${task.fromDate.day.toString().length != 2 ? '0' + task.fromDate.day.toString() : task.fromDate.day.toString()}`;
     tDateTo.value = `${task.toDate.year}-${(task.toDate.month).toString().length != 2 ? '0' + task.toDate.month.toString() : task.toDate.month.toString()}-${task.toDate.day.toString().length != 2 ? '0' + task.toDate.day.toString() : task.toDate.day.toString()}`;
+
     tAssignees.value = task.assignees!;
+    profilesInactive.value = props.profiles as Profile[];
+    profilesActive.value = [];
+    tAssignees.value.forEach((assignee) => {
+        profilesInactive.value.forEach((profile) => {
+            if(profile.uuid === assignee) {
+                profilesActive.value.push(profile);
+                profilesInactive.value = profilesInactive.value.filter(elmnt => elmnt.uuid !== profile.uuid);
+            }
+        });
+    });
+
     tDescription.value = task.description;
-    
     uuid.value = task.uuid;
     createdBy.value = task.createdBy;
-
+    
     editedTask = task;
 }
 
 async function onInactiveTask(task: InactiveTask) {
-    if(inactiveTask) {
-        tColor.value = "#977aff";
-        tName.value = "New";
-        tStatus.value = "No status";
-        tDateFrom.value = `${task.fromDate.year}-${(task.fromDate.month).toString().length != 2 ? '0' + task.fromDate.month.toString() : task.fromDate.month.toString()}-${task.fromDate.day.toString().length != 2 ? '0' + task.fromDate.day.toString() : task.fromDate.day.toString()}`;
-        tDateTo.value = `${task.toDate.year}-${(task.toDate.month).toString().length != 2 ? '0' + task.toDate.month.toString() : task.toDate.month.toString()}-${task.toDate.day.toString().length != 2 ? '0' + task.toDate.day.toString() : task.toDate.day.toString()}`;
-        tAssignees.value = [];
-        tDescription.value = "";
-
-        uuid.value = "-";
-        createdBy.value = "";
-        inactiveTask = task;
-        editedTask = undefined;
-    }
+    tColor.value = "#977aff";
+    tName.value = "New";
+    tStatus.value = "No status";
+    tDateFrom.value = `${task.fromDate.year}-${(task.fromDate.month).toString().length != 2 ? '0' + task.fromDate.month.toString() : task.fromDate.month.toString()}-${task.fromDate.day.toString().length != 2 ? '0' + task.fromDate.day.toString() : task.fromDate.day.toString()}`;
+    tDateTo.value = `${task.toDate.year}-${(task.toDate.month).toString().length != 2 ? '0' + task.toDate.month.toString() : task.toDate.month.toString()}-${task.toDate.day.toString().length != 2 ? '0' + task.toDate.day.toString() : task.toDate.day.toString()}`;
+    tAssignees.value = [];
+    profilesInactive.value = props.profiles as Profile[];
+    profilesActive.value = [];
+    tDescription.value = "";
+    uuid.value = "-";
+    createdBy.value = "";
+    inactiveTask = task;
+    editedTask = undefined;
 }
 
 async function hideEditor() {
@@ -182,7 +192,6 @@ function removeProfile(profile: Profile) {
     profilesActive.value.forEach(activeProfile => {
         tAssignees.value.push(activeProfile.uuid);
     });
-    console.log(profilesActive, profilesInactive);
 }
 
 function addProfile(profile: Profile) {
@@ -242,7 +251,7 @@ function addProfile(profile: Profile) {
                                     <ul :class="{ hidden: !profilesActive.length }" class="flex flex-col gap-1">
                                         <li v-for="profile in profilesActive" @click="removeProfile(profile); editTask();" class="flex justify-between items-center text-ellipsis cursor-pointer">
                                             <div class="flex items-center gap-3">
-                                                <img v-if="props.pfps![profile.uuid]" :src="'data:image/jpg;base64,' + props.pfps![profile.uuid]" class="size-7 rounded-full object-cover">
+                                                <img :src="'data:image/jpg;base64,' + props.pfps![profile.uuid]" class="size-7 rounded-full object-cover">
                                                 <span>{{ profile.name }}</span>
                                             </div>
                                             <SvgCheck class="size-6" />
@@ -251,7 +260,7 @@ function addProfile(profile: Profile) {
                                     <div v-if="profilesActive.length > 0" class="h-0.5 my-2 mr-2 bg-gray-200"></div>
                                     <ul class="flex flex-col gap-1">
                                         <li v-if="profilesInactive.length > 0" v-for="profile in profilesInactive" @click="addProfile(profile); editTask();" class="flex items-center gap-3 text-ellipsis cursor-pointer">
-                                            <img v-if="props.pfps![profile.uuid]" :src="'data:image/jpg;base64,' + props.pfps![profile.uuid]" class="size-7 rounded-full object-cover">
+                                            <img :src="'data:image/jpg;base64,' + props.pfps![profile.uuid]" class="size-7 rounded-full object-cover">
                                             <span>{{ profile.name }}</span>
                                         </li>
                                         <p v-else>No assignees left</p>
