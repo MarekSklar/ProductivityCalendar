@@ -39,7 +39,7 @@ export async function list(db: DatabaseConnection) {
 
         const toDates = task.toDate.split('-');
         task.toDate = { day: toDates[2], month: toDates[1], year: toDates[0] };
-
+        
         task.assignees = task.assignees.split(',');
         task.active = true;
     });
@@ -90,7 +90,7 @@ export async function add(db: DatabaseConnection, options: TaskAddOptions) {
         ${task.createdBy}
     )
 `);
-
+    
     return task;
 }
 
@@ -103,9 +103,8 @@ export async function edit(db: DatabaseConnection, options: TaskEditOptions) {
     if(!task)
         return;
 
-    const sqlFromDate = task.fromDate.year + "-" + (task.fromDate.month < 10 ? "0" + task.fromDate.month : task.fromDate.month) + "-" + (task.fromDate.day < 10 ? "0" + task.fromDate.day : task.fromDate.day);
-    const sqlToDate = task.toDate.year + "-" + (task.toDate.month < 10 ? "0" + task.toDate.month : task.toDate.month) + "-" + (task.toDate.day < 10 ? "0" + task.toDate.day : task.toDate.day); 
-
+    const sqlFromDate = params.fromDate.year + "-" + (params.fromDate.month < 10 ? "0" + params.fromDate.month : params.fromDate.month) + "-" + (params.fromDate.day < 10 ? "0" + params.fromDate.day : params.fromDate.day);
+    const sqlToDate = params.toDate.year + "-" + (params.toDate.moFlognth < 10 ? "0" + params.toDate.month : params.toDate.month) + "-" + (params.toDate.day < 10 ? "0" + params.toDate.day : params.toDate.day); 
     await db.query(sql`UPDATE tasks SET
         uuid = ${params.uuid},
         color = ${params.color},
@@ -119,16 +118,17 @@ export async function edit(db: DatabaseConnection, options: TaskEditOptions) {
         createdBy = ${params.createdBy}
         WHERE uuid = ${params.uuid}
     `);
+        
 
     taskData = await db.query(sql`SELECT * FROM tasks WHERE uuid = ${params.uuid}`);
     task = taskData.at(0);
-
+     
     const fromDates = taskData.at(0).fromDate.split('-');
     task.fromDate = { day: fromDates[2], month: fromDates[1], year: fromDates[0] };
 
     const toDates = taskData.at(0).toDate.split('-');
     task.toDate = { day: toDates[2], month: toDates[1], year: toDates[0] };
-
+    
     task.assignees = taskData.at(0).assignees.split(',');
     return task;
 }

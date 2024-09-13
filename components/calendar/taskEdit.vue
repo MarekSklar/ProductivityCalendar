@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-const emit = defineEmits(['closeEdit', 'taskEdited', 'createdTask']);
+const emit = defineEmits(['closeEdit', 'taskEdited', 'createdTask', 'editResizeTask']);
 defineExpose({
     onTaskChange, onInactiveTask, hideEditor, showEditor
 });
@@ -38,11 +38,11 @@ async function onTaskChange(task: Task) {
     tColor.value = task.color;
     tName.value = task.name;
     tStatus.value = task.status;
-    tDateFrom.value = `${task.fromDate.year}-${(task.fromDate.month < 10 ? '0' : '') + (task.fromDate.month).toString()}-${(task.fromDate.day < 10 ? '0' : '') + task.fromDate.day.toString()}`;
-    tDateTo.value = `${task.toDate.year}-${(task.toDate.month < 10 ? '0' : '') + (task.toDate.month).toString()}-${(task.toDate.day < 10 ? '0' : '') + task.toDate.day.toString()}`;
+    tDateFrom.value = `${task.fromDate.year}-${(task.fromDate.month).toString().length != 2 ? '0' + parseInt(task.fromDate.month).toString() : task.fromDate.month.toString()}-${task.fromDate.day.toString().length != 2 ? '0' + parseInt(task.fromDate.day).toString() : task.fromDate.day.toString()}`;
+    tDateTo.value = `${task.toDate.year}-${(task.toDate.month).toString().length != 2 ? '0' + parseInt(task.toDate.month).toString() : task.toDate.month.toString()}-${task.toDate.day.toString().length != 2 ? '0' + parseInt(task.toDate.day).toString() : task.toDate.day.toString()}`;
     tAssignees.value = task.assignees!;
     tDescription.value = task.description;
-
+    
     uuid.value = task.uuid;
     createdBy.value = task.createdBy;
 
@@ -53,8 +53,8 @@ async function onInactiveTask(task: InactiveTask) {
     tColor.value = "#977aff";
     tName.value = "New";
     tStatus.value = "No status";
-    tDateFrom.value = `${task.fromDate.year}-${(task.fromDate.month < 10 ? '0' : '') + (task.fromDate.month).toString()}-${(task.fromDate.day < 10 ? '0' : '') + task.fromDate.day.toString()}`;
-    tDateTo.value = `${task.toDate.year}-${(task.toDate.month < 10 ? '0' : '') + (task.toDate.month).toString()}-${(task.toDate.day < 10 ? '0' : '') + task.toDate.day.toString()}`;
+    tDateFrom.value = `${task.fromDate.year}-${(task.fromDate.month).toString().length != 2 ? '0' + task.fromDate.month.toString() : task.fromDate.month.toString()}-${task.fromDate.day.toString().length != 2 ? '0' + task.fromDate.day.toString() : task.fromDate.day.toString()}`;
+    tDateTo.value = `${task.toDate.year}-${(task.toDate.month).toString().length != 2 ? '0' + task.toDate.month.toString() : task.toDate.month.toString()}-${task.toDate.day.toString().length != 2 ? '0' + task.toDate.day.toString() : task.toDate.day.toString()}`;
     tAssignees.value = [];
     tDescription.value = "";
 
@@ -73,7 +73,7 @@ async function showEditor() {
 }
 
 const createTask = async () => {
-    if (!props.profiles || !props.profile || !props.sessionToken)
+    if (!props.profiles || !props.profile || !props.sessionToken && inactiveTask)
         return;
 
     let task: Task = await $fetch('/api/tasks/tasksCreate', {
@@ -90,7 +90,7 @@ const createTask = async () => {
             description: tDescription.value
         }
     });  
-
+   
     return task;
 };
 
@@ -104,9 +104,8 @@ const editName = async () => {
         
         if(!editedTask || editedTask === undefined) {
             createTask().then(async (task) => {
-                editedTask = task;
                 onTaskChange(task); 
-                emit("createdTask", task);              
+                emit("createdTask", task);
             });
         }
         else {
@@ -132,7 +131,7 @@ const editName = async () => {
     }, 2000);
 }
 
-const editTask = async () => { // TODO: [(fix from and to date edits, can be invalid), resized tasks dont have updated time)]
+const editTask = async () => {
     if (!props.profiles || !props.profile || !props.sessionToken || editTaskTimerRunning)
         return;
 
@@ -142,15 +141,14 @@ const editTask = async () => { // TODO: [(fix from and to date edits, can be inv
 
         if(!editedTask || editedTask === undefined) {
             createTask().then(async (task) => {
-                editedTask = task;
                 onTaskChange(task); 
-                emit("createdTask", task);              
+                emit("createdTask", task); 
             });
         }
         else {
             const dateFromFormat = tDateFrom.value.split('-');
             const dateToFormat = tDateTo.value.split('-');       
-
+            
             await $fetch('/api/tasks/taskEdit', {
                 method: 'post',
                 body: {
@@ -222,11 +220,11 @@ function addProfile(profile: Profile) {
                     <div class="flex flex-col gap-2 w-full">
                         <div class="flex justify-between gap-2">
                             <label for="dateFrom">From:</label>
-                            <input v-model="tDateFrom" type="date" @input="editTask">
+                            <input v-model="tDateFrom" type="date" @input="emit('editResizeTask', editedTask, tDateFrom, tDateTo)">
                         </div>
                         <div class="flex justify-between gap-2">
                             <label for="dateTo">To:</label>
-                            <input v-model="tDateTo" type="date" @input="editTask">
+                            <input v-model="tDateTo" type="date" @input="emit('editResizeTask', editedTask, tDateFrom, tDateTo)">
                         </div>
                     </div>
 
