@@ -69,6 +69,11 @@ async function mouseUpEvent() {
 
 // task events
 
+function CDateToTimestamp(date: CDate) {
+    return new Date(date.year, date.month - 1, date.day).getTime();
+}
+
+
 async function onEditTask(task: Task) {
     if(task && sections.value)
         sections.value!.onEditTask(task);    
@@ -110,6 +115,29 @@ async function inactiveTaskEdit(task: InactiveTask) {
     }
 }
 
+async function editResizeTask(task: Task, dateFrom: string, dateTo: string) {
+    if(task && sections.value) {
+        const dateFromFormat = dateFrom.split('-');
+        const dateToFormat = dateTo.split('-');
+        
+        let prevFromDate = task.fromDate;
+        let prevToDate = task.toDate;
+        let fromDate: CDate = { day: parseInt(dateFromFormat[2]), month: parseInt(dateFromFormat[1]), year: parseInt(dateFromFormat[0]) };
+        let toDate: CDate = { day: parseInt(dateToFormat[2]), month: parseInt(dateToFormat[1]), year: parseInt(dateToFormat[0]) };
+
+        if(CDateToTimestamp(fromDate) > CDateToTimestamp(toDate)) {
+            task.fromDate = toDate;
+            task.toDate = fromDate;
+        }
+        else {
+            task.fromDate = fromDate;
+            task.toDate = toDate;
+        }
+
+        sections.value.onEditResizeTask(task, prevFromDate, prevToDate);
+    }
+}
+
 async function onDraggedTaskChange(draggedTask: DraggedTask) {
     draggedTaskObject.value = draggedTask;
 }
@@ -130,7 +158,7 @@ onMounted(() => {
 
         <div class="relative flex-auto min-w-full h-full">
             <!-- Task edit menu -->
-            <CalendarTaskEdit ref="taskEditor" @taskEdited="onEditTask" @createdTask="onCreatedTask" @closeEdit="onCloseEdit" :session-token="sessionToken" :profiles="profiles!" :profile="profile" :pfps="pfps"/>
+            <CalendarTaskEdit ref="taskEditor" @taskEdited="onEditTask" @createdTask="onCreatedTask" @closeEdit="onCloseEdit" @editResizeTask="editResizeTask" :session-token="sessionToken" :profiles="profiles!" :profile="profile" :pfps="pfps"/>
             <!-- Calendar -->
             <div @mousedown="mouseDownEvent" @mousemove="mouseMoveEvent" @mouseup="mouseUpEvent"
                 class="w-full h-full overflow-x-hidden overflow-y-auto cursor-grab"
