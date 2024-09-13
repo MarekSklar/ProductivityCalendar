@@ -54,7 +54,8 @@ export default {
       "transparent": "transparent"
     },
     fontFamily: {
-      Quicksand: ["Quicksand", "sans-serif"]
+      Quicksand: ["Quicksand", "sans-serif"],
+      SansSerif: ["sans-serif"],
     },
     extend: {
       width: {

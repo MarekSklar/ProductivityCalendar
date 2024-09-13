@@ -1,3 +1,3 @@
-export function handleInputFile(e: any, item: any) {
+export function handleInputFile(e: any) {
     return e.target.files;
 }
