@@ -30,6 +30,7 @@ let draggedTaskObject = ref();
 let clickOffsetX: number;
 let clickOffsetY: number;
 let currentHoveredRow: number;
+let prevHoveredRow: number = -1;
 let editing: boolean = false;
 let changedTasks: Task[] = [];
 
@@ -52,8 +53,7 @@ await useFetch('/api/tasks/tasksList', { method: 'post' })!.then((value) => {
 
     for(let i = 3; i < maxRow + 1; i++)
     {
-        rows.value.push([]);
-        taskIntervals.push(new Map<string, TaskTimestampInterval>);
+        addRow();
     }
 
     tasks.forEach((task: Task) => {
@@ -102,9 +102,8 @@ function invalidRow(row: number, currentUUID: string, fromDate: CDate, toDate: C
         if(key == currentUUID)
             return;
 
-        if ((fromTimeTimestamp >= value.from && fromTimeTimestamp <= value.to) || (toTimeTimestamp <= value.to && toTimeTimestamp >= value.from)) {
-            returnValue = true;
-        }
+        if ((fromTimeTimestamp >= value.from && fromTimeTimestamp <= value.to) || (toTimeTimestamp <= value.to && toTimeTimestamp >= value.from) || (fromTimeTimestamp <= value.from && toTimeTimestamp >= value.to)) 
+            returnValue = true;   
     });
 
     return returnValue;
@@ -158,7 +157,7 @@ function findTaskByUUID(row: number, uuid: string) {
 }
 
 function changeRow(uuid: string, row1: number, row2: number) {
-    let foundTask: Task | undefined = undefined;
+    let foundTask: Task | undefined = undefined; 
     rows.value[row1].forEach((task: Task, index: number) => {
         if(task.uuid === uuid) {
             foundTask = task;
@@ -170,11 +169,11 @@ function changeRow(uuid: string, row1: number, row2: number) {
         rows.value[row2].push(foundTask);
 }
 
-function fixRow(task: Task) {
-    let tempFromDate: CDate = task.fromDate;
-    let tempToDate: CDate = task.toDate;
+function fixRow(task: Task, prevFromDate: CDate | undefined = undefined, prevToDate: CDate | undefined = undefined) {
+    let tempFromDate: CDate = prevFromDate ? prevFromDate : task.fromDate;
+    let tempToDate: CDate = prevToDate ? prevToDate : task.toDate;
 
-    while(task.row - 1 >= 0 && !invalidRow(task.row - 1, task.uuid, tempFromDate, tempToDate)) {
+    while(task.row - 1 >= 0 && !invalidRow(task.row - 1, task.uuid, task.fromDate, task.toDate)) {
         changeRow(task.uuid, task.row, task.row - 1);
         taskIntervals[task.row].delete(task.uuid);
         taskIntervals[task.row - 1].set(task.uuid, { from: CDateToDate(task.fromDate).getTime(), to: CDateToDate(task.toDate).getTime() });
@@ -183,25 +182,22 @@ function fixRow(task: Task) {
         if(!arrayIncludesTask(changedTasks, task))
             changedTasks.push(task);
         
-        for(let i = Math.max(task.row + 2, 1); i < rows.value.length; i++) {            
-            if(invalidRow(i, task.uuid, tempFromDate, tempToDate)) {
-                findTasksInRow(i, tempFromDate, tempToDate).forEach((taskUUID) => {
-                    let newTask: Task | undefined = findTaskByUUID(i, taskUUID);
-                    
-                    if(newTask) {
-                        tempFromDate = CDateToTimestamp(newTask.fromDate) < CDateToTimestamp(tempFromDate) ? newTask.fromDate : tempFromDate;
-                        tempToDate = CDateToTimestamp(newTask.toDate) > CDateToTimestamp(tempToDate) ? newTask.toDate : tempToDate;
+        for(let i = task.row + 2; i < rows.value.length + 1; i++) {
+            for(let taskUUID of findTasksInRow(i, tempFromDate, tempToDate)) {
+                let newTask: Task | undefined = findTaskByUUID(i, taskUUID);
 
-                        changeRow(newTask.uuid, i, i - 1);
-                        taskIntervals[i].delete(newTask.uuid);
-                        taskIntervals[i - 1].set(newTask.uuid, { from: CDateToDate(newTask.fromDate).getTime(), to: CDateToDate(newTask.toDate).getTime() });
-                        newTask.row = i - 1;
-                        
-                        if(!arrayIncludesTask(changedTasks, newTask))
-                            changedTasks.push(newTask);
-                    }
-                })
-            } else break;
+                if(newTask && !invalidRow(i - 1, task.uuid, newTask.fromDate, newTask.toDate)) {
+                    changeRow(newTask.uuid, i, i - 1);
+                    taskIntervals[i].delete(newTask.uuid);
+                    taskIntervals[i - 1].set(newTask.uuid, { from: CDateToDate(newTask.fromDate).getTime(), to: CDateToDate(newTask.toDate).getTime() });
+                    newTask.row = i - 1;
+                    
+                    if(!arrayIncludesTask(changedTasks, newTask))
+                        changedTasks.push(newTask);                    
+                } 
+                else
+                    break;
+            }
         }
     }
 }
@@ -257,6 +253,18 @@ function arrayIncludesTask(array: Task[], task: Task) {
     return includes;
 }
 
+function addRow() {
+    rows.value.push([]);
+    taskIntervals.push(new Map<string, TaskTimestampInterval>);
+}
+
+function deleteEmptyRows() {
+    while(rows.value[rows.value.length - 1].length === 0) {
+        rows.value.pop();
+        taskIntervals.pop();
+    }
+}
+
 function checkSwitchRow(switchTask: Task) {
     let tempFromDate: CDate = switchTask.fromDate;
     let tempToDate: CDate = switchTask.toDate;
@@ -277,9 +285,8 @@ function checkSwitchRow(switchTask: Task) {
 
             for(let i = switchTask.row + 1; i < rows.value.length; i++) {
                 if(invalidRow(i, switchTask.uuid, tempFromDate, tempToDate)) {
-                    if(i === rows.value.length - 1) {
-                        rows.value.push([]);
-                        taskIntervals.push(new Map<string, TaskTimestampInterval>);
+                    if(i >= rows.value.length - 1) {
+                        addRow();
                     }
 
                     findTasksInRow(i, tempFromDate, tempToDate).forEach((taskUUID) => {
@@ -288,7 +295,7 @@ function checkSwitchRow(switchTask: Task) {
                         if(task && !alreadyChangedTaskUUIDs.includes(task.uuid)) {
                             tempFromDate = CDateToTimestamp(task.fromDate) < CDateToTimestamp(tempFromDate) ? task.fromDate : tempFromDate;
                             tempToDate = CDateToTimestamp(task.toDate) > CDateToTimestamp(tempToDate) ? task.toDate : tempToDate;                                
-
+     
                             changeRow(task.uuid, i, i + 1);
                             taskIntervals[i].delete(task.uuid);
                             taskIntervals[i + 1].set(task.uuid, { from: CDateToDate(task.fromDate).getTime(), to: CDateToDate(task.toDate).getTime() });
@@ -304,7 +311,7 @@ function checkSwitchRow(switchTask: Task) {
                 if(!invalidRowIgnoreUUIDs(i + 1, alreadyChangedTaskUUIDs, tempFromDate, tempToDate))
                     break;
             }
-            
+
             taskUUIDs.forEach((taskUUID) => {
                 let task: Task | undefined = findTaskByUUID(switchTask.row, taskUUID);                    
                 
@@ -312,6 +319,10 @@ function checkSwitchRow(switchTask: Task) {
                     tempFromDate = task.fromDate;
                     tempToDate = task.toDate;
                 
+                    if(switchTask.row >= rows.value.length - 1) {
+                        addRow();
+                    }
+
                     changeRow(task.uuid, switchTask.row, switchTask.row + 1);
                     taskIntervals[switchTask.row].delete(task.uuid);
                     taskIntervals[switchTask.row + 1].set(task.uuid, { from: CDateToDate(task.fromDate).getTime(), to: CDateToDate(task.toDate).getTime() });
@@ -323,15 +334,15 @@ function checkSwitchRow(switchTask: Task) {
             });
         }
     }
-    else if(switchTask.row !== currentHoveredRow) {
+    else if(switchTask.row !== currentHoveredRow && currentHoveredRow !== prevHoveredRow) {
         if(invalidRow(currentHoveredRow, switchTask.uuid, switchTask.fromDate, switchTask.toDate)) {
-            if(currentHoveredRow > 0 && invalidRow(currentHoveredRow - 1, switchTask.uuid, switchTask.fromDate, switchTask.toDate) && invalidRow(switchTask.row, switchTask.uuid, switchTask.fromDate, switchTask.toDate)) {
+            if(currentHoveredRow > 0 && invalidRow(currentHoveredRow - 1, switchTask.uuid, switchTask.fromDate, switchTask.toDate)) {
                 let taskUUIDs: string[] = findTasksInRow(currentHoveredRow, tempFromDate, tempToDate);
                 let intersectedTask: Task | undefined = undefined;
 
                 for(const taskUUID of taskUUIDs) {
                     if(taskUUID !== switchTask.uuid)
-                        intersectedTask = findTaskByUUID(switchTask.row, taskUUID);
+                        intersectedTask = findTaskByUUID(currentHoveredRow, taskUUID);
                 }
 
                 if(intersectedTask) {
@@ -341,9 +352,8 @@ function checkSwitchRow(switchTask: Task) {
 
                     for(let i = currentHoveredRow + 1; i < rows.value.length; i++) {            
                         if(invalidRow(i, switchTask.uuid, tempFromDate, tempToDate)) {
-                            if(i === rows.value.length - 1) {
-                                rows.value.push([]);
-                                taskIntervals.push(new Map<string, TaskTimestampInterval>);
+                            if(i >= rows.value.length - 1) {
+                                addRow();
                             }
 
                             findTasksInRow(i, tempFromDate, tempToDate).forEach((taskUUID) => {
@@ -371,8 +381,11 @@ function checkSwitchRow(switchTask: Task) {
                     
                     taskUUIDs.forEach((taskUUID) => {
                         let task: Task | undefined = findTaskByUUID(currentHoveredRow, taskUUID);                    
-                        
                         if(task && task.uuid !== switchTask.uuid) {
+                            if(currentHoveredRow >= rows.value.length - 1) {
+                                addRow();
+                            }
+
                             changeRow(task.uuid, currentHoveredRow, currentHoveredRow + 1);
                             taskIntervals[currentHoveredRow].delete(task.uuid);
                             taskIntervals[currentHoveredRow + 1].set(task.uuid, { from: CDateToDate(task.fromDate).getTime(), to: CDateToDate(task.toDate).getTime() });
@@ -383,6 +396,12 @@ function checkSwitchRow(switchTask: Task) {
                         }
                     });
 
+                    changeRow(switchTask.uuid, switchTask.row, currentHoveredRow);
+                    taskIntervals[switchTask.row].delete(switchTask.uuid);
+                    taskIntervals[currentHoveredRow].set(switchTask.uuid, { from: CDateToDate(switchTask.fromDate).getTime(), to: CDateToDate(switchTask.toDate).getTime() });
+                    switchTask.row = currentHoveredRow;
+
+                    fixRow(switchTask);
                     changedTasks.forEach((changedTask) => fixRow(changedTask));
                 }
             }
@@ -435,8 +454,21 @@ function checkSwitchRow(switchTask: Task) {
                             changedTasks.push(task);
                     });
 
+                    fixRow(switchTask);
                     changedTasks.forEach((changedTask) => fixRow(changedTask));
-                }        
+                }
+                else if(canSwap && (currentHoveredRow === 0 || invalidRow(currentHoveredRow - 1, switchTask.uuid, switchTask.fromDate, switchTask.toDate))) {
+                    if(currentHoveredRow >= rows.value.length - 1) {
+                        addRow();
+                    }
+
+                    changeRow(switchTask.uuid, switchTask.row, currentHoveredRow);
+                    taskIntervals[switchTask.row].delete(switchTask.uuid);
+                    taskIntervals[currentHoveredRow].set(switchTask.uuid, { from: CDateToDate(switchTask.fromDate).getTime(), to: CDateToDate(switchTask.toDate).getTime() });
+                    switchTask.row = currentHoveredRow;
+
+                    resizeCheckRow(switchTask);                    
+                }      
             }
         } 
         else {
@@ -449,10 +481,16 @@ function checkSwitchRow(switchTask: Task) {
                 }
             }
 
-            changeRow(switchTask.uuid, switchTask.row, nextAvailableRow);
-            taskIntervals[switchTask.row].delete(switchTask.uuid);
-            taskIntervals[nextAvailableRow].set(switchTask.uuid, { from: CDateToDate(switchTask.fromDate).getTime(), to: CDateToDate(switchTask.toDate).getTime() });
-            switchTask.row = nextAvailableRow;
+            if(nextAvailableRow !== switchTask.row) {
+                if(nextAvailableRow >= rows.value.length - 1) {
+                    addRow();
+                }                 
+
+                changeRow(switchTask.uuid, switchTask.row, nextAvailableRow);
+                taskIntervals[switchTask.row].delete(switchTask.uuid);
+                taskIntervals[nextAvailableRow].set(switchTask.uuid, { from: CDateToDate(switchTask.fromDate).getTime(), to: CDateToDate(switchTask.toDate).getTime() });
+                switchTask.row = nextAvailableRow;
+            }
 
             if(nextAvailableRow !== 0) {
                 findTasksInRow(nextAvailableRow - 1, switchTask.fromDate, switchTask.toDate).forEach((taskUUID) => {
@@ -463,9 +501,12 @@ function checkSwitchRow(switchTask: Task) {
                 });
             }
 
+            fixRow(switchTask);
             changedTasks.forEach((changedTask) => fixRow(changedTask));
         }
     }
+
+    deleteEmptyRows();
 }
 
 function resizeCheckRow(resizeTask: Task) {
@@ -487,9 +528,8 @@ function resizeCheckRow(resizeTask: Task) {
 
             for(let i = resizeTask.row + 1; i < rows.value.length; i++) {
                 if(invalidRow(i, resizeTask.uuid, tempFromDate, tempToDate)) {
-                    if(i === rows.value.length - 1) {
-                        rows.value.push([]);
-                        taskIntervals.push(new Map<string, TaskTimestampInterval>);
+                    if(i >= rows.value.length - 1) {
+                        addRow();
                     }
 
                     findTasksInRow(i, tempFromDate, tempToDate).forEach((taskUUID) => {
@@ -519,6 +559,10 @@ function resizeCheckRow(resizeTask: Task) {
                 let task: Task | undefined = findTaskByUUID(resizeTask.row, taskUUID);                    
                 
                 if(task && task.uuid !== resizeTask.uuid) {
+                    if(resizeTask.row >= rows.value.length - 1) {
+                        addRow();
+                    }
+
                     tempFromDate = task.fromDate;
                     tempToDate = task.toDate;
                     changeRow(task.uuid, resizeTask.row, resizeTask.row + 1);
@@ -532,6 +576,8 @@ function resizeCheckRow(resizeTask: Task) {
             });
         }
     }
+
+    deleteEmptyRows();
 }
 
 //
@@ -568,7 +614,7 @@ async function onEditResizeTask(task: Task, prevFromDate: CDate, prevToDate: CDa
         findTasksInRow(i, prevFromDate, prevToDate).forEach((foundUUID) => {
             let foundTask: Task | undefined = findTaskByUUID(i, foundUUID);
 
-            if(foundTask && !arrayIncludesTask(changedTasks, foundTask))
+            if(foundTask && foundTask.uuid !== task.uuid && !arrayIncludesTask(changedTasks, foundTask))
                 fixRow(foundTask);
         })
     }
@@ -576,6 +622,7 @@ async function onEditResizeTask(task: Task, prevFromDate: CDate, prevToDate: CDa
     if(!arrayIncludesTask(changedTasks, task))
         changedTasks.push(task);
     
+    fixRow(task, prevFromDate, prevToDate);
     changedTasks.forEach((task) => fixRow(task));
     saveTasks(changedTasks);
     changedTasks = [];
@@ -584,6 +631,7 @@ async function onEditResizeTask(task: Task, prevFromDate: CDate, prevToDate: CDa
 }
 
 async function onRowChangeEvent(index: number) {
+    prevHoveredRow = currentHoveredRow;
     currentHoveredRow = index;
 }
 
@@ -594,6 +642,7 @@ async function mousePressedEvent(e: MouseEvent) {
     if(editing) {
         editing = false;
         emit('taskEdit', undefined);
+        inactiveTask.value = {}
     }
     else {
         if(inactiveTask) 
@@ -625,8 +674,7 @@ async function mousePressedEvent(e: MouseEvent) {
         }        
         else if(row === currentHoveredRow && rows.value.length - 1 === row)
         {
-            rows.value.push([]);
-            taskIntervals.push(new Map<string, TaskTimestampInterval>);
+            addRow();
         }
 
         inactiveTask.value.row = row;
@@ -713,13 +761,14 @@ async function mouseMoveEvent(mousePageX: number, mousePageY: number) { // TODO:
                 findTasksInRow(selectedTask.row + 1, prevFromDate, prevToDate).forEach((foundUUID) => {
                     let foundTask: Task | undefined = findTaskByUUID(selectedTask.row + 1, foundUUID);
                     
-                    if(foundTask && !arrayIncludesTask(changedTasks, foundTask))
+                    if(foundTask && foundTask.uuid !== selectedTask.uuid && !arrayIncludesTask(changedTasks, foundTask))
                         fixRow(foundTask);
                 });
 
                 if(!arrayIncludesTask(changedTasks, selectedTask))
                     changedTasks.push(selectedTask);
 
+                fixRow(selectedTask, prevFromDate, prevToDate);
                 changedTasks.forEach((task) => fixRow(task));
 
                 if(editing)
@@ -738,13 +787,14 @@ async function mouseMoveEvent(mousePageX: number, mousePageY: number) { // TODO:
                 findTasksInRow(selectedTask.row + 1, prevFromDate, prevToDate).forEach((foundUUID) => {
                     let foundTask: Task | undefined = findTaskByUUID(selectedTask.row + 1, foundUUID);
                     
-                    if(foundTask && !arrayIncludesTask(changedTasks, foundTask))
+                    if(foundTask && foundTask.uuid !== selectedTask.uuid && !arrayIncludesTask(changedTasks, foundTask))
                         fixRow(foundTask);
                 });
 
                 if(!arrayIncludesTask(changedTasks, selectedTask))
                     changedTasks.push(selectedTask);
 
+                fixRow(selectedTask, prevFromDate, prevToDate);
                 changedTasks.forEach((task) => fixRow(task));
 
                 if(editing)
@@ -769,7 +819,7 @@ async function mouseMoveEvent(mousePageX: number, mousePageY: number) { // TODO:
                 findTasksInRow(selectedTask.row + 1, prevFromDate, prevToDate).forEach((foundUUID) => {
                     let foundTask: Task | undefined = findTaskByUUID(selectedTask.row + 1, foundUUID);
                     
-                    if(foundTask && !arrayIncludesTask(changedTasks, foundTask))
+                    if(foundTask && foundTask.uuid !== selectedTask.uuid && !arrayIncludesTask(changedTasks, foundTask))
                         fixRow(foundTask);
                 });
 
@@ -777,6 +827,7 @@ async function mouseMoveEvent(mousePageX: number, mousePageY: number) { // TODO:
                 if(!arrayIncludesTask(changedTasks, selectedTask))
                     changedTasks.push(selectedTask);
 
+                fixRow(selectedTask, prevFromDate, prevToDate);
                 changedTasks.forEach((task) => fixRow(task));
             } 
             else if (startDragPosX - mousePageX < -49 && differenceOfDays > 0) {
@@ -796,7 +847,7 @@ async function mouseMoveEvent(mousePageX: number, mousePageY: number) { // TODO:
                 findTasksInRow(selectedTask.row + 1, prevFromDate, prevToDate).forEach((foundUUID) => {
                     let foundTask: Task | undefined = findTaskByUUID(selectedTask.row + 1, foundUUID);
                     
-                    if(foundTask && !arrayIncludesTask(changedTasks, foundTask))
+                    if(foundTask && foundTask.uuid !== selectedTask.uuid && !arrayIncludesTask(changedTasks, foundTask))
                         fixRow(foundTask);
                 });
 
@@ -804,6 +855,7 @@ async function mouseMoveEvent(mousePageX: number, mousePageY: number) { // TODO:
                 if(!arrayIncludesTask(changedTasks, selectedTask))
                     changedTasks.push(selectedTask);
 
+                fixRow(selectedTask, prevFromDate, prevToDate);
                 changedTasks.forEach((task) => fixRow(task));
             }
             break;
@@ -825,7 +877,7 @@ async function mouseMoveEvent(mousePageX: number, mousePageY: number) { // TODO:
                 findTasksInRow(selectedTask.row + 1, prevFromDate, prevToDate).forEach((foundUUID) => {
                     let foundTask: Task | undefined = findTaskByUUID(selectedTask.row + 1, foundUUID);
                     
-                    if(foundTask && !arrayIncludesTask(changedTasks, foundTask))
+                    if(foundTask && foundTask.uuid !== selectedTask.uuid && !arrayIncludesTask(changedTasks, foundTask))
                         fixRow(foundTask);
                 });
 
@@ -833,6 +885,7 @@ async function mouseMoveEvent(mousePageX: number, mousePageY: number) { // TODO:
                 if(!arrayIncludesTask(changedTasks, selectedTask))
                     changedTasks.push(selectedTask);
 
+                fixRow(selectedTask, prevFromDate, prevToDate);
                 changedTasks.forEach((task) => fixRow(task));
             } 
             else if (mousePageX - startDragPosX < -49 && differenceOfDays > 0) {
@@ -852,7 +905,7 @@ async function mouseMoveEvent(mousePageX: number, mousePageY: number) { // TODO:
                 findTasksInRow(selectedTask.row + 1, prevFromDate, prevToDate).forEach((foundUUID) => {
                     let foundTask: Task | undefined = findTaskByUUID(selectedTask.row + 1, foundUUID);
 
-                    if(foundTask && !arrayIncludesTask(changedTasks, foundTask))
+                    if(foundTask && foundTask.uuid !== selectedTask.uuid && !arrayIncludesTask(changedTasks, foundTask))
                         fixRow(foundTask);
                 });
 
@@ -860,6 +913,7 @@ async function mouseMoveEvent(mousePageX: number, mousePageY: number) { // TODO:
                 if(!arrayIncludesTask(changedTasks, selectedTask))
                     changedTasks.push(selectedTask);
 
+                fixRow(selectedTask, prevFromDate, prevToDate);
                 changedTasks.forEach((task) => fixRow(task));
             }
             break;
