@@ -5,15 +5,6 @@ let db: DatabaseConnection;
 let initalized = false;
 
 export const getDatabase = (path: string) => {
-    if(!fs.existsSync(path))
-    {
-        initalized = false;
-        fs.mkdir(`${process.cwd()}/database`, (err) => {});
-        
-        if(!fs.existsSync(path))
-            fs.writeFile(`${process.cwd()}/database/db.sqlite`, '', (err) => {});
-    }
-
     db = db || connect(path);
 
     if(!initalized) {

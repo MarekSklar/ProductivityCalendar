@@ -334,7 +334,7 @@ function checkSwitchRow(switchTask: Task) {
             });
         }
     }
-    else if(switchTask.row !== currentHoveredRow && currentHoveredRow !== prevHoveredRow) {
+    else if(switchTask.row !== currentHoveredRow) { // TODO: somehow implement currentHoveredRow !== prevHoveredRow
         if(invalidRow(currentHoveredRow, switchTask.uuid, switchTask.fromDate, switchTask.toDate)) {
             if(currentHoveredRow > 0 && invalidRow(currentHoveredRow - 1, switchTask.uuid, switchTask.fromDate, switchTask.toDate)) {
                 let taskUUIDs: string[] = findTasksInRow(currentHoveredRow, tempFromDate, tempToDate);
@@ -744,7 +744,7 @@ async function mouseMoveEvent(mousePageX: number, mousePageY: number) { // TODO:
             
             draggedTaskObject.value.left = mousePageX - clickOffsetX;
             draggedTaskObject.value.top = mousePageY - clickOffsetY;
-
+            
             checkSwitchRow(selectedTask);
             
             // moving
