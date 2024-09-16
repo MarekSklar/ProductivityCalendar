@@ -18,9 +18,7 @@ definePageMeta({
     <!-- register redirect -->
     <div class="card gap-8 px-20 py-12">
       <h2 class="header">Don't have an account?</h2>
-      <NuxtLink to="/register">
-        <button class="primaryButton">Create one</button>
-      </NuxtLink>
+      <p class="text-center py-3">Ask your supervisor and they will create you one.</p>
     </div>
   </div>
 </template>
