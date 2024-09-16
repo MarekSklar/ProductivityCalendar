@@ -134,7 +134,10 @@ export async function get(db: DatabaseConnection, options: ProfileGetOptions) {
         if(result.length == 0)
             return;
 
-        if(result[0].sessionToken === params.sessionToken)    
+        if(result[0].sessionToken === params.sessionToken)
+            result[0].password = null;
+            result[0].sessionToken = null;
+            
             return result;
         
         return;
