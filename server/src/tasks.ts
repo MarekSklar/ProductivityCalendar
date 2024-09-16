@@ -2,10 +2,15 @@ import { boolean, z } from 'zod';
 import { DatabaseConnection, sql } from "@databases/sqlite";
 import { randomUUID } from 'node:crypto';
 
+const tasksListOptionsSchema = z.object({
+    sectionIndex: z.number()
+});
+
 const taskAddOptionsSchema = z.object({
     color: z.string(),
     name: z.string(),
     row: z.number(),
+    sectionIndex: z.number(),
     status: z.string(),
     fromDate: z.any(),
     toDate: z.any(),
@@ -19,6 +24,7 @@ const taskEditOptionsSchema = z.object({
     color: z.string(),
     name: z.string(),
     row: z.number(),
+    sectionIndex: z.number(),
     status: z.string(),
     fromDate: z.any(),
     toDate: z.any(),
@@ -35,19 +41,20 @@ const taskDeleteOptionsSchema = z.object({
     uuid: z.string()
 });
 
-export async function list(db: DatabaseConnection) {
-    let tasks = db.query(sql`SELECT * FROM tasks`);
+export async function list(db: DatabaseConnection, options: TasksListOptions) {
+    const params = tasksListOptionsSchema.parse(options);
+    let tasks = db.query(sql`SELECT * FROM tasks WHERE sectionIndex=${params.sectionIndex}`);
     (await tasks).forEach((task) => {
         const fromDates = task.fromDate.split('-');
         task.fromDate = { day: parseInt(fromDates[2]), month: parseInt(fromDates[1]), year: parseInt(fromDates[0]) };
-
+        
         const toDates = task.toDate.split('-');
         task.toDate = { day: parseInt(toDates[2]), month: parseInt(toDates[1]), year: parseInt(toDates[0]) };
         
         task.assignees = task.assignees.split(',');
         task.active = true;
     });
-
+    
     return tasks;
 }
 
@@ -59,6 +66,7 @@ export async function add(db: DatabaseConnection, options: TaskAddOptions) {
         color: params.color,
         name: params.name,
         row: params.row,
+        sectionIndex: params.sectionIndex,
         status: params.status,
         fromDate: params.fromDate,
         toDate: params.toDate,
@@ -75,6 +83,7 @@ export async function add(db: DatabaseConnection, options: TaskAddOptions) {
         color,
         name,
         row,
+        sectionIndex,
         status,
         fromDate,
         toDate,
@@ -86,6 +95,7 @@ export async function add(db: DatabaseConnection, options: TaskAddOptions) {
         ${task.color},
         ${task.name},
         ${task.row},
+        ${task.sectionIndex},
         ${task.status},
         ${sqlFromDate},
         ${sqlToDate},            
@@ -111,16 +121,17 @@ export async function edit(db: DatabaseConnection, options: TaskEditOptions) {
     const sqlToDate = params.toDate.year + "-" + (params.toDate.moFlognth < 10 ? "0" + params.toDate.month : params.toDate.month) + "-" + (params.toDate.day < 10 ? "0" + params.toDate.day : params.toDate.day); 
 
     await db.query(sql`UPDATE tasks SET
-        uuid = ${params.uuid},
-        color = ${params.color},
-        name = ${params.name},
-        row = ${params.row},
-        status = ${params.status},
-        fromDate = ${sqlFromDate},
-        toDate = ${sqlToDate},            
-        assignees = ${params.assignees?.toString()},
-        description = ${params.description},
-        createdBy = ${params.createdBy}
+            uuid = ${params.uuid},
+            color = ${params.color},
+            name = ${params.name},
+            row = ${params.row},
+            sectionIndex = ${params.sectionIndex},
+            status = ${params.status},
+            fromDate = ${sqlFromDate},
+            toDate = ${sqlToDate},            
+            assignees = ${params.assignees?.toString()},
+            description = ${params.description},
+            createdBy = ${params.createdBy}
         WHERE uuid = ${params.uuid}
     `);
         
@@ -154,6 +165,7 @@ export async function editArray(db: DatabaseConnection, options: TasksEditOption
             color = ${task.color},
             name = ${task.name},
             row = ${task.row},
+            sectionIndex = ${task.sectionIndex},
             status = ${task.status},
             fromDate = ${sqlFromDate},
             toDate = ${sqlToDate},            

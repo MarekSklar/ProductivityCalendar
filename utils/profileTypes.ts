@@ -5,6 +5,7 @@ declare global {
         name: string,
         email: string
         password: string,
+        role: string,
         pfpPath256: string,
         pfpPath48: string,
         sessionToken: string

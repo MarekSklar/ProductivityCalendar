@@ -1,9 +1,8 @@
 import { getDatabase } from '~/server/src/database';
-import * as Tasks from '~/server/src/tasks'
+import * as Sections from '~/server/src/sections'
 
 export default defineEventHandler(async (event) => {
     const { databaseFilePath } = useRuntimeConfig();
     const db = await getDatabase(databaseFilePath);
-    const body = await readBody(event);
-    return Tasks.list(db, body);
+    return Sections.list(db);
 });

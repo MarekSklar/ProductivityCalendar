@@ -1,10 +1,13 @@
 import { getDatabase } from '~/server/src/database';
-import * as Profiles from '~/server/src/profiles'
+import * as Sections from '~/server/src/sections'
 
 export default defineEventHandler(async (event) => {
     try {
         const { databaseFilePath } = useRuntimeConfig();
         const db = await getDatabase(databaseFilePath);
-        return Profiles.list(db);
-    } catch (err) { return };
+        const body = await readBody(event);
+        return Sections.deleteSection(db, body);
+    } catch(err) {
+        return;
+    }
 });

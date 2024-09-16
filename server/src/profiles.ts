@@ -61,6 +61,7 @@ export async function add(db: DatabaseConnection, options: ProfileAddOptions) {
         name: params.name,
         email: params.email,
         password: params.password,
+        role: "admin",
         pfpPath256: params.pfpPath256,
         pfpPath48: params.pfpPath48,
         sessionToken: params.sessionToken
@@ -80,6 +81,7 @@ export async function add(db: DatabaseConnection, options: ProfileAddOptions) {
                 name,
                 email,
                 password,
+                role,
                 pfpPath256,
                 pfpPath48,
                 sessionToken
@@ -88,6 +90,7 @@ export async function add(db: DatabaseConnection, options: ProfileAddOptions) {
                 ${profile.name},
                 ${profile.email},
                 ${profile.password},
+                ${profile.role},
                 ${profile.pfpPath256},
                 ${profile.pfpPath48},
                 ${profile.sessionToken}

@@ -22,7 +22,8 @@
   "dependencies": {
     "@databases/sqlite": "^4.0.2",
     "@iconify/vue": "^4.1.2",
-    "@vueuse/core": "^10.9.0",
+    "@vueuse/core": "^10.11.1",
+    "@vueuse/nuxt": "^11.1.0",
     "image-to-base64": "^2.2.0",
     "radix-vue": "^1.7.4",
     "zod": "^3.23.8"

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useTemplateRefsList } from '@vueuse/core/index.cjs';
 
 // session token
 const sessionToken = getSessionToken();
@@ -14,7 +15,11 @@ const startDragPosX = ref(0);
 const relativeDragPos = ref(0);
 const calendarDragPos = ref(0);
 
-let sections = ref<any>(null); // make array
+let currentHoveredSection = 0;
+let sections = ref<Section[]>([]);
+// @ts-ignore
+let sectionRefs = useTemplateRefsList<CalendarSection>(); 
+
 let taskEditor = ref<any>(null);
 let draggedTaskObject = ref();
 let draggingCalendar: boolean = false;
@@ -30,7 +35,37 @@ const screenSize = ref({width: 1920, height: 1080});
 const columnWidth = 56;
 const weekendOffset = ref(weekOffset.value - (todayWeekDay.value - 2) * columnWidth);
 
+// section events
+
+if(profiles && profiles.length > 0) {
+    await $fetch('/api/sections/sectionsList', { method: 'post' }).then((value) => {
+        let listedSections = value as Section[];
+
+        for(let section of listedSections)
+            sections.value.push(section);
+    });
+
+    if(sections.value.length === 0)
+        addNewSection();
+}
+
+async function addNewSection() {
+    await $fetch('/api/sections/sectionAdd', {
+        method: 'post',
+        body: {
+            name: "New section",
+            sectionIndex: sections.value.length
+        }
+    }).then((section) => { 
+        sections.value.push(section as Section);
+    }).catch(err => {});
+}
+
+//
+
+
 // mouse events
+
 async function mouseDownEvent(event: MouseEvent) {
     if (event.button === 1) {
         startDragPosX.value = event.screenX;
@@ -44,8 +79,7 @@ function mouseMoveEvent(event: MouseEvent) {
     // move calendar on drag
     if (!event.buttons) return;
 
-    if(sections.value)
-        sections.value.mouseMoveEvent(event.pageX, event.pageY);
+    sectionRefs.value.at(currentHoveredSection).mouseMoveEvent(event.pageX, event.pageY);
 
     if(draggingCalendar) {
         calendarDragPos.value = event.screenX - startDragPosX.value + relativeDragPos.value;
@@ -58,8 +92,7 @@ function mouseMoveEvent(event: MouseEvent) {
 }
 
 async function mouseUpEvent() {
-    if(sections.value)
-        sections.value.mouseUpEvent();
+    sectionRefs.value.at(currentHoveredSection).mouseUpEvent();
 
     if(draggingCalendar) {
         relativeDragPos.value = calendarDragPos.value;
@@ -67,26 +100,29 @@ async function mouseUpEvent() {
     }
 }
 
+
 // task events
 
 function CDateToTimestamp(date: CDate) {
     return new Date(date.year, date.month - 1, date.day).getTime();
 }
 
+async function onSectionChange(index: number) {
+    currentHoveredSection = index;
+}
 
 async function onEditTask(task: Task) {
-    if(task && sections.value)
-        sections.value.onEditTask(task);    
+    if(task)
+        sectionRefs.value.at(currentHoveredSection).onEditTask(task);    
 }
 
 async function onCreatedTask(task: Task) {
-    if(task && sections.value)
-        sections.value.onCreateTask(task);
+    if(task)
+        sectionRefs.value.at(currentHoveredSection).onCreateTask(task);
 }
 
 async function onCloseEdit() {
-    if(sections.value)
-        sections.value.onCloseEdit();
+    sectionRefs.value.at(currentHoveredSection).onCloseEdit();
 }
 
 async function taskEdit(task: Task) {
@@ -116,7 +152,7 @@ async function inactiveTaskEdit(task: InactiveTask) {
 }
 
 async function editResizeTask(task: Task, dateFrom: string, dateTo: string) {
-    if(task && sections.value) {
+    if(task) {
         const dateFromFormat = dateFrom.split('-');
         const dateToFormat = dateTo.split('-');
         
@@ -134,13 +170,16 @@ async function editResizeTask(task: Task, dateFrom: string, dateTo: string) {
             task.toDate = toDate;
         }
 
-        sections.value.onEditResizeTask(task, prevFromDate, prevToDate);
+        sectionRefs.value.at(currentHoveredSection).onEditResizeTask(task, prevFromDate, prevToDate);
     }
 }
 
 async function onDraggedTaskChange(draggedTask: DraggedTask) {
     draggedTaskObject.value = draggedTask;
 }
+
+//
+
 
 onMounted(() => {
     const handleResize = () => screenSize.value = getScreenSize();
@@ -151,7 +190,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <div v-if="sessionToken && sessionToken !== 'null' && pfps && profiles && profile" class="flex flex-col w-full h-screen"
+    <div v-if="sessionToken && sessionToken !== 'null' && pfps && profiles && profile && sections && sections.length > 0" class="flex flex-col w-full h-screen"
     :style="{backgroundImage: `repeating-linear-gradient(to right, ${tw.colors.white} ${weekendOffset}px, ${tw.colors.white} ${2+weekendOffset}px, ${tw.colors.gray[50]} ${2+weekendOffset}px, ${tw.colors.gray[50]} ${112+weekendOffset}px, ${tw.colors.white} ${112+weekendOffset}px, ${tw.colors.white} ${392+weekendOffset}px)`}">
         <!-- Top date panel -->
         <CalendarDates :datesOffset = "datesOffset" :columnWidth = "columnWidth" :screenSizeWidth = "screenSize.width" :datesPos = "datesPos" />
@@ -163,7 +202,9 @@ onMounted(() => {
             <div @mousedown="mouseDownEvent" @mousemove="mouseMoveEvent" @mouseup="mouseUpEvent"
                 class="w-full h-full overflow-x-hidden overflow-y-auto cursor-grab"
                 :class="{ 'cursor-grabbing': draggingCalendar }">
-                <CalendarSection @onDraggedTaskChange="onDraggedTaskChange" @taskEdit="taskEdit" @inactiveTaskEdit="inactiveTaskEdit" ref="sections" :columnWidth="columnWidth" :datesPos="datesPos" :calendarDragPos="calendarDragPos" :profile="profile"/>            
+                <div v-for="(section, index) in sections">
+                    <CalendarSection @mouseover="onSectionChange(index)" :ref="sectionRefs.set" @onDraggedTaskChange="onDraggedTaskChange" @taskEdit="taskEdit" @inactiveTaskEdit="inactiveTaskEdit" :sectionIndex="index" :name="sections[index].name" :columnWidth="columnWidth" :datesPos="datesPos" :calendarDragPos="calendarDragPos" :profile="profile"/>            
+                </div>
             </div>
         </div>
 

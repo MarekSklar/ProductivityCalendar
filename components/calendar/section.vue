@@ -7,6 +7,8 @@ defineExpose({
 });
 
 const props = defineProps({
+    sectionIndex: Number,
+    name: String,
     columnWidth: Number,
     datesPos: Number,
     calendarDragPos: Number,
@@ -50,9 +52,9 @@ let dragStatus: DragStatus = DragStatus.None;
 // database functions
 
 // do this in index for each section and then passing it through props
-await useFetch('/api/tasks/tasksList', { method: 'post' })!.then((value) => {
+await $fetch('/api/tasks/tasksList', { method: 'post', body: { sectionIndex: props.sectionIndex }}).then((value) => {
     pending = false; 
-    let tasks = value.data.value as Task[];
+    let tasks = value as Task[];
 
     let maxRow: number = 2;
     tasks.forEach((task) => { if(task.row > maxRow) { maxRow = task.row }});
@@ -265,7 +267,7 @@ function addRow() {
 }
 
 function deleteEmptyRows() {
-    while(rows.value[rows.value.length - 1].length === 0) {
+    while(rows.value[rows.value.length - 1].length === 0 && rows.value.length > 3) {
         rows.value.pop();
         taskIntervals.pop();
     }
@@ -663,6 +665,7 @@ async function onDuplicateTask() {
             color: contextMenuTask.value.color,
             name: contextMenuTask.value.name,
             row: contextMenuTask.value.row + 1,
+            sectionIndex: contextMenuTask.value.sectionIndex,
             status: contextMenuTask.value.status,
             fromDate: contextMenuTask.value.fromDate,
             toDate: contextMenuTask.value.toDate,
@@ -746,6 +749,7 @@ async function mousePressedEvent(e: MouseEvent) {
 
         inactiveTask.value = {
             row: -1,
+            sectionIndex: props.sectionIndex,
             fromDate: currentDate,
             toDate: currentDate,
         };
@@ -1059,7 +1063,7 @@ async function mouseUpEvent() {
 <template>
     <div v-if="!pending" class="relative mt-4 overflow-hidden select-none" @mousedown="mousePressedEvent">
         <div class="absolute top-1/2 z-30" style="height: calc(100% - 1rem);">
-            <div class="relative -top-1/2 flex justify-center items-center w-40 h-full px-4 text-left bg-white rounded-r-lg shadow-[0_0px_20px_-10px_rgba(0,0,0,0.3)]">Daily responsibility</div>
+            <div class="relative -top-1/2 flex justify-center items-center w-40 h-full px-4 text-left bg-white rounded-r-lg shadow-[0_0px_20px_-10px_rgba(0,0,0,0.3)]">{{ props.name }}</div>
         </div>
         <div v-for="(row, index) in rows" @mouseover="onRowChangeEvent(index)" class="relative h-11 mb-0.5">
             <div v-for="task in row.filter((task: Task) => task.row === index)" :id="task.uuid" @mousedown="startTaskDragging($event, task)" class="absolute flex h-full left-5 px-px"

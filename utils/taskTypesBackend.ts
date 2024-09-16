@@ -14,6 +14,7 @@ interface Task {
     color: string,
     name: string,
     row: number,
+    sectionIndex: number,
     status: string,
     fromDate: CDate,
     toDate: CDate,
@@ -24,6 +25,7 @@ interface Task {
 
 interface InactiveTask {
     row: number,
+    sectionIndex: number,
     fromDate: CDate,
     toDate: CDate,
 }
@@ -38,10 +40,15 @@ interface DraggedTask {
     width: number
 }
 
+interface TasksListOptions {
+    sectionIndex: number
+}
+
 interface TaskAddOptions {
     color: string,
     name: string,
-    row: string,
+    row: number,
+    sectionIndex: number,
     fromDate: CDate,
     toDate: CDate,
     assignees?: string[],
@@ -53,7 +60,8 @@ interface TaskEditOptions {
     uuid: string,
     color: string,
     name: string,
-    row: string,
+    row: number,
+    sectionIndex: number,
     status: string,
     fromDate: CDate,
     toDate: CDate,

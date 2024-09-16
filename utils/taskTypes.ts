@@ -15,6 +15,7 @@ declare global {
         color: string,
         name: string,
         row: number,
+        sectionIndex: number,
         status: string,
         fromDate: CDate,
         toDate: CDate,
@@ -25,6 +26,7 @@ declare global {
     
     interface InactiveTask {
         row: number,
+        sectionIndex: number,
         fromDate: CDate,
         toDate: CDate,
     }
@@ -39,10 +41,15 @@ declare global {
         width: number
     }
     
+    interface TasksListOptions {
+        sectionIndex: number
+    }
+
     interface TaskAddOptions {
         color: string,
         name: string,
-        row: string,
+        row: number,
+        sectionIndex: number,
         fromDate: CDate,
         toDate: CDate,
         assignees?: string[],
@@ -54,7 +61,8 @@ declare global {
         uuid: string,
         color: string,
         name: string,
-        row: string,
+        row: number,
+        sectionIndex: number,
         status: string,
         fromDate: CDate,
         toDate: CDate,
