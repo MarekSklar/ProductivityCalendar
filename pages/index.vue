@@ -22,7 +22,7 @@ let sectionRefs = useTemplateRefsList<CalendarSection>();
 
 let taskEditor = ref<any>(null);
 let draggedTaskObject = ref();
-let draggingCalendar: boolean = false;
+let draggingCalendar = ref(false);
 
 // time vatiables
 const datesOffset = ref(0);
@@ -70,7 +70,7 @@ async function addNewSection() {
 async function mouseDownEvent(event: MouseEvent) {
     if (event.button === 1) {
         startDragPosX.value = event.screenX;
-        draggingCalendar = true;
+        draggingCalendar.value = true;
     }
 }
 
@@ -82,7 +82,7 @@ function mouseMoveEvent(event: MouseEvent) {
 
     sectionRefs.value.at(currentHoveredSection).mouseMoveEvent(event.pageX, event.pageY);
 
-    if(draggingCalendar) {
+    if(draggingCalendar.value) {
         calendarDragPos.value = event.screenX - startDragPosX.value + relativeDragPos.value;
         
         datesOffset.value = calendarDragPos.value % columnWidth;
@@ -95,12 +95,11 @@ function mouseMoveEvent(event: MouseEvent) {
 async function mouseUpEvent() {
     sectionRefs.value.at(currentHoveredSection).mouseUpEvent();
 
-    if(draggingCalendar) {
+    if(draggingCalendar.value) {
         relativeDragPos.value = calendarDragPos.value;
-        draggingCalendar = false;     
+        draggingCalendar.value = false;     
     }
 }
-
 
 // task events
 
@@ -202,7 +201,7 @@ onMounted(() => {
             <!-- Calendar -->
             <div @mousedown="mouseDownEvent" @mousemove="mouseMoveEvent" @mouseup="mouseUpEvent"
                 class="w-full h-full overflow-x-hidden overflow-y-auto cursor-grab"
-                :class="{ 'cursor-grabbing': draggingCalendar }">
+                :class="{ 'cursor-grabbing': draggingCalendar || draggedTaskObject }">
                 <div v-for="(section, index) in sections">
                     <CalendarSection @mouseover="onSectionChange(index)" :ref="sectionRefs.set" @onDraggedTaskChange="onDraggedTaskChange" @taskEdit="taskEdit" @inactiveTaskEdit="inactiveTaskEdit" :sectionIndex="index" :name="sections[index].name" :columnWidth="columnWidth" :datesPos="datesPos" :calendarDragPos="calendarDragPos" :profile="profile"/>            
                 </div>

@@ -1085,7 +1085,7 @@ async function mouseUpEvent() {
                     </div>
                 </div>
                 <!-- task -->
-                <div v-else @contextmenu.prevent="onShowContextMenu($event, task)" class="size-full rounded-md" :style="{ backgroundColor: task.color}">
+                <div v-else @contextmenu.prevent="onShowContextMenu($event, task)" class="size-full rounded-md cursor-pointer" :style="{ backgroundColor: task.color}">
                     <div @mousedown="startTaskLeftResizeDragging($event, task)" class="absolute left-0 z-20 w-3 h-full cursor-e-resize"></div>
                     <div @mousedown="startTaskRightResizeDragging($event, task)" class="absolute right-0 z-20 w-3 h-full cursor-e-resize"></div>
                     <div class="size-full p-1 pl-2">
