@@ -1073,18 +1073,16 @@ async function mouseUpEvent() {
                         <div class="relative size-full">
                             <div class="flex items-center h-full">
                                 <div v-if="draggedTaskObject.status !== 'No status'">{{ draggedTaskObject.status.slice(0,2) }}</div>
-                                    <h3 class="leading-none select-none">{{ draggedTaskObject.name }}</h3>
+                                    <h3 class="font-semibold leading-none select-none" :class="{'text-white': !(parseInt(task.color.substring(1), 16) > 0xffffff / 2)}">{{ draggedTaskObject.name }}</h3>
                                 </div>
                             <div class="absolute flex items-center h-full right-1 top-0">
                                 <div class="relative size-8 select-none">
-                                    <div v-for="num in 3">   
-                                    
-                                    </div>
+                                    <div v-for="num in 3"></div>
                                 </div>
-                            </div>                
+                            </div>
                         </div>
                     </div>
-                </div>                             
+                </div>
                 <div v-else @contextmenu.prevent="onShowContextMenu($event, task)" class="size-full rounded-md" :style="{ backgroundColor: task.color}">
                     <div @mousedown="startTaskLeftResizeDragging($event, task)" class="absolute left-0 z-20 w-3 h-full cursor-e-resize"></div>
                     <div @mousedown="startTaskRightResizeDragging($event, task)" class="absolute right-0 z-20 w-3 h-full cursor-e-resize"></div>
@@ -1092,7 +1090,7 @@ async function mouseUpEvent() {
                         <div class="relative size-full">
                             <div class="flex items-center h-full">
                                 <div v-if="task.status !== 'No status'">{{ task.status.slice(0,2) }}</div>
-                                <h3 class="leading-none select-none">{{ task.name }}</h3>
+                                <h3 class="font-semibold leading-none select-none" :class="{'text-white': !(parseInt(task.color.substring(1), 16) > 0xffffff / 2)}">{{ task.name }}</h3>
                             </div>
                             <div class="absolute flex items-center h-full right-1 top-0">
                                 <div class="relative size-8 select-none">
@@ -1100,7 +1098,7 @@ async function mouseUpEvent() {
                                         <img v-if="task.assignees![num-1]" :src="'data:image/jpg;base64,' + pfps![task.assignees![num-1]]" class="absolute size-full rounded-full object-cover" :style="{ right: (num-1)*1.4 + 'rem', 'z-index': num+10 }" draggable="false">
                                     </div>
                                 </div>
-                            </div>                
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1112,18 +1110,18 @@ async function mouseUpEvent() {
                     <div class="size-full p-1 pl-2">
                         <div class="relative size-full">
                             <div class="flex items-center h-full">
-                                <h3 class="leading-none select-none">New</h3>
+                                <h3 class="font-semibold leading-none select-none">New</h3>
                             </div>
                             <div class="absolute flex items-center h-full right-1 top-0">
                                 <div class="relative size-8 select-none">
                                     <div v-for="num in 3"></div>
                                 </div>
-                            </div>                
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>            
+        </div>
         <div class="relative h-11 mb-0.5" @mouseover="onRowChangeEvent(rows.length)"></div>
     </div>
-</template> 
+</template>
