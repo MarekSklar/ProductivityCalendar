@@ -672,6 +672,9 @@ async function onDuplicateTask() {
         }
     });
 
+    if(task.row >= rows.value.length - 1)
+        addRow();
+
     onCreateTask(task);
     checkSwitchRow(task);
 
