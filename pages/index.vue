@@ -33,6 +33,7 @@ const todayWeekDay = ref(new Date().getDay());
 // render variables
 const screenSize = ref({width: 1920, height: 1080});
 const columnWidth = 56;
+const columnHitboxWidth = Math.floor(columnWidth * 7 / 8);
 const weekendOffset = ref(weekOffset.value - (todayWeekDay.value - 2) * columnWidth);
 
 // section events
