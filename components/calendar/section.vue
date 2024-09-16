@@ -1068,6 +1068,7 @@ async function mouseUpEvent() {
         <div v-for="(row, index) in rows" @mouseover="onRowChangeEvent(index)" class="relative h-11 mb-0.5">
             <div v-for="task in row.filter((task: Task) => task.row === index)" :id="task.uuid" @mousedown="startTaskDragging($event, task)" class="absolute flex h-full left-5 px-px"
             :style="{ left: prps.calendarDragPos! + (taskPlacementPos(task).from)*prps.columnWidth! + 'px', width: taskPlacementPos(task).taskLength * prps.columnWidth! + 'px' }"> <!--TODO: precalculate-->
+                <!-- dragged task -->
                 <div v-if="draggedTaskObject !== undefined && draggedTaskObject.uuid === task.uuid" class="size-full rounded-md" :style="{ backgroundColor: draggedTaskObject.color, opacity: 0.6 }">
                     <div class="size-full p-1 pl-2">
                         <div class="relative size-full">
@@ -1083,6 +1084,7 @@ async function mouseUpEvent() {
                         </div>
                     </div>
                 </div>
+                <!-- task -->
                 <div v-else @contextmenu.prevent="onShowContextMenu($event, task)" class="size-full rounded-md" :style="{ backgroundColor: task.color}">
                     <div @mousedown="startTaskLeftResizeDragging($event, task)" class="absolute left-0 z-20 w-3 h-full cursor-e-resize"></div>
                     <div @mousedown="startTaskRightResizeDragging($event, task)" class="absolute right-0 z-20 w-3 h-full cursor-e-resize"></div>
