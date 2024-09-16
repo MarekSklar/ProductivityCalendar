@@ -3,19 +3,54 @@
 const emit = defineEmits(['toggleEdit']);
 
 const props = defineProps({
-  editedProfile: Object
+  editedProfile: Object,
+  profiles: Object
 });
 
 const pName = ref(props.editedProfile?.name ? props.editedProfile?.name : "");
-const pEmail = ref(props.editedProfile?.email ? props.editedProfile?.email : "");
+const pEmail = ref(props.editedProfile?.email ? props.editedProfile?.email : "") as globalThis.Ref<string, string>;
 const pPassword = ref(props.editedProfile?.password ? props.editedProfile?.password : "");
 const pRole = ref(false); // TODO in profile is no admin role
 const files = ref();
 const pFailed = ref("");
 
-function doSomeStaffAfterSave() {
+const addProfile = async () => {
+  const firstEmailPart = pEmail.value.split("@")[0];
+  const SecondEmailPart = pEmail.value.split("@")[1]?.split(".")[0] === undefined ? "" : pEmail.value.split("@")[1]?.split(".")[0];
+  const ThirdEmailPart = pEmail.value.split("@")[1]?.split(".")[1] === undefined ? "" : pEmail.value.split("@")[1]?.split(".")[1];
+
+  if (props.profiles === null) {pFailed.value = "Something went wrong..."; return}
+  else if (pName.value === "") {pFailed.value = "Name is required."; return}
+  else if (pEmail.value.split('').filter(char => char === "@").length !== 1 || pEmail.value.split('').filter(char => char === ".").length !== 1 || firstEmailPart?.length < 1 || SecondEmailPart?.length < 1 || ThirdEmailPart?.length < 1) {pFailed.value = "Enter E-mail in the right format."; return}
+  else if (pEmail.value === "") {pFailed.value = "E-mail is required."; return}
+  else if (pPassword.value === "") {pFailed.value = "Password is required."; return}
   
-}
+
+  let upload;
+  // set custom profile image
+  if (files.value) {
+    upload = await fetchUploadProfileImages(files.value);
+
+    if (upload === undefined || upload === null || upload.length === 0) {
+      pFailed.value = "Invalid format.";
+      return;
+    }
+  } else { // set default profile image       
+    upload = [];
+    upload[0] = 'default';
+    upload[1] = 'default';
+  }    
+  
+  const profile = await fetchRegister(
+    pName.value,
+    pEmail.value,
+    pPassword.value,
+    upload[0],
+    upload[1]
+  );
+
+  if (profile === undefined) pFailed.value = "Your E-Mail is already registered.";
+};
 </script>
 
 <template>
@@ -56,7 +91,7 @@ function doSomeStaffAfterSave() {
 
         <!-- submit button -->
         <div class="flex justify-center w-full">
-          <button @click="doSomeStaffAfterSave" class="primaryButton w-4/5 mt-4 px-4 py-2">Save changes</button>
+          <button @click="addProfile" class="primaryButton w-4/5 mt-4 px-4 py-2">Save changes</button>
         </div>
       </form>
     </div>

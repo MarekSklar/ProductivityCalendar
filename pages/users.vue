@@ -11,6 +11,15 @@ const editedProfile = ref({} as Profile);
 const showEdit = ref(false);
 
 function addNewProfile() {
+    editedProfile.value = {
+        uuid: "",
+        name: "",
+        email: "",
+        password: "",
+        pfpPath48: "",
+        pfpPath256: "",
+        sessionToken: ""
+    } as Profile; 
     toggleEdit();
 }
 
@@ -19,16 +28,14 @@ function editProfile(profile: Profile) {
     toggleEdit();
 }
 
-function toggleEdit() {
-    console.log("hehehhehehhehe");
-    
+function toggleEdit() {   
     showEdit.value = !showEdit.value;
 }
 
 </script>
 
 <template>
-    <UsersEdit v-if="showEdit" :editedProfile="editedProfile" @toggleEdit="toggleEdit" />
+    <UsersEdit v-if="showEdit" :editedProfile="editedProfile" :profiles="profiles" @toggleEdit="toggleEdit" />
     <div class="simpleCardBox py-10">
         <div class="card gap-4 w-5/6 max-h-[100%] h-fit px-6 py-6">
             <div class="flex w-full px-3">
