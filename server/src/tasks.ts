@@ -31,6 +31,10 @@ const tasksEditOptionsSchema = z.object({
     tasks: z.any() // nevim jak to udelat pro objekt
 });
 
+const taskDeleteOptionsSchema = z.object({
+    uuid: z.string()
+});
+
 export async function list(db: DatabaseConnection) {
     let tasks = db.query(sql`SELECT * FROM tasks`);
     (await tasks).forEach((task) => {
@@ -172,4 +176,13 @@ export async function editArray(db: DatabaseConnection, options: TasksEditOption
     });
 
     return params.tasks!;
+}
+
+export async function deleteTask(db: DatabaseConnection, options: TaskDeleteOptions) {
+    const params = taskDeleteOptionsSchema.parse(options);
+
+    try {
+        await db.query(sql`DELETE FROM tasks WHERE uuid=${params.uuid}`)
+        return true
+    } catch(err) { console.log(err); return false; }
 }

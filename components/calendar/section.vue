@@ -34,6 +34,12 @@ let prevHoveredRow: number = -1;
 let editing: boolean = false;
 let changedTasks: Task[] = [];
 
+let showContextMenu = ref(false);
+let contextMenuTask = ref();
+let contextMenuX = ref(0);
+let contextMenuY = ref(0);
+let mouseOverContextMenu = ref(false);
+
 enum DragStatus {
     None, TaskCreate, TaskDrag, TaskLeftResize, TaskRightResize
 }
@@ -635,8 +641,88 @@ async function onRowChangeEvent(index: number) {
     currentHoveredRow = index;
 }
 
+async function onShowContextMenu(e: MouseEvent, task: Task) {
+    e.preventDefault();
+
+    contextMenuTask.value = task;
+    contextMenuX.value = e.clientX;
+    contextMenuY.value = e.clientY;
+    showContextMenu.value = true;
+}
+
+async function onCloseContextMenu() {
+    contextMenuTask.value = undefined
+    showContextMenu.value = false;
+    mouseOverContextMenu.value = false;
+}
+
+async function onDuplicateTask() {
+    let task: Task = await $fetch('/api/tasks/tasksCreate', {
+        method: 'post',
+        body: {
+            color: contextMenuTask.value.color,
+            name: contextMenuTask.value.name,
+            row: contextMenuTask.value.row + 1,
+            status: contextMenuTask.value.status,
+            fromDate: contextMenuTask.value.fromDate,
+            toDate: contextMenuTask.value.toDate,
+            createdBy: contextMenuTask.value.createdBy,
+            assignees: contextMenuTask.value.assignees,
+            description: contextMenuTask.value.description
+        }
+    });
+
+    onCreateTask(task);
+    checkSwitchRow(task);
+
+    if(!arrayIncludesTask(changedTasks, task))
+        changedTasks.push(task);
+
+    saveTasks(changedTasks);
+    changedTasks = [];
+
+    onCloseContextMenu();
+}
+
+async function onDeleteTask() {
+    let tasksAbove: Task[] = [];
+    findTasksInRow(contextMenuTask.value.row + 1, contextMenuTask.value.fromDate, contextMenuTask.value.toDate).forEach((taskUUID) => {
+        let taskAbove: Task | undefined = findTaskByUUID(contextMenuTask.value.row + 1, taskUUID);
+
+        if(taskAbove)
+            tasksAbove.push(taskAbove);
+    });
+
+    await $fetch('/api/tasks/taskDelete', {
+        method: 'post',
+        body: {
+            uuid: contextMenuTask.value.uuid
+        }
+    });
+
+    rows.value[contextMenuTask.value.row].forEach((task: Task, index: number) => {
+        if(task.uuid === contextMenuTask.value.uuid) {
+            rows.value[contextMenuTask.value.row].splice(index, 1);            
+        }
+    });
+    taskIntervals[contextMenuTask.value.row].delete(contextMenuTask.value.uuid);
+
+    for(let i = 0; i < changedTasks.length; i++) {
+        if(changedTasks[i].uuid === contextMenuTask.value.uuid)
+            changedTasks.splice(i, 1);
+    }
+
+    tasksAbove.forEach((taskAbove) => fixRow(taskAbove));    
+    onCloseContextMenu();
+}
+
 async function mousePressedEvent(e: MouseEvent) {
-    if (dragStatus !== DragStatus.None || e.button !== 0)
+    if(showContextMenu.value && !mouseOverContextMenu.value) {
+        onCloseContextMenu();
+        return;
+    }
+
+    if (dragStatus !== DragStatus.None || e.button !== 0 || mouseOverContextMenu.value)
         return;
 
     if(editing) {
@@ -682,9 +768,9 @@ async function mousePressedEvent(e: MouseEvent) {
 }
 
 async function startTaskDragging(e: MouseEvent, task: Task) {
-    if (dragStatus !== DragStatus.None || e.button !== 0)
+    if (dragStatus !== DragStatus.None || e.button !== 0 || mouseOverContextMenu.value)
         return;
-    
+
     mouseButtonDown = true;
     selectedTask = task;
     inactiveTask.value = undefined;
@@ -711,17 +797,21 @@ async function startTaskDragging(e: MouseEvent, task: Task) {
 }
 
 async function startTaskLeftResizeDragging(e: MouseEvent, task: Task) {
-    selectedTask = task;
-    dragStatus = DragStatus.TaskLeftResize;
-    startDragPosX = e.pageX;
-    mouseButtonDown = true;
+    if(!mouseOverContextMenu.value) {
+        selectedTask = task;
+        dragStatus = DragStatus.TaskLeftResize;
+        startDragPosX = e.pageX;
+        mouseButtonDown = true;
+    }
 }
 
 async function startTaskRightResizeDragging(e: MouseEvent, task: Task) {
-    selectedTask = task;
-    dragStatus = DragStatus.TaskRightResize;
-    startDragPosX = e.pageX;
-    mouseButtonDown = true;
+    if(!mouseOverContextMenu.value) {
+        selectedTask = task;
+        dragStatus = DragStatus.TaskRightResize;
+        startDragPosX = e.pageX;
+        mouseButtonDown = true;
+    }
 }
 
 async function mouseMoveEvent(mousePageX: number, mousePageY: number) { // TODO: experiment with datespos for threshold
@@ -921,9 +1011,12 @@ async function mouseMoveEvent(mousePageX: number, mousePageY: number) { // TODO:
 }
 
 async function mouseUpEvent() {
+    if(showContextMenu.value && !mouseOverContextMenu.value)
+        onCloseContextMenu();
+
     if(dragStatus === DragStatus.None)
         return;
-    
+
     if(dragStatus === DragStatus.TaskCreate && inactiveTask) {
         emit('inactiveTaskEdit', inactiveTask.value);
         editing = true;
@@ -985,7 +1078,7 @@ async function mouseUpEvent() {
                         </div>
                     </div>
                 </div>                             
-                <div v-else class="size-full rounded-md" :style="{ backgroundColor: task.color}">
+                <div v-else @contextmenu.prevent="onShowContextMenu($event, task)" class="size-full rounded-md" :style="{ backgroundColor: task.color}">
                     <div @mousedown="startTaskLeftResizeDragging($event, task)" class="absolute left-0 z-20 w-3 h-full cursor-e-resize"></div>
                     <div @mousedown="startTaskRightResizeDragging($event, task)" class="absolute right-0 z-20 w-3 h-full cursor-e-resize"></div>
                     <div class="size-full p-1 pl-2">
@@ -1003,7 +1096,8 @@ async function mouseUpEvent() {
                             </div>                
                         </div>
                     </div>
-                </div>                
+                </div>
+                <CalendarTaskContextMenu v-if="showContextMenu && contextMenuTask.uuid === task.uuid" @mouseover="mouseOverContextMenu = true" @mouseleave="mouseOverContextMenu = false" @onDuplicateTask="onDuplicateTask" @onDeleteTask="onDeleteTask" :task="contextMenuTask" :x="contextMenuX" :y="contextMenuY"/>                
             </div>
             <div v-if="inactiveTask !== undefined && inactiveTask.row === index" class="absolute flex h-full left-5 px-px"
             :style="{ left: prps.calendarDragPos! + (inactiveTaskPlacementPos(inactiveTask).from)*prps.columnWidth! + 'px', width: inactiveTaskPlacementPos(inactiveTask).taskLength * prps.columnWidth! + 'px' }">
@@ -1023,6 +1117,6 @@ async function mouseUpEvent() {
                 </div>
             </div>
         </div>            
-        <div class="relative h-11 mb-0.5"></div>
+        <div class="relative h-11 mb-0.5" @mouseover="onRowChangeEvent(rows.length)"></div>
     </div>
 </template> 

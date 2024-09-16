@@ -31,7 +31,7 @@ const columnWidth = 56;
 const weekendOffset = ref(weekOffset.value - (todayWeekDay.value - 2) * columnWidth);
 
 // mouse events
-async function mouseDownEvent(event: MouseEvent) { // get rid of Dragging enum
+async function mouseDownEvent(event: MouseEvent) {
     if (event.button === 1) {
         startDragPosX.value = event.screenX;
         draggingCalendar = true;

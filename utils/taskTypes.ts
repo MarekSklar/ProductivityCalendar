@@ -66,4 +66,8 @@ declare global {
     interface TasksEditOptions {
         tasks: Task[]
     }
+
+    interface TaskDeleteOptions {
+        uuid: string
+    }
 }
