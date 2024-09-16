@@ -29,6 +29,7 @@ const profileGetByUUIDOptionsSchema = z.object({
 export async function list(db: DatabaseConnection) {
     const profileList = await db.query(sql`SELECT * FROM profiles`);
     for (let i = 0; i < profileList.length; i++) {
+        profileList[i].password = null;
         profileList[i].sessionToken = null;
     }
 

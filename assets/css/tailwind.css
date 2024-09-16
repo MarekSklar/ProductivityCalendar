@@ -3,17 +3,25 @@
 @tailwind utilities;
 
 @layer base {
+    
+    h1, h2, h3, h4, h5, h6, p, label {
+        @apply dark:text-dark-50
+    }
+
+    .background {
+        @apply bg-white dark:bg-dark-700;
+    }
 
     .header {
         @apply text-xl text-center text-gray-800 font-bold;
     }
 
     .simpleCardBox {
-        @apply flex items-center justify-center w-screen h-screen bg-gray-50 dark:bg-gray-900;
+        @apply flex items-center justify-center w-screen h-screen bg-gray-50 dark:bg-dark-800;
     }
 
     .card {
-        @apply flex flex-col items-center gap-8 px-20 py-12 rounded-xl shadow-lg bg-white dark:bg-gray-800 dark:shadow-md;
+        @apply flex flex-col items-center gap-8 px-20 py-12 rounded-xl shadow-lg bg-white dark:shadow-md;
     }
 
     .primaryButton {

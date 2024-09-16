@@ -18,15 +18,15 @@ function logout() {
     <div v-if="sessionToken && sessionToken !== 'null'">
 
         <!-- open sidebar -->
-        <div @click="sidebarIsActive = true" class="absolute top-1/2 left-3 z-40 rounded-full bg-gray-100 cursor-pointer">
-            <SvgChevronRight class="size-10 fill-gray-600" />
+        <div @click="sidebarIsActive = true" class="absolute top-1/2 left-3 z-40 rounded-full bg-gray-100 dark:bg-dark-600 cursor-pointer">
+            <SvgChevronRight class="size-10 fill-gray-600 dark:fill-white" />
         </div>
         
         <!-- backdrop -->
-        <div v-if="sidebarIsActive" @click="sidebarIsActive = false" class="absolute z-40 w-screen h-screen bg-black bg-opacity-20"></div>
+        <div v-if="sidebarIsActive" @click="sidebarIsActive = false" class="absolute z-40 w-screen h-screen bg-black bg-opacity-20 dark:bg-opacity-40"></div>
         
         <!-- sidebar -->
-        <div v-if="sidebarIsActive" class="absolute z-50 w-56 h-full bg-white">
+        <div v-if="sidebarIsActive" class="background absolute z-50 w-56 h-full">
             <div class="relative size-full p-5">
                 <div class="flex flex-col justify-between h-full">
 
@@ -63,8 +63,8 @@ function logout() {
                 </div>
 
                 <!-- close sidebar -->
-                <div @click="sidebarIsActive = false" class="absolute top-1/2 -right-14 z-30 rounded-full bg-gray-50 cursor-pointer">
-                    <SvgChevronRight class="size-10 rotate-180 fill-gray-500" />
+                <div @click="sidebarIsActive = false" class="absolute top-1/2 -right-14 z-30 rounded-full bg-gray-50 dark:bg-dark-600 cursor-pointer">
+                    <SvgChevronRight class="size-10 rotate-180 fill-gray-500 dark:fill-white" />
                 </div>
             </div>
         </div>
@@ -73,15 +73,15 @@ function logout() {
 
 <style scoped>
 .link-box {
-    @apply flex items-center gap-2 text-gray-600 cursor-pointer;
+    @apply flex items-center gap-2 cursor-pointer;
 }
 
 .icon {
-    @apply size-5 fill-gray-400 group-hover:fill-gray-950;
+    @apply size-5 fill-gray-400 dark:fill-dark-100 group-hover:fill-gray-950 dark:group-hover:fill-red-50;
 }
 
 .link-text {
-    @apply font-semibold group-hover:text-gray-950;
+    @apply text-gray-600 dark:text-dark-100 font-semibold group-hover:text-gray-950 dark:group-hover:text-red-50;
 }
 
 </style>
