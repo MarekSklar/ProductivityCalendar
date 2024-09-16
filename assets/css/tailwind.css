@@ -2,17 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
-@font-face {
-    font-family: 'Quicksand';
-    font-style: normal;
-    font-weight: normal;
-    src: url(../font/Quicksand/Quicksand-VariableFont_wght.ttf) format('truetype');
-}
-
 @layer base {
 
     .header {
-        @apply text-xl text-center text-gray-900 font-Quicksand font-bold;
+        @apply text-xl text-center text-gray-800 font-bold;
     }
 
     .simpleCardBox {
@@ -24,7 +17,7 @@
     }
 
     .primaryButton {
-        @apply px-6 py-3 rounded-md bg-red-600 font-Quicksand font-bold text-white;
+        @apply px-6 py-3 rounded-md bg-red-600 font-semibold text-white;
     }
 
     .primaryButton:hover {
@@ -41,7 +34,7 @@
 }
 
 @layer components {
-    .button {}
+
 }
 
 @layer utilities {
