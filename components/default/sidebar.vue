@@ -23,10 +23,10 @@ function logout() {
         </div>
         
         <!-- backdrop -->
-        <div v-if="sidebarIsActive" @click="sidebarIsActive = false" class="absolute z-40 w-screen h-screen bg-black bg-opacity-20 dark:bg-opacity-40"></div>
+        <div v-if="sidebarIsActive" @click="sidebarIsActive = false" class="absolute z-40 w-screen h-screen bg-black bg-opacity-20 dark:bg-gray-600 dark:bg-opacity-10"></div>
         
         <!-- sidebar -->
-        <div v-if="sidebarIsActive" class="background absolute z-50 w-56 h-full">
+        <div v-if="sidebarIsActive" class="background dark:bg-black absolute z-50 w-56 h-full">
             <div class="relative size-full p-5">
                 <div class="flex flex-col justify-between h-full">
 
@@ -38,14 +38,10 @@ function logout() {
                                 <SvgCalendar class="icon" />
                                 <p class="link-text">Calendar</p>
                             </NuxtLink>
-                            <NuxtLink to="/users" @click="sidebarIsActive = false" class="group link-box">
+                            <NuxtLink v-if="profile.role === 'admin'" to="/users" @click="sidebarIsActive = false" class="group link-box">
                                 <SvgGroup class="icon" />
                                 <p class="link-text">Users</p>
                             </NuxtLink>
-                            <div @click="toggleDark()" class="group link-box">
-                                <SvgModeDark class="icon" />
-                                <p class="link-text">Dark mode</p>
-                            </div>
                             <NuxtLink to="/" @click="sidebarIsActive = false; logout()" class="group link-box">
                                 <SvgLogout class="icon" />
                                 <p class="link-text">Logout</p>

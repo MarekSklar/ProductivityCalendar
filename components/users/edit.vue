@@ -54,7 +54,7 @@ const addProfile = async () => {
 </script>
 
 <template>
-  <div @click="emit('toggleEdit')" class="absolute w-screen h-screen bg-black bg-opacity-20"></div>
+  <div @click="emit('toggleEdit')" class="absolute w-screen h-screen bg-gray-600 bg-opacity-20"></div>
   <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
     <div class="card background">
       <form @submit.prevent class="flex flex-col gap-3">
