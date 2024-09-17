@@ -40,6 +40,10 @@ enum DragStatus {
 
 let dragStatus: DragStatus = DragStatus.None;
 
+enum Side {
+    Left, Right
+}
+
 
 // database functions
 
@@ -723,9 +727,6 @@ function findClosestAvailableRow(fromDate: CDate, toDate: CDate) {
     return availableRow;
 }
 
-//
-
-
 // events
 
 async function onEditTask(task: Task) {
@@ -859,19 +860,11 @@ async function startTaskDragging(e: MouseEvent, task: Task) {
     }, 200);
 }
 
-async function startTaskLeftResizeDragging(e: MouseEvent, task: Task) {
+async function startTaskResizeDragging(side: Side, e: MouseEvent, task: Task) {
     selectedTask = task;
-    dragStatus = DragStatus.TaskLeftResize;
+    dragStatus = side === Side.Left ? DragStatus.TaskLeftResize : DragStatus.TaskRightResize;
     startDragPosX = e.pageX;
     mouseButtonDown = true;
-    differenceOfDays = getDifferenceOfDays(selectedTask.fromDate, selectedTask.toDate);
-}
-
-async function startTaskRightResizeDragging(e: MouseEvent, task: Task) {
-    selectedTask = task;
-    dragStatus = DragStatus.TaskRightResize;
-    startDragPosX = e.pageX;
-    mouseButtonDown = true;  
     differenceOfDays = getDifferenceOfDays(selectedTask.fromDate, selectedTask.toDate);
 }
 
@@ -1043,8 +1036,8 @@ async function mouseUpEvent() {
                 </div>
                 <!-- task -->
                 <div v-else @contextmenu.prevent="emit('showTaskContextMenu', $event, task)" class="size-full rounded-md cursor-pointer" :style="{ backgroundColor: task.color}">
-                    <div @mousedown="startTaskLeftResizeDragging($event, task)" class="absolute left-0 z-20 w-3 h-full cursor-e-resize"></div>
-                    <div @mousedown="startTaskRightResizeDragging($event, task)" class="absolute right-0 z-20 w-3 h-full cursor-e-resize"></div>
+                    <div @mousedown="startTaskResizeDragging(Side.Left, $event, task)" class="absolute left-0 z-20 w-3 h-full cursor-e-resize"></div>
+                    <div @mousedown="startTaskResizeDragging(Side.Right, $event, task)" class="absolute right-0 z-20 w-3 h-full cursor-e-resize"></div>
                     <div class="size-full p-1 pl-2">
                         <div class="relative size-full">
                             <div class="flex items-center h-full">
