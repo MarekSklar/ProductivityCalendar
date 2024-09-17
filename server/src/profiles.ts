@@ -159,13 +159,13 @@ export async function get(db: DatabaseConnection, options: ProfileGetOptions) {
     }
 }
 
-export async function edit(db: DatabaseConnection, options: SectionEditOptions) {
+export async function edit(db: DatabaseConnection, options: ProfileEditOptions) {
     const params = profileEditOptionsSchema.parse(options);
     
-    let sectionData = await db.query(sql`SELECT * FROM profiles WHERE uuid = ${params.uuid}`);
-    let section: Section = sectionData.at(0);
+    let profileData = await db.query(sql`SELECT * FROM profiles WHERE uuid = ${params.uuid}`);
+    let profile: Profile = profileData.at(0);
     
-    if(!section)
+    if(!profile)
         return;
 
     let passwordString = ``;
@@ -175,7 +175,7 @@ export async function edit(db: DatabaseConnection, options: SectionEditOptions) 
     if(params.sessionToken)
         sessionTokenString = `sessionToken = ${params.sessionToken}`
 
-    await db.query(sql`UPDATE sections SET
+    await db.query(sql`UPDATE profiles SET
             name = ${params.name},
             email = ${params.email},
             ${passwordString}
@@ -187,10 +187,10 @@ export async function edit(db: DatabaseConnection, options: SectionEditOptions) 
     `);
         
 
-    sectionData = await db.query(sql`SELECT * FROM sections WHERE uuid = ${params.uuid}`);
-    section = sectionData.at(0);
+    profileData = await db.query(sql`SELECT * FROM profiles WHERE uuid = ${params.uuid}`);
+    profile = profileData.at(0);
      
-    return section;
+    return profile;
 }
 
 export async function getByUUID(db: DatabaseConnection, options: ProfileGetByUUIDOptions) {
