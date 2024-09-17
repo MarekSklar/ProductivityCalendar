@@ -112,7 +112,6 @@ function invalidRowIgnoreUUIDs(row: number, currentUUIDs: string[], fromDate: CD
     let returnValue = false;
     if (!taskIntervals[row]) 
         return returnValue;    
-
     const fromTimeTimestamp = CDateToDate(fromDate).getTime();
     const toTimeTimestamp = CDateToDate(toDate).getTime();
     taskIntervals[row].forEach((value: TaskTimestampInterval, key: string) => {
@@ -124,7 +123,7 @@ function invalidRowIgnoreUUIDs(row: number, currentUUIDs: string[], fromDate: CD
             returnValue = true;
         }
     });
-
+    
     return returnValue;
 }
 
@@ -186,6 +185,9 @@ function fixRow(task: Task, prevFromDate: CDate | undefined = undefined, prevToD
                 let newTask: Task | undefined = findTaskByUUID(i, taskUUID);
 
                 if(newTask && !invalidRow(i - 1, task.uuid, newTask.fromDate, newTask.toDate)) {
+                    tempFromDate = CDateToTimestamp(newTask.fromDate) < CDateToTimestamp(tempFromDate) ? newTask.fromDate : tempFromDate;
+                    tempToDate = CDateToTimestamp(newTask.toDate) > CDateToTimestamp(tempToDate) ? newTask.toDate : tempToDate;   
+
                     changeRow(newTask.uuid, i, i - 1);
                     taskIntervals[i].delete(newTask.uuid);
                     taskIntervals[i - 1].set(newTask.uuid, { from: CDateToDate(newTask.fromDate).getTime(), to: CDateToDate(newTask.toDate).getTime() });
@@ -287,10 +289,9 @@ function checkSwitchRow(switchTask: Task) {
                     if(i >= rows.value.length - 1) {
                         addRow();
                     }
-
                     findTasksInRow(i, tempFromDate, tempToDate).forEach((taskUUID) => {
                         let task: Task | undefined = findTaskByUUID(i, taskUUID);
-                        
+
                         if(task && !alreadyChangedTaskUUIDs.includes(task.uuid)) {
                             tempFromDate = CDateToTimestamp(task.fromDate) < CDateToTimestamp(tempFromDate) ? task.fromDate : tempFromDate;
                             tempToDate = CDateToTimestamp(task.toDate) > CDateToTimestamp(tempToDate) ? task.toDate : tempToDate;                                
@@ -306,6 +307,8 @@ function checkSwitchRow(switchTask: Task) {
                         }
                     })
                 }
+                else
+                    break;
 
                 if(!invalidRowIgnoreUUIDs(i + 1, alreadyChangedTaskUUIDs, tempFromDate, tempToDate))
                     break;
@@ -456,17 +459,73 @@ function checkSwitchRow(switchTask: Task) {
                     fixRow(switchTask);
                     changedTasks.forEach((changedTask) => fixRow(changedTask));
                 }
-                else if(canSwap && (currentHoveredRow === 0 || invalidRow(currentHoveredRow - 1, switchTask.uuid, switchTask.fromDate, switchTask.toDate))) {
-                    if(currentHoveredRow >= rows.value.length - 1) {
-                        addRow();
+                else if(canSwap) {
+                    if(currentHoveredRow !== 0 && invalidRow(currentHoveredRow - 1, switchTask.uuid, switchTask.fromDate, switchTask.toDate)) {
+                        if(currentHoveredRow >= rows.value.length - 1) {
+                            addRow();
+                        }
+
+                        changeRow(switchTask.uuid, switchTask.row, currentHoveredRow);
+                        taskIntervals[switchTask.row].delete(switchTask.uuid);
+                        taskIntervals[currentHoveredRow].set(switchTask.uuid, { from: CDateToDate(switchTask.fromDate).getTime(), to: CDateToDate(switchTask.toDate).getTime() });
+                        switchTask.row = currentHoveredRow;
+
+                        resizeCheckRow(switchTask);       
                     }
+                    else if(currentHoveredRow === 0) {
+                        let tFromDate: CDate | undefined = undefined;
+                        let tToDate: CDate | undefined = undefined;
 
-                    changeRow(switchTask.uuid, switchTask.row, currentHoveredRow);
-                    taskIntervals[switchTask.row].delete(switchTask.uuid);
-                    taskIntervals[currentHoveredRow].set(switchTask.uuid, { from: CDateToDate(switchTask.fromDate).getTime(), to: CDateToDate(switchTask.toDate).getTime() });
-                    switchTask.row = currentHoveredRow;
+                        findTasksInRow(0, switchTask.fromDate, switchTask.toDate).forEach((taskUUID) => {
+                            let task: Task | undefined = findTaskByUUID(0, taskUUID);
 
-                    resizeCheckRow(switchTask);                    
+                            if(task) {
+                                if(!tFromDate || !tToDate) {
+                                    tFromDate = task.fromDate;
+                                    tToDate = task.toDate;
+                                }
+                                else {
+                                    tFromDate = CDateToTimestamp(task.fromDate) < CDateToTimestamp(tFromDate) ? task.fromDate : tFromDate;
+                                    tToDate = CDateToTimestamp(task.toDate) > CDateToTimestamp(tToDate) ? task.toDate : tToDate;   
+                                }
+                            }
+                        });
+                        
+                        let alreadyChangedTaskUUIDs: string[] = [];
+
+                        if(tFromDate && tToDate) {
+                            for(let i = 0; i < rows.value.length; i++) {
+                                if(invalidRow(i, switchTask.uuid, tFromDate, tToDate)) {
+                                    if(i >= rows.value.length - 1) {
+                                        addRow();
+                                    }
+
+                                    for(let taskUUID of findTasksInRow(i, tFromDate, tToDate)) {
+                                        let task: Task | undefined = findTaskByUUID(i, taskUUID);
+
+                                        if(task && !alreadyChangedTaskUUIDs.includes(task.uuid)) {
+                                            tFromDate = CDateToTimestamp(task.fromDate) < CDateToTimestamp(tFromDate) ? task.fromDate : tFromDate;
+                                            tToDate = CDateToTimestamp(task.toDate) > CDateToTimestamp(tToDate) ? task.toDate : tToDate;                                
+                    
+                                            changeRow(task.uuid, i, i + 1);
+                                            taskIntervals[i].delete(task.uuid);
+                                            taskIntervals[i + 1].set(task.uuid, { from: CDateToDate(task.fromDate).getTime(), to: CDateToDate(task.toDate).getTime() });
+                                            task.row = i + 1;
+                                            alreadyChangedTaskUUIDs.push(task.uuid);
+
+                                            if(!arrayIncludesTask(changedTasks, task))
+                                                changedTasks.push(task);
+                                        }
+                                    }
+                                }
+                                else
+                                    break;
+
+                                if(!invalidRowIgnoreUUIDs(i + 1, alreadyChangedTaskUUIDs, tFromDate, tToDate))
+                                    break;
+                            }  
+                        }
+                    }
                 }      
             }
         } 
@@ -656,7 +715,7 @@ function findClosestAvailableRow(fromDate: CDate, toDate: CDate) {
 
     if(availableRow === -1)
         availableRow = 0;
-    
+
     if(availableRow >= rows.value.length - 1) {
         addRow();
     }
@@ -804,14 +863,16 @@ async function startTaskLeftResizeDragging(e: MouseEvent, task: Task) {
     selectedTask = task;
     dragStatus = DragStatus.TaskLeftResize;
     startDragPosX = e.pageX;
-    mouseButtonDown = true;    
+    mouseButtonDown = true;
+    differenceOfDays = getDifferenceOfDays(selectedTask.fromDate, selectedTask.toDate);
 }
 
 async function startTaskRightResizeDragging(e: MouseEvent, task: Task) {
     selectedTask = task;
     dragStatus = DragStatus.TaskRightResize;
     startDragPosX = e.pageX;
-    mouseButtonDown = true;    
+    mouseButtonDown = true;  
+    differenceOfDays = getDifferenceOfDays(selectedTask.fromDate, selectedTask.toDate); 
 }
 
 async function mouseMoveEvent(mousePageX: number, mousePageY: number) { // TODO: experiment with datespos for threshold
@@ -847,10 +908,10 @@ async function mouseMoveEvent(mousePageX: number, mousePageY: number) { // TODO:
 
                 startDragPosX -= props.columnWidth! * Math.abs(moveBy);
                 taskIntervals[selectedTask.row].set(selectedTask.uuid, { from: CDateToDate(selectedTask.fromDate).getTime(), to: CDateToDate(selectedTask.toDate).getTime() });
-
+                
                 findTasksInRow(selectedTask.row + 1, prevFromDate, prevToDate).forEach((foundUUID) => {
                     let foundTask: Task | undefined = findTaskByUUID(selectedTask.row + 1, foundUUID);
-                    
+
                     if(foundTask && foundTask.uuid !== selectedTask.uuid && !arrayIncludesTask(changedTasks, foundTask))
                         fixRow(foundTask);
                 });
