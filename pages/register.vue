@@ -43,6 +43,7 @@ const addProfile = async () => {
         pName.value,
         pEmail.value,
         pPassword.value,
+        "admin",
         upload[0],
         upload[1]
     );

@@ -374,12 +374,12 @@ onMounted(() => {
                 <div v-for="(section, index) in sections">
                     <CalendarSection @mouseover="onSectionChange(index)" :ref="sectionRefs.set" @onDraggedTaskChange="onDraggedTaskChange" @taskEdit="taskEdit" @inactiveTaskEdit="inactiveTaskEdit" @showSectionContextMenu="onShowSectionContextMenu" @showTaskContextMenu="onShowTaskContextMenu" :section="section" :columnWidth="columnWidth" :datesPos="datesPos" :calendarDragPos="calendarDragPos" :profile="profile"/>            
                 </div>
-                <button v-if="sections.length < 4" @click="addNewSection" class="h-11 flex justify-center items-center w-40 px-4 text-left bg-red-600 rounded-r-lg">New section</button> <!--TODO: marek, predelat treba na plusko nebo neco (v-if viz addNewSection)-->
+                <button v-if="sections.length < 4" @click="addNewSection" class="flex justify-center items-center w-40 mt-2 p-4 text-white font-bold bg-red-400 hover:bg-red-500 rounded-r-lg shadow-[0_0px_20px_-10px_rgba(0,0,0,0.3)]">New section</button> <!--TODO: marek, predelat treba na plusko nebo neco (v-if viz addNewSection)-->
             </div>
         </div>
 
         <!-- Dragged ghost task -->
-        <div v-if="draggedTaskObject !== undefined" class="absolute z-10 pointer-events-none h-11 mb-0.5 rounded-md" :style="{ backgroundColor: draggedTaskObject.color, left: draggedTaskObject.left + 'px', top: draggedTaskObject.top + 'px', width: draggedTaskObject.width + 'px' }">
+        <div v-if="draggedTaskObject !== undefined" class="absolute z-10 pointer-events-none h-11 mb-0.5 rounded-md overflow-hidden" :style="{ backgroundColor: draggedTaskObject.color, left: draggedTaskObject.left + 'px', top: draggedTaskObject.top + 'px', width: draggedTaskObject.width + 'px' }">
             <div class="size-full">
                 <div class="absolute size-full p-1 pl-2">
                     <div class="relative size-full">
@@ -389,7 +389,7 @@ onMounted(() => {
                         </div>
                         <div class="absolute flex items-center h-full right-1 top-0">
                             <div class="relative size-8 select-none">
-                                <div v-for="num in 3">   
+                                <div v-for="num in 3">
                                     <!--add icons-->
                                 </div>
                             </div>
@@ -399,7 +399,7 @@ onMounted(() => {
             </div>
         </div>
         
-        <CalendarSectionContextMenu v-if="showSectionContextMenu" @mouseover="mouseOverContextMenu = true" @mouseleave="mouseOverContextMenu = false" @onRenameSection="onRenameSection" @onDeleteSection="onDeleteSection" :x="contextMenuX" :y="contextMenuY"/>
+        <CalendarSectionContextMenu v-if="showSectionContextMenu" @mouseover="mouseOverContextMenu = true" @mouseleave="mouseOverContextMenu = false" @onRenameSection="onRenameSection" @onDeleteSection="onDeleteSection" @onCloseSectionContextMenu="onCloseSectionContextMenu" :x="contextMenuX" :y="contextMenuY" :profile="profile"/>
         <CalendarTaskContextMenu v-if="showTaskContextMenu" @mouseover="mouseOverContextMenu = true" @mouseleave="mouseOverContextMenu = false" @onDuplicateTask="onDuplicateTask" @onDeleteTask="onDeleteTask" :x="contextMenuX" :y="contextMenuY"/>
     </div>
 </template>

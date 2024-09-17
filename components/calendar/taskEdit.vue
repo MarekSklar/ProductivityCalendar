@@ -225,9 +225,11 @@ function removeProfile(profile: Profile) {
 }
 
 function addProfile(profile: Profile) {
+
     profilesActive.value.push(profile);
     profilesInactive.value = profilesInactive.value.filter(elmnt => elmnt.uuid !== profile.uuid);
 
+    tAssignees.value = tAssignees.value.filter(x => x);
     tAssignees.value.push(profile.uuid);
 }
 

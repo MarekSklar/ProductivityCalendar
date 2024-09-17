@@ -1020,7 +1020,7 @@ async function mouseUpEvent() {
             <div v-for="task in row.filter((task: Task) => task.row === index)" :id="task.uuid" @mousedown="startTaskDragging($event, task)" class="absolute flex h-full left-5 px-px"
             :style="{ left: prps.calendarDragPos! + (taskPlacementPos(task).from)*prps.columnWidth! + 'px', width: taskPlacementPos(task).taskLength * prps.columnWidth! + 'px' }"> <!--TODO: precalculate-->
                 <!-- dragged task -->
-                <div v-if="draggedTaskObject !== undefined && draggedTaskObject.uuid === task.uuid" class="size-full rounded-md" :style="{ backgroundColor: draggedTaskObject.color, opacity: 0.6 }">
+                <div v-if="draggedTaskObject !== undefined && draggedTaskObject.uuid === task.uuid" class="size-full rounded-md overflow-hidden" :style="{ backgroundColor: draggedTaskObject.color, opacity: 0.6 }">
                     <div class="size-full p-1 pl-2">
                         <div class="relative size-full">
                             <div class="flex items-center h-full">
@@ -1036,7 +1036,7 @@ async function mouseUpEvent() {
                     </div>
                 </div>
                 <!-- task -->
-                <div v-else @contextmenu.prevent="emit('showTaskContextMenu', $event, task)" class="size-full rounded-md cursor-pointer" :style="{ backgroundColor: task.color}">
+                <div v-else @contextmenu.prevent="emit('showTaskContextMenu', $event, task)" class="size-full rounded-md cursor-pointer overflow-hidden" :style="{ backgroundColor: task.color}">
                     <div @mousedown="startTaskResizeDragging(Side.Left, $event, task)" class="absolute left-0 z-20 w-3 h-full cursor-e-resize"></div>
                     <div @mousedown="startTaskResizeDragging(Side.Right, $event, task)" class="absolute right-0 z-20 w-3 h-full cursor-e-resize"></div>
                     <div class="size-full p-1 pl-2">

@@ -44,7 +44,7 @@ export async function fetchLogin(email: string, password: string) {
     return login;
 }
 
-export async function fetchRegister(name: string, email: string, password: string, pfpPath256: string, pfpPath48: string) {
+export async function fetchRegister(name: string, email: string, password: string, role: string, pfpPath256: string, pfpPath48: string) {
     const profile = await $fetch('/api/profiles/profilesCreate', {
         method: 'post',
         body: {
@@ -53,6 +53,7 @@ export async function fetchRegister(name: string, email: string, password: strin
             password,
             pfpPath256,
             pfpPath48,
+            role,
             sessionToken: "null",
         }
     });
