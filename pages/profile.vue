@@ -21,7 +21,7 @@ const profileImage = await fetchProfileImage(profile ? profile.pfpPath256 : "");
                     </div>
                     <div class="info-box">
                         <SvgRole class="info-icon fill-gray-600 dark:fill-gray-100" />
-                        <p class="info-text text-gray-600"> Admin </p>
+                        <p class="info-text text-gray-600">{{ profile.role }}</p>
                     </div>
                     <div class="info-box">
                         <SvgMail class="info-icon fill-gray-600 dark:fill-gray-100" />
