@@ -8,6 +8,7 @@ const profileAddOptionsSchema = z.object({
     name: z.string(),
     email: z.string().email(),
     password: z.string(),
+    role: z.string(),
     pfpPath256: z.string(),
     pfpPath48: z.string(),
     sessionToken: z.string()
@@ -20,6 +21,17 @@ const profileLoginOptionsSchema = z.object({
 
 const profileGetOptionsSchema = z.object({
     sessionToken: z.string()
+});
+
+const profileEditOptionsSchema = z.object({
+    uuid: z.string(),
+    name: z.string(),
+    email: z.string().email(),
+    password: z.string().optional(),
+    role: z.string(),
+    pfpPath256: z.string(),
+    pfpPath48: z.string(),
+    sessionToken: z.string().optional()
 });
 
 const profileGetByUUIDOptionsSchema = z.object({
@@ -61,7 +73,7 @@ export async function add(db: DatabaseConnection, options: ProfileAddOptions) {
         name: params.name,
         email: params.email,
         password: params.password,
-        role: "admin",
+        role: params.role,
         pfpPath256: params.pfpPath256,
         pfpPath48: params.pfpPath48,
         sessionToken: params.sessionToken
@@ -134,16 +146,51 @@ export async function get(db: DatabaseConnection, options: ProfileGetOptions) {
         if(result.length == 0)
             return;
 
-        if(result[0].sessionToken === params.sessionToken)
+        if(result[0].sessionToken === params.sessionToken) {
             result[0].password = null;
             result[0].sessionToken = null;
             
             return result;
+        }
         
         return;
     } catch(error) {
         return;
     }
+}
+
+export async function edit(db: DatabaseConnection, options: SectionEditOptions) {
+    const params = profileEditOptionsSchema.parse(options);
+    
+    let sectionData = await db.query(sql`SELECT * FROM profiles WHERE uuid = ${params.uuid}`);
+    let section: Section = sectionData.at(0);
+    
+    if(!section)
+        return;
+
+    let passwordString = ``;
+    let sessionTokenString = ``;
+    if(params.password)
+        passwordString = `password = ${params.password},`
+    if(params.sessionToken)
+        sessionTokenString = `sessionToken = ${params.sessionToken}`
+
+    await db.query(sql`UPDATE sections SET
+            name = ${params.name},
+            email = ${params.email},
+            ${passwordString}
+            role = ${params.role}
+            pfpPath256 = ${params.pfpPath256},
+            pfpPath48 = ${params.pfpPath48},
+            ${sessionTokenString}
+        WHERE uuid = ${params.uuid}
+    `);
+        
+
+    sectionData = await db.query(sql`SELECT * FROM sections WHERE uuid = ${params.uuid}`);
+    section = sectionData.at(0);
+     
+    return section;
 }
 
 export async function getByUUID(db: DatabaseConnection, options: ProfileGetByUUIDOptions) {

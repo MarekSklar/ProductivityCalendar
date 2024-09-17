@@ -29,6 +29,16 @@ declare global {
         sessionToken: string
     }
 
+    interface ProfileEditOptions {
+        name: string,
+        email: string
+        password?: string,
+        role: string,
+        pfpPath256: string,
+        pfpPath48: string,
+        sessionToken?: string
+    }
+
     interface ProfileGetByUUIDOptions {
         uuid: string
     }

@@ -937,7 +937,6 @@ async function mouseMoveEvent(mousePageX: number, mousePageY: number) { // TODO:
     }
 
     switch(dragStatus) {
-
         // task create resize event
         case DragStatus.TaskCreate:
             if (startDragPosX - mousePageX! > 49 && differenceOfDays > 0) resizeNew(-1);
@@ -966,6 +965,7 @@ async function mouseMoveEvent(mousePageX: number, mousePageY: number) { // TODO:
             else if (mousePageX - startDragPosX < -49 && differenceOfDays > 0) resize(Side.Right, -1);
             break;
     }
+    
 }
 
 async function mouseUpEvent() {

@@ -13,6 +13,7 @@ interface ProfileAddOptions {
     name: string,
     email: string,
     password: string,
+    role: string,
     pfpPath256: string,
     pfpPath48: string,
     sessionToken: string
@@ -25,6 +26,17 @@ interface ProfileLoginOptions {
 
 interface ProfileGetOptions {
     sessionToken: string
+}
+
+interface ProfileEditOptions {
+    uuid: string,
+    name: string,
+    email: string
+    password?: string,
+    role: string,
+    pfpPath256: string,
+    pfpPath48: string,
+    sessionToken?: string
 }
 
 interface ProfileGetByUUIDOptions {
