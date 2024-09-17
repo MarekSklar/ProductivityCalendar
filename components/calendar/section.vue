@@ -876,11 +876,11 @@ async function mouseMoveEvent(mousePageX: number, mousePageY: number) { // TODO:
         differenceOfDays = getDifferenceOfDays(inactiveTask.value.fromDate, inactiveTask.value.toDate);
     }
 
-    function resize(left:boolean, invertor: number) {
+    function resize(side: Side, invertor: number) {
         let prevFromDate: CDate = selectedTask.fromDate;
         let prevToDate: CDate = selectedTask.toDate;
 
-        if (left) selectedTask.fromDate = changeDays(selectedTask.fromDate, invertor);
+        if (side === Side.Left) selectedTask.fromDate = changeDays(selectedTask.fromDate, invertor);
         else selectedTask.toDate = changeDays(selectedTask.toDate, invertor);
         startDragPosX = mousePageX;
         differenceOfDays = getDifferenceOfDays(selectedTask.fromDate, selectedTask.toDate);
@@ -956,14 +956,14 @@ async function mouseMoveEvent(mousePageX: number, mousePageY: number) { // TODO:
 
         // resize left
         case DragStatus.TaskLeftResize:
-            if (startDragPosX - mousePageX > 49) resize(true, -1);
-            else if (startDragPosX - mousePageX < -49 && differenceOfDays > 0) resize(true, 1);
+            if (startDragPosX - mousePageX > 49) resize(Side.Left, -1);
+            else if (startDragPosX - mousePageX < -49 && differenceOfDays > 0) resize(Side.Left, 1);
             break;
 
         // resize right
         case DragStatus.TaskRightResize:
-            if (mousePageX - startDragPosX > 49) resize(false, 1);
-            else if (mousePageX - startDragPosX < -49 && differenceOfDays > 0) resize(false, -1);
+            if (mousePageX - startDragPosX > 49) resize(Side.Right, 1);
+            else if (mousePageX - startDragPosX < -49 && differenceOfDays > 0) resize(Side.Right, -1);
             break;
     }
 }
