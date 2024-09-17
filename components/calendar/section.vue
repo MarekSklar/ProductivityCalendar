@@ -872,203 +872,105 @@ async function startTaskRightResizeDragging(e: MouseEvent, task: Task) {
     dragStatus = DragStatus.TaskRightResize;
     startDragPosX = e.pageX;
     mouseButtonDown = true;  
-    differenceOfDays = getDifferenceOfDays(selectedTask.fromDate, selectedTask.toDate); 
+    differenceOfDays = getDifferenceOfDays(selectedTask.fromDate, selectedTask.toDate);
 }
 
 async function mouseMoveEvent(mousePageX: number, mousePageY: number) { // TODO: experiment with datespos for threshold
+
+    function resizeNew(invertor: number) {
+        inactiveTask.value.toDate = changeDays(inactiveTask.value.toDate, invertor);
+        startDragPosX = mousePageX!;
+        differenceOfDays = getDifferenceOfDays(inactiveTask.value.fromDate, inactiveTask.value.toDate);
+    }
+
+    function resize(left:boolean, invertor: number) {
+        let prevFromDate: CDate = selectedTask.fromDate;
+        let prevToDate: CDate = selectedTask.toDate;
+
+        if (left) selectedTask.fromDate = changeDays(selectedTask.fromDate, invertor);
+        else selectedTask.toDate = changeDays(selectedTask.toDate, invertor);
+        startDragPosX = mousePageX;
+        differenceOfDays = getDifferenceOfDays(selectedTask.fromDate, selectedTask.toDate);
+        taskIntervals[selectedTask.row].set(selectedTask.uuid, { from: CDateToDate(selectedTask.fromDate).getTime(), to: CDateToDate(selectedTask.toDate).getTime() });
+
+        if(editing)
+            emit("taskEdit", selectedTask);
+
+        resizeCheckRow(selectedTask);
+
+        findTasksInRow(selectedTask.row + 1, prevFromDate, prevToDate).forEach((foundUUID) => {
+            let foundTask: Task | undefined = findTaskByUUID(selectedTask.row + 1, foundUUID);
+            
+            if(foundTask && foundTask.uuid !== selectedTask.uuid && !arrayIncludesTask(changedTasks, foundTask))
+                fixRow(foundTask);
+        });
+
+        
+        if(!arrayIncludesTask(changedTasks, selectedTask))
+            changedTasks.push(selectedTask);
+
+        fixRow(selectedTask, prevFromDate, prevToDate);
+        changedTasks.forEach((task) => fixRow(task));
+    }
+
+    // moving
+    function move(invertor: number) {
+        const moveBy = -Math.round((startDragPosX - mousePageX - 8) / 49);
+
+        let prevFromDate: CDate = selectedTask.fromDate;
+        let prevToDate: CDate = selectedTask.toDate; 
+
+        selectedTask.fromDate = changeDays(selectedTask.fromDate, moveBy);
+        selectedTask.toDate = changeDays(selectedTask.toDate, moveBy);
+
+        startDragPosX += props.columnWidth! * Math.abs(moveBy) * invertor;
+        taskIntervals[selectedTask.row].set(selectedTask.uuid, { from: CDateToDate(selectedTask.fromDate).getTime(), to: CDateToDate(selectedTask.toDate).getTime() });
+
+        findTasksInRow(selectedTask.row + 1, prevFromDate, prevToDate).forEach((foundUUID) => {
+            let foundTask: Task | undefined = findTaskByUUID(selectedTask.row + 1, foundUUID);
+
+            if(foundTask && foundTask.uuid !== selectedTask.uuid && !arrayIncludesTask(changedTasks, foundTask))
+                fixRow(foundTask);
+        });
+
+        if(!arrayIncludesTask(changedTasks, selectedTask))
+            changedTasks.push(selectedTask);
+
+        fixRow(selectedTask, prevFromDate, prevToDate);
+        changedTasks.forEach((task) => fixRow(task));
+
+        if(editing)
+            emit("taskEdit", selectedTask);
+    }
+
     switch(dragStatus) {
+
+        // task create resize event
         case DragStatus.TaskCreate:
-            if (startDragPosX - mousePageX! > 49 && differenceOfDays > 0) {
-                inactiveTask.value.toDate = changeDays(inactiveTask.value.toDate, -1);
-                startDragPosX = mousePageX!;
-                differenceOfDays = getDifferenceOfDays(inactiveTask.value.fromDate, inactiveTask.value.toDate);
-            } 
-            else if (startDragPosX - mousePageX! < -49 && !invalidRow(inactiveTask.value.row, "", inactiveTask.value.fromDate, changeDays(inactiveTask.value.toDate, 1))) {
-                inactiveTask.value.toDate = changeDays(inactiveTask.value.toDate, 1);
-                startDragPosX = mousePageX!;
-                differenceOfDays = getDifferenceOfDays(inactiveTask.value.fromDate, inactiveTask.value.toDate);
-            }
+            if (startDragPosX - mousePageX! > 49 && differenceOfDays > 0) resizeNew(-1);
+            else if (startDragPosX - mousePageX! < -49 && !invalidRow(inactiveTask.value.row, "", inactiveTask.value.fromDate, changeDays(inactiveTask.value.toDate, 1))) resizeNew(1);
             break;
+
+        // task drag event
         case DragStatus.TaskDrag: // TODO: add temporary row when out of bounds of rows
-            if(!draggedTaskObject.value)
-                return;
+            if (!draggedTaskObject.value) return;
             
             checkSwitchRow(selectedTask);
-            
-            // moving
-            
-            if ((startDragPosX - mousePageX - 8) > 49) {
-                const moveBy = -Math.round((startDragPosX - mousePageX - 8) / 49);
-                
-                let prevFromDate: CDate = selectedTask.fromDate;
-                let prevToDate: CDate = selectedTask.toDate; 
 
-                selectedTask.fromDate = changeDays(selectedTask.fromDate, moveBy);
-                selectedTask.toDate = changeDays(selectedTask.toDate, moveBy);
-
-                startDragPosX -= props.columnWidth! * Math.abs(moveBy);
-                taskIntervals[selectedTask.row].set(selectedTask.uuid, { from: CDateToDate(selectedTask.fromDate).getTime(), to: CDateToDate(selectedTask.toDate).getTime() });
-                
-                findTasksInRow(selectedTask.row + 1, prevFromDate, prevToDate).forEach((foundUUID) => {
-                    let foundTask: Task | undefined = findTaskByUUID(selectedTask.row + 1, foundUUID);
-
-                    if(foundTask && foundTask.uuid !== selectedTask.uuid && !arrayIncludesTask(changedTasks, foundTask))
-                        fixRow(foundTask);
-                });
-
-                if(!arrayIncludesTask(changedTasks, selectedTask))
-                    changedTasks.push(selectedTask);
-
-                fixRow(selectedTask, prevFromDate, prevToDate);
-                changedTasks.forEach((task) => fixRow(task));
-
-                if(editing)
-                    emit("taskEdit", selectedTask);
-            } 
-            else if ((startDragPosX - mousePageX - 8) < -49) {
-                const moveBy = -Math.round((startDragPosX - mousePageX - 8) / 49) ;
-                
-                let prevFromDate: CDate = selectedTask.fromDate;
-                let prevToDate: CDate = selectedTask.toDate; 
-
-                selectedTask.fromDate = changeDays(selectedTask.fromDate, moveBy);
-                selectedTask.toDate = changeDays(selectedTask.toDate, moveBy);
-
-                startDragPosX += props.columnWidth! * Math.abs(moveBy);
-                taskIntervals[selectedTask.row].set(selectedTask.uuid, { from: CDateToDate(selectedTask.fromDate).getTime(), to: CDateToDate(selectedTask.toDate).getTime() });
-
-                findTasksInRow(selectedTask.row + 1, prevFromDate, prevToDate).forEach((foundUUID) => {
-                    let foundTask: Task | undefined = findTaskByUUID(selectedTask.row + 1, foundUUID);
-                    
-                    if(foundTask && foundTask.uuid !== selectedTask.uuid && !arrayIncludesTask(changedTasks, foundTask))
-                        fixRow(foundTask);
-                });
-
-                if(!arrayIncludesTask(changedTasks, selectedTask))
-                    changedTasks.push(selectedTask);
-
-                fixRow(selectedTask, prevFromDate, prevToDate);
-                changedTasks.forEach((task) => fixRow(task));
-
-                if(editing)
-                    emit("taskEdit", selectedTask);
-            }
+            if ((startDragPosX - mousePageX - 8) > 49) move(-1);
+            else if ((startDragPosX - mousePageX - 8) < -49) move(1);
             break;
+
+        // resize left
         case DragStatus.TaskLeftResize:
-            if (startDragPosX - mousePageX > 49) {
-                let prevFromDate: CDate = selectedTask.fromDate;
-                let prevToDate: CDate = selectedTask.toDate; 
-
-                selectedTask.fromDate = changeDays(selectedTask.fromDate, -1);
-                startDragPosX = mousePageX;
-                differenceOfDays = getDifferenceOfDays(selectedTask.fromDate, selectedTask.toDate);
-                taskIntervals[selectedTask.row].set(selectedTask.uuid, { from: CDateToDate(selectedTask.fromDate).getTime(), to: CDateToDate(selectedTask.toDate).getTime() });
-
-                if(editing)
-                    emit("taskEdit", selectedTask);
-
-                resizeCheckRow(selectedTask);
-
-                findTasksInRow(selectedTask.row + 1, prevFromDate, prevToDate).forEach((foundUUID) => {
-                    let foundTask: Task | undefined = findTaskByUUID(selectedTask.row + 1, foundUUID);
-                    
-                    if(foundTask && foundTask.uuid !== selectedTask.uuid && !arrayIncludesTask(changedTasks, foundTask))
-                        fixRow(foundTask);
-                });
-
-                
-                if(!arrayIncludesTask(changedTasks, selectedTask))
-                    changedTasks.push(selectedTask);
-
-                fixRow(selectedTask, prevFromDate, prevToDate);
-                changedTasks.forEach((task) => fixRow(task));
-            } 
-            else if (startDragPosX - mousePageX < -49 && differenceOfDays > 0) {
-                let prevFromDate: CDate = selectedTask.fromDate;
-                let prevToDate: CDate = selectedTask.toDate; 
-
-                selectedTask.fromDate = changeDays(selectedTask.fromDate, 1);
-                startDragPosX = mousePageX;
-                differenceOfDays = getDifferenceOfDays(selectedTask.fromDate, selectedTask.toDate);
-                taskIntervals[selectedTask.row].set(selectedTask.uuid, { from: CDateToDate(selectedTask.fromDate).getTime(), to: CDateToDate(selectedTask.toDate).getTime() });
-
-                if(editing)
-                    emit("taskEdit", selectedTask);
-
-                resizeCheckRow(selectedTask);
-
-                findTasksInRow(selectedTask.row + 1, prevFromDate, prevToDate).forEach((foundUUID) => {
-                    let foundTask: Task | undefined = findTaskByUUID(selectedTask.row + 1, foundUUID);
-                    
-                    if(foundTask && foundTask.uuid !== selectedTask.uuid && !arrayIncludesTask(changedTasks, foundTask))
-                        fixRow(foundTask);
-                });
-
-                
-                if(!arrayIncludesTask(changedTasks, selectedTask))
-                    changedTasks.push(selectedTask);
-
-                fixRow(selectedTask, prevFromDate, prevToDate);
-                changedTasks.forEach((task) => fixRow(task));
-            }
+            if (startDragPosX - mousePageX > 49) resize(true, -1);
+            else if (startDragPosX - mousePageX < -49 && differenceOfDays > 0) resize(true, 1);
             break;
+
+        // resize right
         case DragStatus.TaskRightResize:
-            if (mousePageX - startDragPosX > 49) {
-                let prevFromDate: CDate = selectedTask.fromDate;
-                let prevToDate: CDate = selectedTask.toDate; 
-
-                selectedTask.toDate = changeDays(selectedTask.toDate, 1);
-                startDragPosX = mousePageX;
-                differenceOfDays = getDifferenceOfDays(selectedTask.fromDate, selectedTask.toDate);
-                taskIntervals[selectedTask.row].set(selectedTask.uuid, { from: CDateToDate(selectedTask.fromDate).getTime(), to: CDateToDate(selectedTask.toDate).getTime() });
-
-                if(editing)
-                    emit("taskEdit", selectedTask);
-
-                resizeCheckRow(selectedTask);
-
-                findTasksInRow(selectedTask.row + 1, prevFromDate, prevToDate).forEach((foundUUID) => {
-                    let foundTask: Task | undefined = findTaskByUUID(selectedTask.row + 1, foundUUID);
-                    
-                    if(foundTask && foundTask.uuid !== selectedTask.uuid && !arrayIncludesTask(changedTasks, foundTask))
-                        fixRow(foundTask);
-                });
-
-                
-                if(!arrayIncludesTask(changedTasks, selectedTask))
-                    changedTasks.push(selectedTask);
-
-                fixRow(selectedTask, prevFromDate, prevToDate);
-                changedTasks.forEach((task) => fixRow(task));
-            } 
-            else if (mousePageX - startDragPosX < -49 && differenceOfDays > 0) {
-                let prevFromDate: CDate = selectedTask.fromDate;
-                let prevToDate: CDate = selectedTask.toDate; 
-
-                selectedTask.toDate = changeDays(selectedTask.toDate, -1);
-                startDragPosX = mousePageX;
-                differenceOfDays = getDifferenceOfDays(selectedTask.fromDate, selectedTask.toDate);
-                taskIntervals[selectedTask.row].set(selectedTask.uuid, { from: CDateToDate(selectedTask.fromDate).getTime(), to: CDateToDate(selectedTask.toDate).getTime() });
-
-                if(editing)
-                    emit("taskEdit", selectedTask);
-
-                resizeCheckRow(selectedTask);
-
-                findTasksInRow(selectedTask.row + 1, prevFromDate, prevToDate).forEach((foundUUID) => {
-                    let foundTask: Task | undefined = findTaskByUUID(selectedTask.row + 1, foundUUID);
-
-                    if(foundTask && foundTask.uuid !== selectedTask.uuid && !arrayIncludesTask(changedTasks, foundTask))
-                        fixRow(foundTask);
-                });
-
-                
-                if(!arrayIncludesTask(changedTasks, selectedTask))
-                    changedTasks.push(selectedTask);
-
-                fixRow(selectedTask, prevFromDate, prevToDate);
-                changedTasks.forEach((task) => fixRow(task));
-            }
+            if (mousePageX - startDragPosX > 49) resize(false, 1);
+            else if (mousePageX - startDragPosX < -49 && differenceOfDays > 0) resize(false, -1);
             break;
     }
 }
@@ -1111,8 +1013,6 @@ async function mouseUpEvent() {
     dragStatus = DragStatus.None;
     mouseButtonDown = false;
 }
-
-//
 
 </script>
 

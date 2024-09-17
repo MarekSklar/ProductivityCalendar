@@ -76,9 +76,6 @@ async function addNewSection() {
     }).catch(err => {});
 }
 
-//
-
-
 // context menu events
 
 async function onShowTaskContextMenu(e: MouseEvent, task: Task) {
