@@ -3,7 +3,7 @@
 const emit = defineEmits(['taskEdit', 'onDraggedTaskChange', 'inactiveTaskEdit', 'showSectionContextMenu', 'showTaskContextMenu']);
 
 defineExpose({
-    mousePressedEvent, mouseMoveEvent, mouseUpEvent, onEditTask, onCreateTask, onCloseEdit, onEditResizeTask, onDuplicateTask, onDeleteTask, onDeleteTaskAndGetValues, onChangeTaskSection
+    mousePressedEvent, mouseMoveEvent, mouseUpEvent, onEditTask, onCreateTask, onCloseEdit, onEditResizeTask, onDuplicateTask, onDeleteTask, onDeleteTaskAndGetValues, onChangeTaskSection, findClosestAvailableRow
 });
 
 const props = defineProps({
@@ -51,8 +51,7 @@ await $fetch('/api/tasks/tasksList', { method: 'post', body: { sectionIndex: pro
     let maxRow: number = 2;
     tasks.forEach((task) => { if(task.row > maxRow) { maxRow = task.row }});
 
-    for(let i = 3; i < maxRow + 1; i++)
-    {
+    for(let i = 3; i < maxRow + 1; i++) {
         addRow();
     }
 
@@ -603,8 +602,8 @@ async function onDeleteTask(task: Task) {
             tasksAbove.push(taskAbove);
     });
 
-    rows.value[task.row].forEach((task: Task, index: number) => {
-        if(task.uuid === task.uuid) {
+    rows.value[task.row].forEach((_task: Task, index: number) => {
+        if(_task.uuid === task.uuid) {
             rows.value[task.row].splice(index, 1);            
         }
     });
@@ -616,6 +615,8 @@ async function onDeleteTask(task: Task) {
     }
 
     tasksAbove.forEach((taskAbove) => fixRow(taskAbove));
+
+    deleteEmptyRows();
 }
 
 function onDeleteTaskAndGetValues(draggedTaskObj: DraggedTask) {
@@ -628,7 +629,6 @@ function onDeleteTaskAndGetValues(draggedTaskObj: DraggedTask) {
             break;
         }
     }
-
     if(foundTask) {
         onDeleteTask(foundTask);
     }
@@ -643,6 +643,25 @@ async function onChangeTaskSection(e: MouseEvent, task: Task, draggedTaskObj: Dr
     dragStatus = DragStatus.TaskDrag;
     mouseButtonDown = false;
     draggedTaskObject.value = draggedTaskObj;
+}
+
+function findClosestAvailableRow(fromDate: CDate, toDate: CDate) {
+    let availableRow: number = -1;
+    for(let i = rows.value.length - 1; i >= 0; i--) {
+        if(invalidRow(i, "", fromDate, toDate)) {
+            availableRow = i + 1;
+            break;
+        }
+    }
+
+    if(availableRow === -1)
+        availableRow = 0;
+    
+    if(availableRow >= rows.value.length - 1) {
+        addRow();
+    }
+
+    return availableRow;
 }
 
 //
@@ -662,6 +681,9 @@ async function onEditTask(task: Task) {
 
 async function onCreateTask(task: Task) {
     inactiveTask.value = {};
+
+    if(task.row >= rows.value.length - 1)
+        addRow();
 
     rows.value[task.row].push(task);
     taskIntervals[task.row].set(task.uuid, { from: CDateToTimestamp(task.fromDate), to: CDateToTimestamp(task.toDate) });
@@ -793,7 +815,6 @@ async function startTaskRightResizeDragging(e: MouseEvent, task: Task) {
 }
 
 async function mouseMoveEvent(mousePageX: number, mousePageY: number) { // TODO: experiment with datespos for threshold
-    console.log(startDragPosX);
     switch(dragStatus) {
         case DragStatus.TaskCreate:
             if (startDragPosX - mousePageX! > 49 && differenceOfDays > 0) {

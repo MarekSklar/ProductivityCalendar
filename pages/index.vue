@@ -214,6 +214,13 @@ async function mouseMoveEvent(event: MouseEvent) {
             let returnValues = sectionRefs.value.at(draggedTaskObject.value.sectionIndex).onDeleteTaskAndGetValues(draggedTaskObject.value);
 
             if(returnValues.task) {
+                if(draggedTaskObject.value.sectionIndex > currentHoveredSection) {
+                    returnValues.task.row = sectionRefs.value.at(currentHoveredSection).findClosestAvailableRow(returnValues.task.fromDate, returnValues.task.toDate);
+                }
+                else {
+                    returnValues.task.row = 0;
+                }
+
                 returnValues.task.sectionIndex = currentHoveredSection;
                 draggedTaskObject.value.sectionIndex = currentHoveredSection;
 
@@ -232,10 +239,10 @@ async function mouseMoveEvent(event: MouseEvent) {
                         assignees: returnValues.task.assignees,
                         description: returnValues.task.description
                     }
+                }).then(() => {
+                    sectionRefs.value.at(currentHoveredSection).onChangeTaskSection(event, returnValues.task, draggedTaskObject.value, returnValues.startDragPosX);
+                    sectionRefs.value.at(currentHoveredSection).onCreateTask(returnValues.task);
                 });
-
-                sectionRefs.value.at(currentHoveredSection).onChangeTaskSection(event, returnValues.task, draggedTaskObject.value, returnValues.startDragPosX);
-                sectionRefs.value.at(currentHoveredSection).onCreateTask(returnValues.task);
             }
         }
     }
