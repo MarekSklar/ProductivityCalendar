@@ -694,12 +694,13 @@ function onDeleteTaskAndGetValues(draggedTaskObj: DraggedTask) {
     }
     if(foundTask) {
         onDeleteTask(foundTask);
+        dragStatus = DragStatus.None;
     }
 
     return { task: foundTask, startDragPosX: startDragPosX };
 }
 
-async function onChangeTaskSection(e: MouseEvent, task: Task, draggedTaskObj: DraggedTask, _startDragPosX: number) {
+function onChangeTaskSection(e: MouseEvent, task: Task, draggedTaskObj: DraggedTask, _startDragPosX: number) {
     startDragPosX = _startDragPosX;
     selectedTask = task;
     inactiveTask.value = undefined;
@@ -965,7 +966,7 @@ async function mouseMoveEvent(mousePageX: number, mousePageY: number) { // TODO:
             else if (mousePageX - startDragPosX < -49 && differenceOfDays > 0) resize(Side.Right, -1);
             break;
     }
-    
+
 }
 
 async function mouseUpEvent() {
