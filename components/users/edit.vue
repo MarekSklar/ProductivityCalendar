@@ -56,7 +56,7 @@ const addProfile = async () => {
 <template>
   <div @click="emit('toggleEdit')" class="absolute w-screen h-screen bg-black bg-opacity-20"></div>
   <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-    <div class="card bg-white">
+    <div class="card background">
       <form @submit.prevent class="flex flex-col gap-3">
         <div class="input-box">
           <label for="lname">Full name<span class="requiredAsterisk">*</span></label>
@@ -87,7 +87,7 @@ const addProfile = async () => {
         </div>
 
         <!-- fail message -->
-        <p class="text-center text-red-600">{{ pFailed }}</p>
+        <p class="text-center text-red-600 dark:text-red-200 dark:font-semibold">{{ pFailed }}</p>
 
         <!-- submit button -->
         <div class="flex justify-center w-full">
@@ -104,6 +104,6 @@ const addProfile = async () => {
 }
 
 input {
-  @apply w-1/2 ml-3 px-2 border-2 border-gray-200 rounded-md;
+  @apply w-1/2 ml-3 px-2 border-2 border-gray-200 rounded-md bg-white/0;
 }
 </style>
