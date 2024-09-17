@@ -845,14 +845,17 @@ async function mouseMoveEvent(mousePageX: number, mousePageY: number) { // TODO:
             checkSwitchRow(selectedTask);
             
             // moving
-            if (startDragPosX - mousePageX > 49) {
+            
+            if ((startDragPosX - mousePageX - 8) > 49) {
+                const moveBy = - Math.round((startDragPosX - mousePageX - 8) / 49);
+                
                 let prevFromDate: CDate = selectedTask.fromDate;
                 let prevToDate: CDate = selectedTask.toDate; 
 
-                selectedTask.fromDate = changeDays(selectedTask.fromDate, -1);
-                selectedTask.toDate = changeDays(selectedTask.toDate, -1);
+                selectedTask.fromDate = changeDays(selectedTask.fromDate, moveBy);
+                selectedTask.toDate = changeDays(selectedTask.toDate, moveBy);
 
-                startDragPosX = mousePageX;
+                startDragPosX -= props.columnWidth! * Math.abs(moveBy);
                 taskIntervals[selectedTask.row].set(selectedTask.uuid, { from: CDateToDate(selectedTask.fromDate).getTime(), to: CDateToDate(selectedTask.toDate).getTime() });
 
                 findTasksInRow(selectedTask.row + 1, prevFromDate, prevToDate).forEach((foundUUID) => {
@@ -871,14 +874,16 @@ async function mouseMoveEvent(mousePageX: number, mousePageY: number) { // TODO:
                 if(editing)
                     emit("taskEdit", selectedTask);
             } 
-            else if (startDragPosX - mousePageX < -49) {
+            else if ((startDragPosX - mousePageX - 8) < -49) {
+                const moveBy = - Math.round((startDragPosX - mousePageX - 8) / 49) ;
+                
                 let prevFromDate: CDate = selectedTask.fromDate;
                 let prevToDate: CDate = selectedTask.toDate; 
 
-                selectedTask.fromDate = changeDays(selectedTask.fromDate, 1);
-                selectedTask.toDate = changeDays(selectedTask.toDate, 1);
+                selectedTask.fromDate = changeDays(selectedTask.fromDate, moveBy);
+                selectedTask.toDate = changeDays(selectedTask.toDate, moveBy);
 
-                startDragPosX = mousePageX;
+                startDragPosX += props.columnWidth! * Math.abs(moveBy);
                 taskIntervals[selectedTask.row].set(selectedTask.uuid, { from: CDateToDate(selectedTask.fromDate).getTime(), to: CDateToDate(selectedTask.toDate).getTime() });
 
                 findTasksInRow(selectedTask.row + 1, prevFromDate, prevToDate).forEach((foundUUID) => {
