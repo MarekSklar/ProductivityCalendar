@@ -123,9 +123,16 @@ const createTask = async () => {
 };
 
 const editName = async () => {
-    if (!props.profiles || !props.profile || !props.sessionToken || nameTimerRunning)
+    if (!props.profiles || !props.profile || !props.sessionToken)
         return;
 
+    if(editedTask) {
+        updateEditedTask();
+    }
+
+    if(nameTimerRunning)
+        return;
+    
     if(!editedTask) {
         createTask().then(async (task) => {
             if(task) {
