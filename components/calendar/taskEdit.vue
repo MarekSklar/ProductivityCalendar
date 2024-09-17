@@ -84,6 +84,21 @@ async function showEditor() {
     editorVisibility.value = true;
 }
 
+async function updateEditedTask() {
+    if(editedTask) {
+        const dateFromFormat = tDateFrom.value.split('-');
+        const dateToFormat = tDateTo.value.split('-'); 
+
+        editedTask.color = tColor.value;
+        editedTask.name = tName.value;
+        editedTask.status = tStatus.value;
+        editedTask.fromDate = { day: parseInt(dateFromFormat[2]), month: parseInt(dateFromFormat[1]), year: parseInt(dateFromFormat[0]) };
+        editedTask.toDate = { day: parseInt(dateToFormat[2]), month: parseInt(dateToFormat[1]), year: parseInt(dateToFormat[0]) };
+        editedTask.assignees = tAssignees.value;
+        editedTask.description = tDescription.value;
+    }
+}
+
 const createTask = async () => {
     if (!props.profiles || !props.profile || !props.sessionToken || !inactiveTask)
         return;
@@ -126,6 +141,9 @@ const editName = async () => {
             const dateFromFormat = tDateFrom.value.split('-');
             const dateToFormat = tDateTo.value.split('-');       
             
+            updateEditedTask();
+            emit('taskEdited', editedTask);
+            
             await $fetch('/api/tasks/taskEdit', {
                 method: 'post',
                 body: {
@@ -141,7 +159,7 @@ const editName = async () => {
                     assignees: tAssignees.value,
                     description: tDescription.value
                 }
-            }).then((task) => emit('taskEdited', task)).catch(err => {});
+            }).catch(err => {});
         }, 2000);
     }
 }
@@ -166,6 +184,9 @@ const editTask = async () => {
             const dateFromFormat = tDateFrom.value.split('-');
             const dateToFormat = tDateTo.value.split('-');       
             
+            updateEditedTask();
+            emit('taskEdited', editedTask);
+
             await $fetch('/api/tasks/taskEdit', {
                 method: 'post',
                 body: {
@@ -181,7 +202,7 @@ const editTask = async () => {
                     assignees: tAssignees.value,
                     description: tDescription.value
                 }
-            }).then((task) => { emit('taskEdited', task)}).catch(err => {});
+            }).catch(err => {});
         }
     }, 50);  
 };
