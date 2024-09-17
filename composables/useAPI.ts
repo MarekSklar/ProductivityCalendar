@@ -5,7 +5,6 @@
 export async function fetchProfile(sessionToken: string) {
     const { data: profileData } = await useFetch('/api/profiles/profileGet', { method: 'post', body: { sessionToken: sessionToken }});
     const profile = profileData.value?.at(0);
-    console.log(profile);    
     return profile;
 }
 
