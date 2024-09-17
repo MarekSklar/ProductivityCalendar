@@ -111,40 +111,39 @@ const editName = async () => {
     if (!props.profiles || !props.profile || !props.sessionToken || nameTimerRunning)
         return;
 
-    nameTimerRunning = true;
-    setTimeout(async () => {
-        nameTimerRunning = false;
-        
-        if(!editedTask || editedTask === undefined) {
-            createTask().then(async (task) => {
-                if(task) {
-                    onTaskChange(task); 
-                    emit("createdTask", task);
-                }
-            });
-        }
-        else {
+    if(!editedTask) {
+        createTask().then(async (task) => {
+            if(task) {
+                onTaskChange(task); 
+                emit("createdTask", task);
+            }
+        });
+    }
+    else {
+        nameTimerRunning = true;
+        setTimeout(async () => {
+            nameTimerRunning = false;
             const dateFromFormat = tDateFrom.value.split('-');
             const dateToFormat = tDateTo.value.split('-');       
             
             await $fetch('/api/tasks/taskEdit', {
                 method: 'post',
                 body: {
-                    uuid: editedTask.uuid,
+                    uuid: editedTask!.uuid,
                     color: tColor.value,
                     name: tName.value,
-                    row: editedTask.row,
-                    sectionIndex: editedTask.sectionIndex,
+                    row: editedTask!.row,
+                    sectionIndex: editedTask!.sectionIndex,
                     status: tStatus.value,
                     fromDate: { day: parseInt(dateFromFormat[2]), month: parseInt(dateFromFormat[1]), year: parseInt(dateFromFormat[0]) },
                     toDate: { day: parseInt(dateToFormat[2]), month: parseInt(dateToFormat[1]), year: parseInt(dateToFormat[0]) },
-                    createdBy: editedTask.createdBy,
+                    createdBy: editedTask!.createdBy,
                     assignees: tAssignees.value,
                     description: tDescription.value
                 }
-            }).then((task) => emit('taskEdited', task)).catch(err => {});  
-    }      
-    }, 2000);
+            }).then((task) => emit('taskEdited', task)).catch(err => {});
+        }, 2000);
+    }
 }
 
 const editTask = async () => {
