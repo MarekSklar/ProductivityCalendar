@@ -1,14 +1,13 @@
 <script setup lang="ts">
 
-const emit = defineEmits(['taskEdit', 'onDraggedTaskChange', 'inactiveTaskEdit']);
+const emit = defineEmits(['taskEdit', 'onDraggedTaskChange', 'inactiveTaskEdit', 'showSectionContextMenu', 'showTaskContextMenu']);
 
 defineExpose({
-    mouseMoveEvent, mouseUpEvent, onEditTask, onCreateTask, onCloseEdit, onEditResizeTask
+    mousePressedEvent, mouseMoveEvent, mouseUpEvent, onEditTask, onCreateTask, onCloseEdit, onEditResizeTask, onDuplicateTask, onDeleteTask, onDeleteTaskAndGetValues, onChangeTaskSection
 });
 
 const props = defineProps({
-    sectionIndex: Number,
-    name: String,
+    section: Object as PropType<Section>,
     columnWidth: Number,
     datesPos: Number,
     calendarDragPos: Number,
@@ -29,18 +28,11 @@ let differenceOfDays: number;
 
 let startDragPosX: number;
 let draggedTaskObject = ref();
-let clickOffsetX: number;
-let clickOffsetY: number;
 let currentHoveredRow: number;
 let prevHoveredRow: number = -1;
 let editing: boolean = false;
 let changedTasks: Task[] = [];
 
-let showContextMenu = ref(false);
-let contextMenuTask = ref();
-let contextMenuX = ref(0);
-let contextMenuY = ref(0);
-let mouseOverContextMenu = ref(false);
 
 enum DragStatus {
     None, TaskCreate, TaskDrag, TaskLeftResize, TaskRightResize
@@ -52,7 +44,7 @@ let dragStatus: DragStatus = DragStatus.None;
 // database functions
 
 // do this in index for each section and then passing it through props
-await $fetch('/api/tasks/tasksList', { method: 'post', body: { sectionIndex: props.sectionIndex }}).then((value) => {
+await $fetch('/api/tasks/tasksList', { method: 'post', body: { sectionIndex: props.section!.sectionIndex }}).then((value) => {
     pending = false; 
     let tasks = value as Task[];
 
@@ -588,6 +580,71 @@ function resizeCheckRow(resizeTask: Task) {
     deleteEmptyRows();
 }
 
+async function onDuplicateTask(task: Task) {
+    if(task.row >= rows.value.length - 1)
+        addRow();
+
+    onCreateTask(task);
+    checkSwitchRow(task);
+
+    if(!arrayIncludesTask(changedTasks, task))
+        changedTasks.push(task);
+
+    saveTasks(changedTasks);
+    changedTasks = [];
+}
+
+async function onDeleteTask(task: Task) {
+    let tasksAbove: Task[] = [];
+    findTasksInRow(task.row + 1, task.fromDate, task.toDate).forEach((taskUUID) => {
+        let taskAbove: Task | undefined = findTaskByUUID(task.row + 1, taskUUID);
+
+        if(taskAbove)
+            tasksAbove.push(taskAbove);
+    });
+
+    rows.value[task.row].forEach((task: Task, index: number) => {
+        if(task.uuid === task.uuid) {
+            rows.value[task.row].splice(index, 1);            
+        }
+    });
+    taskIntervals[task.row].delete(task.uuid);
+
+    for(let i = 0; i < changedTasks.length; i++) {
+        if(changedTasks[i].uuid === task.uuid)
+            changedTasks.splice(i, 1);
+    }
+
+    tasksAbove.forEach((taskAbove) => fixRow(taskAbove));
+}
+
+function onDeleteTaskAndGetValues(draggedTaskObj: DraggedTask) {
+    let foundTask: Task | undefined = undefined;
+    for(let i = 0; i < rows.value.length; i++) {
+        let task: Task | undefined = findTaskByUUID(i, draggedTaskObj.uuid);
+
+        if(task) {
+            foundTask = task;
+            break;
+        }
+    }
+
+    if(foundTask) {
+        onDeleteTask(foundTask);
+    }
+
+    return { task: foundTask, startDragPosX: startDragPosX };
+}
+
+async function onChangeTaskSection(e: MouseEvent, task: Task, draggedTaskObj: DraggedTask, _startDragPosX: number) {
+    startDragPosX = _startDragPosX;
+    selectedTask = task;
+    inactiveTask.value = undefined;
+    dragStatus = DragStatus.TaskDrag;
+    mouseButtonDown = false;
+    draggedTaskObject.value = draggedTaskObj;
+}
+
 //
 
 
@@ -612,6 +669,7 @@ async function onCreateTask(task: Task) {
 
 async function onCloseEdit() {
     inactiveTask.value = {};
+    editing = false;
 }
 
 async function onEditResizeTask(task: Task, prevFromDate: CDate, prevToDate: CDate) {
@@ -643,100 +701,17 @@ async function onRowChangeEvent(index: number) {
     currentHoveredRow = index;
 }
 
-async function onShowContextMenu(e: MouseEvent, task: Task) {
-    e.preventDefault();
 
-    contextMenuTask.value = task;
-    contextMenuX.value = e.clientX;
-    contextMenuY.value = e.clientY;
-    showContextMenu.value = true;
-}
-
-async function onCloseContextMenu() {
-    contextMenuTask.value = undefined
-    showContextMenu.value = false;
-    mouseOverContextMenu.value = false;
-}
-
-async function onDuplicateTask() {
-    let task: Task = await $fetch('/api/tasks/tasksCreate', {
-        method: 'post',
-        body: {
-            color: contextMenuTask.value.color,
-            name: contextMenuTask.value.name,
-            row: contextMenuTask.value.row + 1,
-            sectionIndex: contextMenuTask.value.sectionIndex,
-            status: contextMenuTask.value.status,
-            fromDate: contextMenuTask.value.fromDate,
-            toDate: contextMenuTask.value.toDate,
-            createdBy: contextMenuTask.value.createdBy,
-            assignees: contextMenuTask.value.assignees,
-            description: contextMenuTask.value.description
-        }
-    });
-
-    if(task.row >= rows.value.length - 1)
-        addRow();
-
-    onCreateTask(task);
-    checkSwitchRow(task);
-
-    if(!arrayIncludesTask(changedTasks, task))
-        changedTasks.push(task);
-
-    saveTasks(changedTasks);
-    changedTasks = [];
-
-    onCloseContextMenu();
-}
-
-async function onDeleteTask() {
-    let tasksAbove: Task[] = [];
-    findTasksInRow(contextMenuTask.value.row + 1, contextMenuTask.value.fromDate, contextMenuTask.value.toDate).forEach((taskUUID) => {
-        let taskAbove: Task | undefined = findTaskByUUID(contextMenuTask.value.row + 1, taskUUID);
-
-        if(taskAbove)
-            tasksAbove.push(taskAbove);
-    });
-
-    await $fetch('/api/tasks/taskDelete', {
-        method: 'post',
-        body: {
-            uuid: contextMenuTask.value.uuid
-        }
-    });
-
-    rows.value[contextMenuTask.value.row].forEach((task: Task, index: number) => {
-        if(task.uuid === contextMenuTask.value.uuid) {
-            rows.value[contextMenuTask.value.row].splice(index, 1);            
-        }
-    });
-    taskIntervals[contextMenuTask.value.row].delete(contextMenuTask.value.uuid);
-
-    for(let i = 0; i < changedTasks.length; i++) {
-        if(changedTasks[i].uuid === contextMenuTask.value.uuid)
-            changedTasks.splice(i, 1);
-    }
-
-    tasksAbove.forEach((taskAbove) => fixRow(taskAbove));    
-    onCloseContextMenu();
-}
-
-async function mousePressedEvent(e: MouseEvent) {
-    if(showContextMenu.value && !mouseOverContextMenu.value) {
-        onCloseContextMenu();
+async function mousePressedEvent(e: MouseEvent, ignoreTaskCreation: boolean) {
+    if (dragStatus !== DragStatus.None || e.button !== 0)
         return;
-    }
-
-    if (dragStatus !== DragStatus.None || e.button !== 0 || mouseOverContextMenu.value)
-        return;
-
+    
     if(editing) {
         editing = false;
         emit('taskEdit', undefined);
         inactiveTask.value = {}
     }
-    else {
+    else if(!ignoreTaskCreation) {
         if(inactiveTask) 
             inactiveTask.value = {};       
 
@@ -749,7 +724,7 @@ async function mousePressedEvent(e: MouseEvent) {
 
         inactiveTask.value = {
             row: -1,
-            sectionIndex: props.sectionIndex,
+            sectionIndex: props.section!.sectionIndex,
             fromDate: currentDate,
             toDate: currentDate,
         };
@@ -775,9 +750,9 @@ async function mousePressedEvent(e: MouseEvent) {
 }
 
 async function startTaskDragging(e: MouseEvent, task: Task) {
-    if (dragStatus !== DragStatus.None || e.button !== 0 || mouseOverContextMenu.value)
+    if (dragStatus !== DragStatus.None || e.button !== 0)
         return;
-
+    
     mouseButtonDown = true;
     selectedTask = task;
     inactiveTask.value = undefined;
@@ -785,12 +760,12 @@ async function startTaskDragging(e: MouseEvent, task: Task) {
 
     setTimeout(() => {
         if (mouseButtonDown) {
-            draggedTaskObject.value = { uuid: selectedTask.uuid, name: selectedTask.name, status: selectedTask.status, color: selectedTask.color, width: taskPlacementPos(task).taskLength * props.columnWidth! };
+            draggedTaskObject.value = { uuid: selectedTask.uuid, name: selectedTask.name, status: selectedTask.status, color: selectedTask.color, width: taskPlacementPos(task).taskLength * props.columnWidth!, sectionIndex: props.section!.sectionIndex };
             draggedTaskObject.value.left = e.pageX - e.offsetX;
             draggedTaskObject.value.top = e.pageY - e.offsetY;
+            draggedTaskObject.value.clickOffsetX = e.offsetX;
+            draggedTaskObject.value.clickOffsetY = e.offsetY;
             mouseButtonDown = false;
-            clickOffsetX = e.offsetX;
-            clickOffsetY = e.offsetY;
             startDragPosX = e.pageX;
             emit('onDraggedTaskChange', draggedTaskObject.value);
             emit('taskEdit', undefined);
@@ -804,24 +779,21 @@ async function startTaskDragging(e: MouseEvent, task: Task) {
 }
 
 async function startTaskLeftResizeDragging(e: MouseEvent, task: Task) {
-    if(!mouseOverContextMenu.value) {
-        selectedTask = task;
-        dragStatus = DragStatus.TaskLeftResize;
-        startDragPosX = e.pageX;
-        mouseButtonDown = true;
-    }
+    selectedTask = task;
+    dragStatus = DragStatus.TaskLeftResize;
+    startDragPosX = e.pageX;
+    mouseButtonDown = true;    
 }
 
 async function startTaskRightResizeDragging(e: MouseEvent, task: Task) {
-    if(!mouseOverContextMenu.value) {
-        selectedTask = task;
-        dragStatus = DragStatus.TaskRightResize;
-        startDragPosX = e.pageX;
-        mouseButtonDown = true;
-    }
+    selectedTask = task;
+    dragStatus = DragStatus.TaskRightResize;
+    startDragPosX = e.pageX;
+    mouseButtonDown = true;    
 }
 
 async function mouseMoveEvent(mousePageX: number, mousePageY: number) { // TODO: experiment with datespos for threshold
+    console.log(startDragPosX);
     switch(dragStatus) {
         case DragStatus.TaskCreate:
             if (startDragPosX - mousePageX! > 49 && differenceOfDays > 0) {
@@ -839,15 +811,12 @@ async function mouseMoveEvent(mousePageX: number, mousePageY: number) { // TODO:
             if(!draggedTaskObject.value)
                 return;
             
-            draggedTaskObject.value.left = mousePageX - clickOffsetX;
-            draggedTaskObject.value.top = mousePageY - clickOffsetY;
-            
             checkSwitchRow(selectedTask);
             
             // moving
             
             if ((startDragPosX - mousePageX - 8) > 49) {
-                const moveBy = - Math.round((startDragPosX - mousePageX - 8) / 49);
+                const moveBy = -Math.round((startDragPosX - mousePageX - 8) / 49);
                 
                 let prevFromDate: CDate = selectedTask.fromDate;
                 let prevToDate: CDate = selectedTask.toDate; 
@@ -875,7 +844,7 @@ async function mouseMoveEvent(mousePageX: number, mousePageY: number) { // TODO:
                     emit("taskEdit", selectedTask);
             } 
             else if ((startDragPosX - mousePageX - 8) < -49) {
-                const moveBy = - Math.round((startDragPosX - mousePageX - 8) / 49) ;
+                const moveBy = -Math.round((startDragPosX - mousePageX - 8) / 49) ;
                 
                 let prevFromDate: CDate = selectedTask.fromDate;
                 let prevToDate: CDate = selectedTask.toDate; 
@@ -1023,11 +992,11 @@ async function mouseMoveEvent(mousePageX: number, mousePageY: number) { // TODO:
 }
 
 async function mouseUpEvent() {
-    if(showContextMenu.value && !mouseOverContextMenu.value)
-        onCloseContextMenu();
-
-    if(dragStatus === DragStatus.None)
+    if(dragStatus === DragStatus.None) {
+        inactiveTask.value = {};
+        editing = false;
         return;
+    }
 
     if(dragStatus === DragStatus.TaskCreate && inactiveTask) {
         emit('inactiveTaskEdit', inactiveTask.value);
@@ -1066,10 +1035,11 @@ async function mouseUpEvent() {
 </script>
 
 <template>
-    <div v-if="!pending" class="relative mt-4 overflow-hidden select-none" @mousedown="mousePressedEvent">
-        <div class="absolute top-1/2 z-30" style="height: calc(100% - 1rem);">
-            <div class="relative -top-1/2 flex justify-center items-center w-40 h-full px-4 text-left bg-white rounded-r-lg shadow-[0_0px_20px_-10px_rgba(0,0,0,0.3)]">{{ props.name }}</div>
+    <div v-if="!pending" class="relative mt-4 overflow-hidden select-none">
+        <div @contextmenu.prevent="emit('showSectionContextMenu', $event, props.section!)" class="absolute top-1/2 z-30" style="height: calc(100% - 1rem);">
+            <div class="relative -top-1/2 flex justify-center items-center w-40 h-full px-4 text-left bg-white rounded-r-lg shadow-[0_0px_20px_-10px_rgba(0,0,0,0.3)]">{{ props.section!.name }}</div>
         </div>
+
         <div v-for="(row, index) in rows" @mouseover="onRowChangeEvent(index)" class="relative h-11 mb-0.5">
             <div v-for="task in row.filter((task: Task) => task.row === index)" :id="task.uuid" @mousedown="startTaskDragging($event, task)" class="absolute flex h-full left-5 px-px"
             :style="{ left: prps.calendarDragPos! + (taskPlacementPos(task).from)*prps.columnWidth! + 'px', width: taskPlacementPos(task).taskLength * prps.columnWidth! + 'px' }"> <!--TODO: precalculate-->
@@ -1090,7 +1060,7 @@ async function mouseUpEvent() {
                     </div>
                 </div>
                 <!-- task -->
-                <div v-else @contextmenu.prevent="onShowContextMenu($event, task)" class="size-full rounded-md cursor-pointer" :style="{ backgroundColor: task.color}">
+                <div v-else @contextmenu.prevent="emit('showTaskContextMenu', $event, task)" class="size-full rounded-md cursor-pointer" :style="{ backgroundColor: task.color}">
                     <div @mousedown="startTaskLeftResizeDragging($event, task)" class="absolute left-0 z-20 w-3 h-full cursor-e-resize"></div>
                     <div @mousedown="startTaskRightResizeDragging($event, task)" class="absolute right-0 z-20 w-3 h-full cursor-e-resize"></div>
                     <div class="size-full p-1 pl-2">
@@ -1108,8 +1078,7 @@ async function mouseUpEvent() {
                             </div>
                         </div>
                     </div>
-                </div>
-                <CalendarTaskContextMenu v-if="showContextMenu && contextMenuTask.uuid === task.uuid" @mouseover="mouseOverContextMenu = true" @mouseleave="mouseOverContextMenu = false" @onDuplicateTask="onDuplicateTask" @onDeleteTask="onDeleteTask" :task="contextMenuTask" :x="contextMenuX" :y="contextMenuY"/>                
+                </div>                
             </div>
             <div v-if="inactiveTask !== undefined && inactiveTask.row === index" class="absolute flex h-full left-5 px-px"
             :style="{ left: prps.calendarDragPos! + (inactiveTaskPlacementPos(inactiveTask).from)*prps.columnWidth! + 'px', width: inactiveTaskPlacementPos(inactiveTask).taskLength * prps.columnWidth! + 'px' }">

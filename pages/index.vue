@@ -36,6 +36,17 @@ const columnWidth = 56;
 const columnHitboxWidth = Math.floor(columnWidth * 7 / 8);
 const weekendOffset = ref(weekOffset.value - (todayWeekDay.value - 2) * columnWidth);
 
+// context menu variables
+let showTaskContextMenu = ref(false);
+let showSectionContextMenu = ref(false);
+let contextMenuTask = ref();
+let contextMenuSection = ref();
+let contextMenuX = ref(0);
+let contextMenuY = ref(0);
+let mouseOverContextMenu = ref(false);
+
+let inactiveTaskCreateSectionIndex: number = -2;
+
 // section events
 
 if(profiles && profiles.length > 0) {
@@ -51,6 +62,9 @@ if(profiles && profiles.length > 0) {
 }
 
 async function addNewSection() {
+    if(sections.value.length === 4) // limitoval bych to na 4 sekce, kdyztak na to mrknem
+        return;
+
     await $fetch('/api/sections/sectionAdd', {
         method: 'post',
         body: {
@@ -65,6 +79,97 @@ async function addNewSection() {
 //
 
 
+// context menu events
+
+async function onShowTaskContextMenu(e: MouseEvent, task: Task) {
+    e.preventDefault();
+
+    contextMenuTask.value = task;
+    contextMenuX.value = e.clientX;
+    contextMenuY.value = e.clientY;
+    showTaskContextMenu.value = true;
+}
+
+async function onCloseTaskContextMenu() {
+    contextMenuTask.value = undefined
+    showTaskContextMenu.value = false;
+    mouseOverContextMenu.value = false;
+}
+
+async function onDuplicateTask() {
+    let task: Task = await $fetch('/api/tasks/tasksCreate', {
+        method: 'post',
+        body: {
+            color: contextMenuTask.value.color,
+            name: contextMenuTask.value.name,
+            row: contextMenuTask.value.row + 1,
+            sectionIndex: contextMenuTask.value.sectionIndex,
+            status: contextMenuTask.value.status,
+            fromDate: contextMenuTask.value.fromDate,
+            toDate: contextMenuTask.value.toDate,
+            createdBy: contextMenuTask.value.createdBy,
+            assignees: contextMenuTask.value.assignees,
+            description: contextMenuTask.value.description
+        }
+    });
+
+    sectionRefs.value.at(currentHoveredSection).onDuplicateTask(task);
+
+    onCloseTaskContextMenu();
+}
+
+async function onDeleteTask() {
+    sectionRefs.value.at(currentHoveredSection).onDeleteTask(contextMenuTask.value);
+    
+    await $fetch('/api/tasks/taskDelete', {
+        method: 'post',
+        body: {
+            uuid: contextMenuTask.value.uuid
+        }
+    });
+
+    onCloseTaskContextMenu();
+}
+
+async function onShowSectionContextMenu(e: MouseEvent, section: Section) {
+    e.preventDefault();
+
+    contextMenuX.value = e.clientX;
+    contextMenuY.value = e.clientY;
+    showSectionContextMenu.value = true;
+    contextMenuSection.value = section;
+}
+
+
+async function onCloseSectionContextMenu() {
+    contextMenuSection.value = undefined;
+    showSectionContextMenu.value = false;
+    mouseOverContextMenu.value = false;
+}
+
+async function onRenameSection(name: string) {
+    contextMenuSection.value.name = name;
+    sections.value[contextMenuSection.value.sectionIndex].name = name;
+
+    await $fetch('/api/sections/sectionEdit', {
+        method: 'post',
+        body: {
+            uuid: contextMenuSection.value.uuid,
+            name: contextMenuSection.value.name,
+            sectionIndex: contextMenuSection.value.sectionIndex
+        }
+    });
+
+    onCloseSectionContextMenu();
+}
+
+async function onDeleteSection() {
+    onCloseSectionContextMenu();
+}
+
+//
+
+
 // mouse events
 
 async function mouseDownEvent(event: MouseEvent) {
@@ -72,16 +177,71 @@ async function mouseDownEvent(event: MouseEvent) {
         startDragPosX.value = event.screenX;
         draggingCalendar.value = true;
     }
+    else {
+        if(showTaskContextMenu.value && !mouseOverContextMenu.value) {
+            onCloseTaskContextMenu();
+            return;
+        }
+        else if(showSectionContextMenu.value && !mouseOverContextMenu.value) {
+            onCloseSectionContextMenu();
+            return;
+        }
+
+        if(inactiveTaskCreateSectionIndex === -2 || inactiveTaskCreateSectionIndex === currentHoveredSection) {
+            inactiveTaskCreateSectionIndex = currentHoveredSection
+            sectionRefs.value.at(currentHoveredSection).mousePressedEvent(event, false);
+        }
+        else {            
+            sectionRefs.value.at(inactiveTaskCreateSectionIndex).mouseUpEvent(currentHoveredSection);
+            sectionRefs.value.at(inactiveTaskCreateSectionIndex).onCloseEdit(currentHoveredSection);
+            taskEditor.value.hideEditor();
+            inactiveTaskCreateSectionIndex = currentHoveredSection
+        }
+    }
 }
 
-function mouseMoveEvent(event: MouseEvent) {
+async function mouseMoveEvent(event: MouseEvent) {
     // disable default dragging
     event.preventDefault ? event.preventDefault() : event.returnValue = false;
     // move calendar on drag
     if (!event.buttons) return;
 
-    sectionRefs.value.at(currentHoveredSection).mouseMoveEvent(event.pageX, event.pageY);
+    if(draggedTaskObject.value) {
+        draggedTaskObject.value.left = event.pageX - draggedTaskObject.value.clickOffsetX;
+        draggedTaskObject.value.top = event.pageY - draggedTaskObject.value.clickOffsetY;
 
+        if(currentHoveredSection !== draggedTaskObject.value.sectionIndex) {
+            let returnValues = sectionRefs.value.at(draggedTaskObject.value.sectionIndex).onDeleteTaskAndGetValues(draggedTaskObject.value);
+
+            if(returnValues.task) {
+                returnValues.task.sectionIndex = currentHoveredSection;
+                draggedTaskObject.value.sectionIndex = currentHoveredSection;
+
+                await $fetch('/api/tasks/taskEdit', {
+                    method: 'post',
+                    body: {
+                        uuid: returnValues.task.uuid,
+                        color: returnValues.task.color,
+                        name: returnValues.task.name,
+                        row: returnValues.task.row,
+                        sectionIndex: returnValues.task.sectionIndex,
+                        status: returnValues.task.status,
+                        fromDate: returnValues.task.fromDate,
+                        toDate: returnValues.task.toDate,
+                        createdBy: returnValues.task.createdBy,
+                        assignees: returnValues.task.assignees,
+                        description: returnValues.task.description
+                    }
+                });
+
+                sectionRefs.value.at(currentHoveredSection).onChangeTaskSection(event, returnValues.task, draggedTaskObject.value, returnValues.startDragPosX);
+                sectionRefs.value.at(currentHoveredSection).onCreateTask(returnValues.task);
+            }
+        }
+    }
+
+    sectionRefs.value.at(currentHoveredSection).mouseMoveEvent(event.pageX, event.pageY);
+    
     if(draggingCalendar.value) {
         calendarDragPos.value = event.screenX - startDragPosX.value + relativeDragPos.value;
         
@@ -93,7 +253,8 @@ function mouseMoveEvent(event: MouseEvent) {
 }
 
 async function mouseUpEvent() {
-    sectionRefs.value.at(currentHoveredSection).mouseUpEvent();
+    for(let i = 0; i < sections.value.length; i++)
+        sectionRefs.value.at(i).mouseUpEvent(currentHoveredSection);
 
     if(draggingCalendar.value) {
         relativeDragPos.value = calendarDragPos.value;
@@ -134,6 +295,8 @@ async function taskEdit(task: Task) {
         }
         else {
             taskEditor.value.hideEditor();
+            for(let i = 0; i < sections.value.length; i++)
+                sectionRefs.value.at(i).onCloseEdit(currentHoveredSection);
         }
     }
 }
@@ -147,6 +310,8 @@ async function inactiveTaskEdit(task: InactiveTask) {
         }
         else {
             taskEditor.value!.hideEditor();
+            for(let i = 0; i < sections.value.length; i++)
+                sectionRefs.value.at(i).onCloseEdit(currentHoveredSection);
         }
     }
 }
@@ -203,8 +368,9 @@ onMounted(() => {
                 class="w-full h-full overflow-x-hidden overflow-y-auto cursor-grab"
                 :class="{ 'cursor-grabbing': draggingCalendar || draggedTaskObject }">
                 <div v-for="(section, index) in sections">
-                    <CalendarSection @mouseover="onSectionChange(index)" :ref="sectionRefs.set" @onDraggedTaskChange="onDraggedTaskChange" @taskEdit="taskEdit" @inactiveTaskEdit="inactiveTaskEdit" :sectionIndex="index" :name="sections[index].name" :columnWidth="columnWidth" :datesPos="datesPos" :calendarDragPos="calendarDragPos" :profile="profile"/>            
+                    <CalendarSection @mouseover="onSectionChange(index)" :ref="sectionRefs.set" @onDraggedTaskChange="onDraggedTaskChange" @taskEdit="taskEdit" @inactiveTaskEdit="inactiveTaskEdit" @showSectionContextMenu="onShowSectionContextMenu" @showTaskContextMenu="onShowTaskContextMenu" :section="section" :columnWidth="columnWidth" :datesPos="datesPos" :calendarDragPos="calendarDragPos" :profile="profile"/>            
                 </div>
+                <button v-if="sections.length < 4" @click="addNewSection" class="h-11 flex justify-center items-center w-40 px-4 text-left bg-red-600 rounded-r-lg">New section</button> <!--TODO: marek, predelat treba na plusko nebo neco (v-if viz addNewSection)-->
             </div>
         </div>
 
@@ -227,7 +393,10 @@ onMounted(() => {
                     </div>
                 </div>
             </div>
-        </div>          
+        </div>
+        
+        <CalendarSectionContextMenu v-if="showSectionContextMenu" @mouseover="mouseOverContextMenu = true" @mouseleave="mouseOverContextMenu = false" @onRenameSection="onRenameSection" @onDeleteSection="onDeleteSection" :x="contextMenuX" :y="contextMenuY"/>
+        <CalendarTaskContextMenu v-if="showTaskContextMenu" @mouseover="mouseOverContextMenu = true" @mouseleave="mouseOverContextMenu = false" @onDuplicateTask="onDuplicateTask" @onDeleteTask="onDeleteTask" :x="contextMenuX" :y="contextMenuY"/>
     </div>
 </template>
 

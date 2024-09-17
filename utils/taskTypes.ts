@@ -33,12 +33,15 @@ declare global {
     
     interface DraggedTask {
         uuid: string,
+        sectionIndex: number,
         name: string,
         status: string,
         color: string,
         left: number,
         top: number,
-        width: number
+        width: number,
+        clickOffsetX: number,
+        clickOffsetY: number
     }
     
     interface TasksListOptions {
