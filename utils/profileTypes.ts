@@ -31,6 +31,7 @@ declare global {
     }
 
     interface ProfileEditOptions {
+        uuid: string,
         name: string,
         email: string
         password?: string,
