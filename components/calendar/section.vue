@@ -811,7 +811,7 @@ async function onRowChangeEvent(index: number) {
 async function mousePressedEvent(e: MouseEvent, ignoreTaskCreation: boolean) {
     if (dragStatus !== DragStatus.None || e.button !== 0 || mouseOverSectionBox.value)
         return;
-    
+    console.log(currentHoveredRow);
     if(editing) {
         editing = false;
         emit('taskEdit', undefined);
@@ -837,6 +837,15 @@ async function mousePressedEvent(e: MouseEvent, ignoreTaskCreation: boolean) {
         };
 
         let row = -1;
+        if(invalidRow(currentHoveredRow, "", currentDate, currentDate)) {
+            for (let i = currentHoveredRow; i <= rows.value.length; i++) {
+                if (!invalidRow(i, "", currentDate, currentDate)) {
+                    row = i;
+                    break;
+                }
+            }
+        }
+
         for (let i = currentHoveredRow; i >= 0; i--) {
             if (invalidRow(i, "", currentDate, currentDate)) {
                 row = i + 1;
@@ -936,6 +945,8 @@ async function mouseMoveEvent(e: MouseEvent) { // TODO: experiment with datespos
 
         fixRow(selectedTask, prevFromDate, prevToDate);
         changedTasks.forEach((task) => fixRow(task));
+
+        deleteEmptyRows();
     }
 
     // moving
