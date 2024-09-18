@@ -178,6 +178,13 @@ async function onDeleteSection() {
         }
     }
 
+    await $fetch('/api/sections/sectionDelete', {
+        method: 'post',
+        body: {
+            uuid: contextMenuSection.value.uuid
+        }
+    });
+    
     onCloseSectionContextMenu();
 }
 
