@@ -202,7 +202,7 @@ async function mouseDownEvent(event: MouseEvent) {
         startDragPosX.value = event.screenX;
         draggingCalendar.value = true;
     }
-    else {
+    else if(profile.role === "admin") {
         if(showTaskContextMenu.value && !mouseOverContextMenu.value) {
             onCloseTaskContextMenu();
             return;
@@ -234,48 +234,50 @@ async function mouseMoveEvent(event: MouseEvent) {
     // move calendar on drag
     if (!event.buttons) return;
 
-    if(draggedTaskObject.value) {
-        draggedTaskObject.value.left = event.pageX - draggedTaskObject.value.clickOffsetX;
-        draggedTaskObject.value.top = event.pageY - draggedTaskObject.value.clickOffsetY;
+    if(profile.role === "admin") {
+        if(draggedTaskObject.value) {
+            draggedTaskObject.value.left = event.pageX - draggedTaskObject.value.clickOffsetX;
+            draggedTaskObject.value.top = event.pageY - draggedTaskObject.value.clickOffsetY;
 
-        if(currentHoveredSection !== draggedTaskObject.value.sectionIndex) {
-            let returnValues = sectionRefs.value.at(draggedTaskObject.value.sectionIndex).onDeleteTaskAndGetValues(draggedTaskObject.value);
+            if(currentHoveredSection !== draggedTaskObject.value.sectionIndex) {
+                let returnValues = sectionRefs.value.at(draggedTaskObject.value.sectionIndex).onDeleteTaskAndGetValues(draggedTaskObject.value);
 
-            if(returnValues.task) {
-                if(draggedTaskObject.value.sectionIndex > currentHoveredSection) {
-                    returnValues.task.row = sectionRefs.value.at(currentHoveredSection).findClosestAvailableRow(returnValues.task.fromDate, returnValues.task.toDate);
-                }
-                else {
-                    returnValues.task.row = 0;
-                }
-
-                returnValues.task.sectionIndex = currentHoveredSection;
-                draggedTaskObject.value.sectionIndex = currentHoveredSection;
-
-                await $fetch('/api/tasks/taskEdit', {
-                    method: 'post',
-                    body: {
-                        uuid: returnValues.task.uuid,
-                        color: returnValues.task.color,
-                        name: returnValues.task.name,
-                        row: returnValues.task.row,
-                        sectionIndex: returnValues.task.sectionIndex,
-                        status: returnValues.task.status,
-                        fromDate: returnValues.task.fromDate,
-                        toDate: returnValues.task.toDate,
-                        createdBy: returnValues.task.createdBy,
-                        assignees: returnValues.task.assignees,
-                        description: returnValues.task.description
+                if(returnValues.task) {
+                    if(draggedTaskObject.value.sectionIndex > currentHoveredSection) {
+                        returnValues.task.row = sectionRefs.value.at(currentHoveredSection).findClosestAvailableRow(returnValues.task.fromDate, returnValues.task.toDate);
                     }
-                }).then(() => {
-                    sectionRefs.value.at(currentHoveredSection).onChangeTaskSection(event, returnValues.task, draggedTaskObject.value, returnValues.startDragPosX);
-                    sectionRefs.value.at(currentHoveredSection).onCreateTask(returnValues.task);
-                });
+                    else {
+                        returnValues.task.row = 0;
+                    }
+
+                    returnValues.task.sectionIndex = currentHoveredSection;
+                    draggedTaskObject.value.sectionIndex = currentHoveredSection;
+
+                    await $fetch('/api/tasks/taskEdit', {
+                        method: 'post',
+                        body: {
+                            uuid: returnValues.task.uuid,
+                            color: returnValues.task.color,
+                            name: returnValues.task.name,
+                            row: returnValues.task.row,
+                            sectionIndex: returnValues.task.sectionIndex,
+                            status: returnValues.task.status,
+                            fromDate: returnValues.task.fromDate,
+                            toDate: returnValues.task.toDate,
+                            createdBy: returnValues.task.createdBy,
+                            assignees: returnValues.task.assignees,
+                            description: returnValues.task.description
+                        }
+                    }).then(() => {
+                        sectionRefs.value.at(currentHoveredSection).onChangeTaskSection(event, returnValues.task, draggedTaskObject.value, returnValues.startDragPosX);
+                        sectionRefs.value.at(currentHoveredSection).onCreateTask(returnValues.task);
+                    });
+                }
             }
         }
-    }
 
-    sectionRefs.value.at(currentHoveredSection).mouseMoveEvent(event.pageX, event.pageY);
+        sectionRefs.value.at(currentHoveredSection).mouseMoveEvent(event.pageX, event.pageY);
+    }
     
     if(draggingCalendar.value) {
         calendarDragPos.value = event.screenX - startDragPosX.value + relativeDragPos.value;
@@ -441,8 +443,8 @@ onMounted(() => {
             </div>
         </div>
         
-        <CalendarSectionContextMenu v-if="showSectionContextMenu" @mouseover="mouseOverContextMenu = true" @mouseleave="mouseOverContextMenu = false" @onRenameSection="onRenameSection" @onDeleteSection="onDeleteSection" @onCloseSectionContextMenu="onCloseSectionContextMenu" :x="contextMenuX" :y="contextMenuY" :profile="profile"/>
-        <CalendarTaskContextMenu v-if="showTaskContextMenu" @mouseover="mouseOverContextMenu = true" @mouseleave="mouseOverContextMenu = false" @onDuplicateTask="onDuplicateTask" @onDeleteTask="onDeleteTask" :x="contextMenuX" :y="contextMenuY"/>
+        <CalendarSectionContextMenu v-if="profile.role === 'admin' && showSectionContextMenu" @mouseover="mouseOverContextMenu = true" @mouseleave="mouseOverContextMenu = false" @onRenameSection="onRenameSection" @onDeleteSection="onDeleteSection" @onCloseSectionContextMenu="onCloseSectionContextMenu" :x="contextMenuX" :y="contextMenuY" :profile="profile"/>
+        <CalendarTaskContextMenu v-if="profile.role === 'admin' && showTaskContextMenu" @mouseover="mouseOverContextMenu = true" @mouseleave="mouseOverContextMenu = false" @onDuplicateTask="onDuplicateTask" @onDeleteTask="onDeleteTask" :x="contextMenuX" :y="contextMenuY"/>
     </div>
 </template>
 
