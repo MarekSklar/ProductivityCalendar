@@ -24,7 +24,7 @@ const profileImage = await fetchProfileImage(profile ? profile.pfpPath256 : "");
                         <p class="info-text text-gray-600">{{ profile.role }}</p>
                     </div>
                     <div class="info-box">
-                        <SvgMail class="info-icon fill-gray-60" />
+                        <SvgMail class="info-icon fill-gray-600" />
                         <p class="info-text text-gray-600">{{ profile.email }}</p>
                     </div>
                 </div>
