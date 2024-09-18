@@ -161,30 +161,32 @@ async function onRenameSection(name: string) {
 }
 
 async function onDeleteSection() {
-    sectionRefs.value.splice(contextMenuSection.value.sectionIndex, 1);
-    sections.value.splice(contextMenuSection.value.sectionIndex, 1);
-    currentHoveredSection = Math.min(sections.value.length - 1, currentHoveredSection);
+    if(sections.value.length > 1) {
+        sectionRefs.value.splice(contextMenuSection.value.sectionIndex, 1);
+        sections.value.splice(contextMenuSection.value.sectionIndex, 1);
+        currentHoveredSection = Math.min(sections.value.length - 1, currentHoveredSection);
 
-    for(let i = 0; i < sections.value.length; i++) {
-        if(sections.value[i].sectionIndex !== i) {
-            sections.value[i].sectionIndex = i;
-            await $fetch('/api/sections/sectionEdit', {
-                method: 'post',
-                body: {
-                    uuid: sections.value[i].uuid,
-                    name: sections.value[i].name,
-                    sectionIndex: sections.value[i].sectionIndex
-                }
-            });
+        for(let i = 0; i < sections.value.length; i++) {
+            if(sections.value[i].sectionIndex !== i) {
+                sections.value[i].sectionIndex = i;
+                await $fetch('/api/sections/sectionEdit', {
+                    method: 'post',
+                    body: {
+                        uuid: sections.value[i].uuid,
+                        name: sections.value[i].name,
+                        sectionIndex: sections.value[i].sectionIndex
+                    }
+                });
+            }
         }
+
+        await $fetch('/api/sections/sectionDelete', {
+            method: 'post',
+            body: {
+                uuid: contextMenuSection.value.uuid
+            }
+        });
     }
-
-    await $fetch('/api/sections/sectionDelete', {
-        method: 'post',
-        body: {
-            uuid: contextMenuSection.value.uuid
-        }
-    });
     
     onCloseSectionContextMenu();
 }
