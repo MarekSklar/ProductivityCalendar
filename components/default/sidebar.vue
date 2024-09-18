@@ -18,15 +18,15 @@ function logout() {
     <div v-if="sessionToken && sessionToken !== 'null'">
 
         <!-- open sidebar -->
-        <div @click="sidebarIsActive = true" class="absolute top-1/2 left-3 z-40 rounded-full bg-gray-100 dark:bg-dark-600 cursor-pointer">
+        <div @click="sidebarIsActive = true" class="absolute top-1/2 left-3 z-[100] rounded-full bg-gray-100 dark:bg-dark-600 cursor-pointer">
             <SvgChevronRight class="size-10 fill-gray-600 dark:fill-white" />
         </div>
         
         <!-- backdrop -->
-        <div v-if="sidebarIsActive" @click="sidebarIsActive = false" class="absolute z-40 w-screen h-screen bg-black bg-opacity-20 dark:bg-gray-600 dark:bg-opacity-10"></div>
+        <div v-if="sidebarIsActive" @click="sidebarIsActive = false" class="absolute z-[90] w-screen h-screen bg-black bg-opacity-20 dark:bg-gray-600 dark:bg-opacity-10"></div>
         
         <!-- sidebar -->
-        <div v-if="sidebarIsActive" class="background dark:bg-black absolute z-50 w-56 h-full">
+        <div v-if="sidebarIsActive" class="background dark:bg-black absolute z-[100] w-56 h-full">
             <div class="relative size-full p-5">
                 <div class="flex flex-col justify-between h-full">
 

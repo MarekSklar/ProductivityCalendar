@@ -33,7 +33,7 @@ Date.prototype.getWeek = function() {
 </script>
 
 <template>
-  <div class="shadow-md bg-white select-none">
+  <div class="z-40 w-full shadow-md bg-white select-none">
     <div class="relative flex justify-center w-full pt-10 pb-12 overflow-hidden">
       <div class="absolute z-10 flex" :style="{left: props.datesOffset! - 5 * props.columnWidth! + 'px'}">
         <div v-for="date in Math.ceil(props.screenSizeWidth! / props.columnWidth! + 20)" class="relative w-14 text-center text-gray-500 font-bold">

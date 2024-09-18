@@ -411,20 +411,22 @@ onMounted(() => {
 <template>
     <div v-if="sessionToken && sessionToken !== 'null' && pfps && profiles && profile && sections && sections.length > 0" class="relative flex flex-col w-full h-screen overflow-x-hidden"
     :style="{backgroundImage: `repeating-linear-gradient(to right, ${tw.colors.white} ${weekendOffset}px, ${tw.colors.white} ${2+weekendOffset}px, ${tw.colors.gray[50]} ${2+weekendOffset}px, ${tw.colors.gray[50]} ${112+weekendOffset}px, ${tw.colors.white} ${112+weekendOffset}px, ${tw.colors.white} ${392+weekendOffset}px)`}">
-        <!-- Top date panel -->
-        <CalendarDates :datesOffset = "datesOffset" :columnWidth = "columnWidth" :screenSizeWidth = "screenSize.width" :datesPos = "datesPos" />
-
-        <div class="relative flex-auto min-w-full h-full">
+        <div class="flex flex-col h-screen">
+            <!-- Top date panel -->
+            <CalendarDates :datesOffset = "datesOffset" :columnWidth = "columnWidth" :screenSizeWidth = "screenSize.width" :datesPos = "datesPos" />
             <!-- Task edit menu -->
             <CalendarTaskEdit ref="taskEditor" @taskEdited="onEditTask" @createdTask="onCreatedTask" @closeEdit="onCloseEdit" @editResizeTask="editResizeTask" :session-token="sessionToken" :profiles="profiles!" :profile="profile" :pfps="pfps"/>
-            <!-- Calendar -->
-            <div @mousedown="mouseDownEvent" @mousemove="mouseMoveEvent" @mouseup="mouseUpEvent"
-                class="w-full h-full overflow-x-hidden overflow-y-auto cursor-grab"
-                :class="{ 'cursor-grabbing': draggingCalendar || draggedTaskObject }">
-                <div v-for="(section, index) in sections">
-                    <CalendarSection @mouseover="onSectionChange(index)" :ref="sectionRefs.set" @onDraggedTaskChange="onDraggedTaskChange" @taskEdit="taskEdit" @inactiveTaskEdit="inactiveTaskEdit" @showSectionContextMenu="onShowSectionContextMenu" @showTaskContextMenu="onShowTaskContextMenu" :section="section" :columnWidth="columnWidth" :datesPos="datesPos" :calendarDragPos="calendarDragPos" :profile="profile"/>            
+
+            <div class="relative flex-grow w-full overflow-y-auto">
+                <!-- Calendar -->
+                <div @mousedown="mouseDownEvent" @mousemove="mouseMoveEvent" @mouseup="mouseUpEvent"
+                    class="w-full overflow-x-hidden cursor-grab"
+                    :class="{ 'cursor-grabbing': draggingCalendar || draggedTaskObject }">
+                    <div v-for="(section, index) in sections">
+                        <CalendarSection @mouseover="onSectionChange(index)" :ref="sectionRefs.set" @onDraggedTaskChange="onDraggedTaskChange" @taskEdit="taskEdit" @inactiveTaskEdit="inactiveTaskEdit" @showSectionContextMenu="onShowSectionContextMenu" @showTaskContextMenu="onShowTaskContextMenu" :section="section" :columnWidth="columnWidth" :datesPos="datesPos" :calendarDragPos="calendarDragPos" :profile="profile"/>            
+                    </div>
+                    <button v-if="sections.length < 4" @click="addNewSection" @mouseover="disableCreatingTasks = true" @mouseleave="disableCreatingTasks = false" class="flex justify-center items-center w-40 mt-2 mb-8 p-4 text-white font-bold bg-red-400 hover:bg-red-500 rounded-r-lg select-none shadow-[0_0px_20px_-10px_rgba(0,0,0,0.3)]">New section</button>
                 </div>
-                <button v-if="sections.length < 4" @click="addNewSection" @mouseover="disableCreatingTasks = true" @mouseleave="disableCreatingTasks = false" class="flex justify-center items-center w-40 mt-2 p-4 text-white font-bold bg-red-400 hover:bg-red-500 rounded-r-lg select-none shadow-[0_0px_20px_-10px_rgba(0,0,0,0.3)]">New section</button> <!--TODO: marek, predelat treba na plusko nebo neco (v-if viz addNewSection)-->
             </div>
         </div>
 

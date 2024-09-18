@@ -232,7 +232,7 @@ function addProfile(profile: Profile) {
 </script>
 
 <template>
-    <div v-if="editorVisibility" class="absolute right-0 z-30 w-128 h-full p-4 pl-6 bg-white shadow-lg">
+    <div v-if="editorVisibility" class="fixed right-0 z-50 w-128 h-full p-4 pl-6 bg-white shadow-lg">
         <div class="flex justify-between">
             <div class="flex items-start pt-1 text-xs font-semibold text-gray-500">
                 <span v-if="createdBy === ''" class="mr-0.5 font-bold">Not saved</span> 
