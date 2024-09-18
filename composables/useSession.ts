@@ -2,8 +2,9 @@ export function getSessionToken() {
     return useCookie<string>('sessionToken').value;
 }
 
-export async function checkSessionToken(uuid: string, sessionToken: string) {
-    return await $fetch('/api/profiles/profileCheckSessionToken', { method: 'post', body: { uuid, sessionToken }});
+export function editSessionToken(value: string) {
+    const sessionToken = useCookie("sessionToken");
+    sessionToken.value = value;
 }
 
 export function navigateToInvalidSessionPage(sessionToken: string) {
