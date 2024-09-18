@@ -371,29 +371,27 @@ async function inactiveTaskEdit(task: InactiveTask) {
 }
 
 async function editResizeTask(task: Task, dateFrom: string, dateTo: string) {
-    if(task) {
-        const dateFromFormat = dateFrom.split('-');
-        const dateToFormat = dateTo.split('-');
+    // if value was cleared in edit calendar or task problem
+    if (!task || dateFrom.length < 1 || dateTo.length < 1) return;
 
-        // if value was cleared in edit calendar
-        if (dateFrom.length < 1 || dateTo.length < 1) return;
-        
-        let prevFromDate = task.fromDate;
-        let prevToDate = task.toDate;
-        let fromDate: CDate = { day: parseInt(dateFromFormat[2]), month: parseInt(dateFromFormat[1]), year: parseInt(dateFromFormat[0]) };
-        let toDate: CDate = { day: parseInt(dateToFormat[2]), month: parseInt(dateToFormat[1]), year: parseInt(dateToFormat[0]) };
+    const dateFromFormat = dateFrom.split('-');
+    const dateToFormat = dateTo.split('-');
+    
+    let prevFromDate = task.fromDate;
+    let prevToDate = task.toDate;
+    let fromDate: CDate = { day: parseInt(dateFromFormat[2]), month: parseInt(dateFromFormat[1]), year: parseInt(dateFromFormat[0]) };
+    let toDate: CDate = { day: parseInt(dateToFormat[2]), month: parseInt(dateToFormat[1]), year: parseInt(dateToFormat[0]) };
 
-        if(CDateToTimestamp(fromDate) > CDateToTimestamp(toDate)) {
-            task.fromDate = toDate;
-            task.toDate = fromDate;
-        }
-        else {
-            task.fromDate = fromDate;
-            task.toDate = toDate;
-        }
-
-        sectionRefs.value.at(currentHoveredSection).onEditResizeTask(task, prevFromDate, prevToDate);
+    if(CDateToTimestamp(fromDate) > CDateToTimestamp(toDate)) {
+        task.fromDate = toDate;
+        task.toDate = fromDate;
     }
+    else {
+        task.fromDate = fromDate;
+        task.toDate = toDate;
+    }
+
+    sectionRefs.value.at(currentHoveredSection).onEditResizeTask(task, prevFromDate, prevToDate);
 }
 
 async function onDraggedTaskChange(draggedTask: DraggedTask) {
