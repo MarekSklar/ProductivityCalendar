@@ -48,7 +48,7 @@ let contextMenuY = ref(0);
 let mouseOverContextMenu = ref(false);
 
 let inactiveTaskCreateSectionIndex: number = -2;
-
+let disableCreatingTasks = ref(false);
 // section events
 
 if(profiles && profiles.length > 0) {
@@ -75,6 +75,7 @@ async function addNewSection() {
         }
     }).then((section) => { 
         sections.value.push(section as Section);
+        disableCreatingTasks.value = false;
     }).catch(err => {});
 }
 
@@ -166,7 +167,8 @@ async function onDeleteSection() {
     if(sections.value.length > 1) {
         sections.value.splice(contextMenuSection.value.sectionIndex, 1);
         currentHoveredSection = Math.min(sections.value.length - 1, currentHoveredSection);
-
+        inactiveTaskCreateSectionIndex = Math.min(sections.value.length - 1, inactiveTaskCreateSectionIndex);
+        
         for(let i = 0; i < sections.value.length; i++) {
             if(sections.value[i].sectionIndex !== i) {
                 sections.value[i].sectionIndex = i;
@@ -212,11 +214,11 @@ async function mouseDownEvent(event: MouseEvent) {
             return;
         }
 
-        if((inactiveTaskCreateSectionIndex === -2 || inactiveTaskCreateSectionIndex === currentHoveredSection)) {
+        if((inactiveTaskCreateSectionIndex === -2 || inactiveTaskCreateSectionIndex === currentHoveredSection) && !disableCreatingTasks.value) {
             inactiveTaskCreateSectionIndex = currentHoveredSection
             sectionRefs.value.at(currentHoveredSection).mousePressedEvent(event, false);
         }
-        else if(inactiveTaskCreateSectionIndex <= sections.value.length - 1) {            
+        else if(inactiveTaskCreateSectionIndex <= sections.value.length - 1 && !disableCreatingTasks.value) {
             sectionRefs.value.at(inactiveTaskCreateSectionIndex).mouseUpEvent(currentHoveredSection);
             sectionRefs.value.at(inactiveTaskCreateSectionIndex).onCloseEdit(currentHoveredSection);
             taskEditor.value.hideEditor();
@@ -238,7 +240,6 @@ async function mouseMoveEvent(event: MouseEvent) {
         if(draggedTaskObject.value) {
             draggedTaskObject.value.left = event.pageX - draggedTaskObject.value.clickOffsetX;
             draggedTaskObject.value.top = event.pageY - draggedTaskObject.value.clickOffsetY;
-
             if(currentHoveredSection !== draggedTaskObject.value.sectionIndex) {
                 let returnValues = sectionRefs.value.at(draggedTaskObject.value.sectionIndex).onDeleteTaskAndGetValues(draggedTaskObject.value);
 
@@ -322,12 +323,12 @@ async function onSectionChange(index: number) {
 
 async function onEditTask(task: Task) {
     if(task)
-        sectionRefs.value.at(currentHoveredSection).onEditTask(task);    
+        sectionRefs.value.at(task.sectionIndex).onEditTask(task);    
 }
 
 async function onCreatedTask(task: Task) {
     if(task)
-        sectionRefs.value.at(currentHoveredSection).onCreateTask(task);
+        sectionRefs.value.at(task.sectionIndex).onCreateTask(task);
 }
 
 async function onCloseEdit() {
@@ -418,7 +419,7 @@ onMounted(() => {
                 <div v-for="(section, index) in sections">
                     <CalendarSection @mouseover="onSectionChange(index)" :ref="sectionRefs.set" @onDraggedTaskChange="onDraggedTaskChange" @taskEdit="taskEdit" @inactiveTaskEdit="inactiveTaskEdit" @showSectionContextMenu="onShowSectionContextMenu" @showTaskContextMenu="onShowTaskContextMenu" :section="section" :columnWidth="columnWidth" :datesPos="datesPos" :calendarDragPos="calendarDragPos" :profile="profile"/>            
                 </div>
-                <button v-if="sections.length < 4" @click="addNewSection" class="flex justify-center items-center w-40 mt-2 p-4 text-white font-bold bg-red-400 hover:bg-red-500 rounded-r-lg shadow-[0_0px_20px_-10px_rgba(0,0,0,0.3)]">New section</button> <!--TODO: marek, predelat treba na plusko nebo neco (v-if viz addNewSection)-->
+                <button v-if="sections.length < 4" @click="addNewSection" @mouseover="disableCreatingTasks = true" @mouseleave="disableCreatingTasks = false" class="flex justify-center items-center w-40 mt-2 p-4 text-white font-bold bg-red-400 hover:bg-red-500 rounded-r-lg shadow-[0_0px_20px_-10px_rgba(0,0,0,0.3)]">New section</button> <!--TODO: marek, predelat treba na plusko nebo neco (v-if viz addNewSection)-->
             </div>
         </div>
 

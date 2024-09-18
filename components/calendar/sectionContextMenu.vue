@@ -4,8 +4,7 @@ const emit = defineEmits(["onRenameSection", "onDeleteSection", "onCloseSectionC
 
 const props = defineProps({
   x: Number,
-  y: Number,
-  profile: Object as PropType<Profile>
+  y: Number
 });
 
 const renaming = ref(false);
@@ -17,7 +16,7 @@ function handleRenaming() {
 </script>
 
 <template>
-  <div v-if="profile?.role === 'admin'" class="background fixed z-50 min-w-36 p-3 rounded-md shadow-md" :style="{ left: props.x + 'px', top: props.y + 'px' }">
+  <div class="background fixed z-50 min-w-36 p-3 rounded-md shadow-md" :style="{ left: props.x + 'px', top: props.y + 'px' }">
     <div v-if="renaming" @keydown.enter="emit('onRenameSection', renamedTo)" @keydown.esc="emit('onCloseSectionContextMenu')" class="flex flex-col items-left gap-4 p-2">
       <div class="flex flex-col gap-1">
         <label class="text-sm text-gray-500">New section name</label>

@@ -251,15 +251,15 @@ function addProfile(profile: Profile) {
             <form @submit.prevent class="w-2/3">
                 <div class="flex gap-2 mt-3 mb-8">
                     <div class="relative size-7 rounded-full" :style="{backgroundColor: tColor}">
-                        <input v-model="tColor" type="color" @input="editTask" class="size-full opacity-0 cursor-pointer">
+                        <input v-model="tColor" type="color" @input="editTask" :disabled="props.profile!.role !== 'admin'" class="size-full opacity-0 cursor-pointer">
                     </div>
-                    <input v-model="tName" type="text" placeholder="Enter task name..." @input="editName" class="text-lg font-semibold text-gray-400 border-none outline-none">
+                    <input v-model="tName" type="text" placeholder="Enter task name..." @input="editName" :disabled="props.profile!.role !== 'admin'" class="text-lg font-semibold text-gray-400 border-none outline-none">
                 </div>
 
                 <div class="flex flex-col gap-4">
                     <div>
                         <label for="status">Status:</label>
-                        <select v-model="tStatus" @change="editTask">
+                        <select v-model="tStatus" @change="editTask" :disabled="props.profile!.role !== 'admin'">
                             <option v-for="status in Object.values(TaskStatus)">{{ status }}</option>
                         </select>
                     </div>
@@ -267,11 +267,11 @@ function addProfile(profile: Profile) {
                     <div class="flex flex-col gap-2 w-full">
                         <div class="flex justify-between gap-2">
                             <label for="dateFrom">From:</label>
-                            <input v-model="tDateFrom" type="date" @input="emit('editResizeTask', editedTask, tDateFrom, tDateTo)">
+                            <input v-model="tDateFrom" type="date" @input="emit('editResizeTask', editedTask, tDateFrom, tDateTo)" :disabled="props.profile!.role !== 'admin'">
                         </div>
                         <div class="flex justify-between gap-2">
                             <label for="dateTo">To:</label>
-                            <input v-model="tDateTo" type="date" @input="emit('editResizeTask', editedTask, tDateFrom, tDateTo)">
+                            <input v-model="tDateTo" type="date" @input="emit('editResizeTask', editedTask, tDateFrom, tDateTo)" :disabled="props.profile!.role !== 'admin'">
                         </div>
                     </div>
 
@@ -281,7 +281,7 @@ function addProfile(profile: Profile) {
                             <div class="w-full p-2 rounded-md">
                                 <div class="w-full max-h-44 overflow-auto select-none custom-scrollbar">
                                     <ul :class="{ hidden: !profilesActive.length }" class="flex flex-col gap-1">
-                                        <li v-for="profile in profilesActive" @click="removeProfile(profile); editTask();" class="flex justify-between items-center text-ellipsis cursor-pointer">
+                                        <li v-for="profile in profilesActive" @click="if(props.profile!.role === 'admin') { removeProfile(profile); editTask(); }" class="flex justify-between items-center text-ellipsis cursor-pointer">
                                             <div class="flex items-center gap-3">
                                                 <img :src="'data:image/jpg;base64,' + props.pfps![profile.uuid]" class="size-7 rounded-full object-cover">
                                                 <span>{{ profile.name }}</span>
@@ -291,7 +291,7 @@ function addProfile(profile: Profile) {
                                     </ul>
                                     <div v-if="profilesActive.length > 0" class="h-0.5 my-2 mr-2 bg-gray-200"></div>
                                     <ul class="flex flex-col gap-1">
-                                        <li v-if="profilesInactive.length > 0" v-for="profile in profilesInactive" @click="addProfile(profile); editTask();" class="flex items-center gap-3 text-ellipsis cursor-pointer">
+                                        <li v-if="profilesInactive.length > 0" v-for="profile in profilesInactive" @click="if(props.profile!.role === 'admin') { addProfile(profile); editTask(); }" :disabled="props.profile!.role !== 'admin'" class="flex items-center gap-3 text-ellipsis cursor-pointer">
                                             <img :src="'data:image/jpg;base64,' + props.pfps![profile.uuid]" class="size-7 rounded-full object-cover">
                                             <span>{{ profile.name }}</span>
                                         </li>
@@ -304,7 +304,7 @@ function addProfile(profile: Profile) {
 
                     <div class="flex flex-col gap-1">
                         <label for="description">Description:</label>
-                        <input v-model="tDescription" type="text" @input="editTask">
+                        <input v-model="tDescription" type="text" @input="editTask" :disabled="props.profile!.role !== 'admin'">
                     </div>
                 </div>
             </form>

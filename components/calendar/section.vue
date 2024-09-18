@@ -65,7 +65,6 @@ async function loadTasks(leftOffset: number, rightOffset: number) {
         }
         tasks.forEach((task: Task) => {
             if(!arrayIncludesTask(rows.value[task.row], task)) {
-                console.log(task);
                 rows.value[task.row].push(task);
                 taskIntervals[task.row].set(
                     task.uuid,
@@ -846,29 +845,36 @@ async function startTaskDragging(e: MouseEvent, task: Task) {
     if (dragStatus !== DragStatus.None || e.button !== 0)
         return;
     
-    mouseButtonDown = true;
     selectedTask = task;
     inactiveTask.value = undefined;
-    dragStatus = DragStatus.TaskDrag;
+    mouseButtonDown = true;
 
-    setTimeout(() => {
-        if (mouseButtonDown) {
-            draggedTaskObject.value = { uuid: selectedTask.uuid, name: selectedTask.name, status: selectedTask.status, color: selectedTask.color, width: taskPlacementPos(task).taskLength * props.columnWidth!, sectionIndex: props.section!.sectionIndex };
-            draggedTaskObject.value.left = e.pageX - e.offsetX;
-            draggedTaskObject.value.top = e.pageY - e.offsetY;
-            draggedTaskObject.value.clickOffsetX = e.offsetX;
-            draggedTaskObject.value.clickOffsetY = e.offsetY;
-            mouseButtonDown = false;
-            startDragPosX = e.pageX;
-            emit('onDraggedTaskChange', draggedTaskObject.value);
-            emit('taskEdit', undefined);
-            editing = false;
-        }
-        else {
-            emit('taskEdit', selectedTask);
-            editing = true;
-        }        
-    }, 200);
+    if(props.profile!.role === "admin") {
+        dragStatus = DragStatus.TaskDrag;
+
+        setTimeout(() => {
+            if (mouseButtonDown && props.profile!.role === "admin") {
+                draggedTaskObject.value = { uuid: selectedTask.uuid, name: selectedTask.name, status: selectedTask.status, color: selectedTask.color, width: taskPlacementPos(task).taskLength * props.columnWidth!, sectionIndex: props.section!.sectionIndex };
+                draggedTaskObject.value.left = e.pageX - e.offsetX;
+                draggedTaskObject.value.top = e.pageY - e.offsetY;
+                draggedTaskObject.value.clickOffsetX = e.offsetX;
+                draggedTaskObject.value.clickOffsetY = e.offsetY;
+                mouseButtonDown = false;
+                startDragPosX = e.pageX;
+                emit('onDraggedTaskChange', draggedTaskObject.value);
+                emit('taskEdit', undefined);
+                editing = false;
+            }
+            else {
+                emit('taskEdit', selectedTask);
+                editing = true;
+            }        
+        }, 200);
+    }
+    else {
+        emit('taskEdit', selectedTask);
+        editing = true;
+    }
 }
 
 async function startTaskResizeDragging(side: Side, e: MouseEvent, task: Task) {
