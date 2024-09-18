@@ -162,7 +162,6 @@ async function onRenameSection(name: string) {
 
 async function onDeleteSection() {
     if(sections.value.length > 1) {
-        sectionRefs.value.splice(contextMenuSection.value.sectionIndex, 1);
         sections.value.splice(contextMenuSection.value.sectionIndex, 1);
         currentHoveredSection = Math.min(sections.value.length - 1, currentHoveredSection);
 
@@ -187,7 +186,7 @@ async function onDeleteSection() {
             }
         });
     }
-    
+
     onCloseSectionContextMenu();
 }
 
@@ -215,11 +214,14 @@ async function mouseDownEvent(event: MouseEvent) {
             inactiveTaskCreateSectionIndex = currentHoveredSection
             sectionRefs.value.at(currentHoveredSection).mousePressedEvent(event, false);
         }
-        else {            
+        else if(inactiveTaskCreateSectionIndex <= sections.value.length - 1) {            
             sectionRefs.value.at(inactiveTaskCreateSectionIndex).mouseUpEvent(currentHoveredSection);
             sectionRefs.value.at(inactiveTaskCreateSectionIndex).onCloseEdit(currentHoveredSection);
             taskEditor.value.hideEditor();
             inactiveTaskCreateSectionIndex = currentHoveredSection
+        }
+        else {
+            inactiveTaskCreateSectionIndex = -2;
         }
     }
 }
