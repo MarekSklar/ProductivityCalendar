@@ -40,3 +40,7 @@ interface ProfileEditOptions {
 interface ProfileGetByUUIDOptions {
     uuid: string
 }
+
+interface ProfileDeleteOptions {
+    uuid: string
+}

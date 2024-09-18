@@ -43,4 +43,7 @@ declare global {
         uuid: string
     }
 
+    interface ProfileDeleteOptions {
+        uuid: string
+    }
 }

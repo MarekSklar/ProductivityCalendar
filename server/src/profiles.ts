@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { DatabaseConnection, sql } from '@databases/sqlite';
+import { DatabaseConnection, DatabaseConnectionMode, sql } from '@databases/sqlite';
 import { randomUUID } from 'node:crypto';
 import fs from 'fs';
 import path from 'path';
@@ -38,9 +38,8 @@ const profileGetByUUIDOptionsSchema = z.object({
     uuid: z.string()
 });
 
-const profileCheckSessionTokenOptionsSchema = z.object({
-    uuid: z.string(),
-    sessionToken: z.string()
+const profileDeleteOptionsSchema = z.object({
+    uuid: z.string()
 });
 
 
@@ -213,4 +212,13 @@ export async function getByUUID(db: DatabaseConnection, options: ProfileGetByUUI
     } catch(error) {
         return;
     }
+}
+
+export async function deleteProfile(db: DatabaseConnection, options: ProfileDeleteOptions) {
+    const params = profileDeleteOptionsSchema.parse(options);
+
+    try {
+        await db.query(sql`DELETE FROM profiles WHERE uuid = ${params.uuid}`)
+        return true
+    } catch(err) { console.log(err); return false; }
 }
