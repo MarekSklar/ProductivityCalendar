@@ -8,6 +8,7 @@ package-lock.json
 .data
 .nuxt
 .nitro
+.output
 .cache
 dist
 
