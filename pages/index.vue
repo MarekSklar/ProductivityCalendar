@@ -163,6 +163,7 @@ async function onRenameSection(name: string) {
 async function onDeleteSection() {
     sectionRefs.value.splice(contextMenuSection.value.sectionIndex, 1);
     sections.value.splice(contextMenuSection.value.sectionIndex, 1);
+    currentHoveredSection = Math.min(sections.value.length - 1, currentHoveredSection);
 
     for(let i = 0; i < sections.value.length; i++) {
         if(sections.value[i].sectionIndex !== i) {
