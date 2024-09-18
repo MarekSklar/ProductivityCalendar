@@ -418,11 +418,11 @@ onMounted(() => {
             <!-- Task edit menu -->
             <CalendarTaskEdit ref="taskEditor" @taskEdited="onEditTask" @createdTask="onCreatedTask" @closeEdit="onCloseEdit" @editResizeTask="editResizeTask" :session-token="sessionToken" :profiles="profiles!" :profile="profile" :pfps="pfps"/>
 
-            <div class="relative flex-grow w-full overflow-y-auto">
+            <div class="relative flex-grow w-full overflow-y-auto cursor-grab"
+                @mousedown="mouseDownEvent" @mousemove="mouseMoveEvent" @mouseup="mouseUpEvent"
+                :class="{ 'cursor-grabbing': draggingCalendar || draggedTaskObject }">
                 <!-- Calendar -->
-                <div @mousedown="mouseDownEvent" @mousemove="mouseMoveEvent" @mouseup="mouseUpEvent"
-                    class="w-full overflow-x-hidden cursor-grab"
-                    :class="{ 'cursor-grabbing': draggingCalendar || draggedTaskObject }">
+                <div class="w-full overflow-x-hidden">
                     <div v-for="(section, index) in sections">
                         <CalendarSection @mouseover="onSectionChange(index)" :ref="sectionRefs.set" @onDraggedTaskChange="onDraggedTaskChange" @taskEdit="taskEdit" @inactiveTaskEdit="inactiveTaskEdit" @showSectionContextMenu="onShowSectionContextMenu" @showTaskContextMenu="onShowTaskContextMenu" :section="section" :columnWidth="columnWidth" :datesPos="datesPos" :calendarDragPos="calendarDragPos" :profile="profile" :datesOffset="datesOffset"/>            
                     </div>
