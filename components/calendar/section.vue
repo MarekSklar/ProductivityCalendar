@@ -11,7 +11,8 @@ const props = defineProps({
     columnWidth: Number,
     datesPos: Number,
     calendarDragPos: Number,
-    profile: Object as PropType<Profile>
+    profile: Object as PropType<Profile>,
+    datesOffset: Number
 });
 
 const prps = toRef(props);
@@ -825,8 +826,8 @@ async function mousePressedEvent(e: MouseEvent, ignoreTaskCreation: boolean) {
         mouseButtonDown = true;
         startDragPosX = e.pageX;
         const todayDate = new Date();
-        const val = e.pageX / props.columnWidth! < 0 ? Math.ceil(e.pageX / props.columnWidth!) : Math.floor(e.pageX / props.columnWidth!);
-        const currentDate = changeDays({ day: todayDate.getDate(), month: todayDate.getMonth() + 1, year: todayDate.getFullYear() }, val - props.datesPos! - 3); // TODO: investigate, is buggy
+        const val = Math.round((e.pageX - props.datesOffset! - props.columnWidth!/2) / props.columnWidth!);
+        const currentDate = changeDays({ day: todayDate.getDate(), month: todayDate.getMonth() + 1, year: todayDate.getFullYear() }, val - props.datesPos! - 3);
 
         inactiveTask.value = {
             row: -1,
