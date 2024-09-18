@@ -38,13 +38,14 @@ const profileGetByUUIDOptionsSchema = z.object({
     uuid: z.string()
 });
 
+const profileCheckSessionTokenOptionsSchema = z.object({
+    uuid: z.string(),
+    sessionToken: z.string()
+});
+
+
 export async function list(db: DatabaseConnection) {
     const profileList = await db.query(sql`SELECT * FROM profiles`);
-    for (let i = 0; i < profileList.length; i++) {
-        profileList[i].password = null;
-        profileList[i].sessionToken = null;
-    }
-
     return profileList;
 }
 
@@ -72,11 +73,9 @@ export async function add(db: DatabaseConnection, options: ProfileAddOptions) {
         uuid: uuid,
         name: params.name,
         email: params.email,
-        password: params.password,
         role: params.role,
         pfpPath256: params.pfpPath256,
         pfpPath48: params.pfpPath48,
-        sessionToken: params.sessionToken
     };
 
     if ((await db.query(sql`SELECT * FROM profiles WHERE email = ${params.email}`)).length > 0)
@@ -101,11 +100,11 @@ export async function add(db: DatabaseConnection, options: ProfileAddOptions) {
                 ${profile.uuid},
                 ${profile.name},
                 ${profile.email},
-                ${profile.password},
+                ${params.password},
                 ${profile.role},
                 ${profile.pfpPath256},
                 ${profile.pfpPath48},
-                ${profile.sessionToken}
+                ${params.sessionToken}
             )
         `);
         
@@ -147,9 +146,6 @@ export async function get(db: DatabaseConnection, options: ProfileGetOptions) {
             return;
 
         if(result[0].sessionToken === params.sessionToken) {
-            result[0].password = null;
-            result[0].sessionToken = null;
-            
             return result;
         }
         
@@ -163,14 +159,13 @@ export async function edit(db: DatabaseConnection, options: ProfileEditOptions) 
     const params = profileEditOptionsSchema.parse(options);
     
     let profileData = await db.query(sql`SELECT * FROM profiles WHERE uuid = ${params.uuid}`);
-    let profile: Profile = profileData.at(0);
     
-    if(!profile)
+    if(!profileData.at(0))
         return;
 
     if (params.pfpPath256 === 'default') {
-        params.pfpPath256 = profile.pfpPath256;
-        params.pfpPath48 = profile.pfpPath48;
+        params.pfpPath256 = profileData.at(0).pfpPath256;
+        params.pfpPath48 = profileData.at(0).pfpPath48;
     }
 
     await db.query(sql`UPDATE profiles SET
@@ -194,9 +189,8 @@ export async function edit(db: DatabaseConnection, options: ProfileEditOptions) 
     }
 
     profileData = await db.query(sql`SELECT * FROM profiles WHERE uuid = ${params.uuid}`);
-    profile = profileData.at(0);
-
-     
+    let profile: Profile = { uuid: profileData.at(0).uuis, name: profileData.at(0).name, email: profileData.at(0).email, role: profileData.at(0).role, pfpPath256: profileData.at(0).pfpPath256, pfpPath48: profileData.at(0).pfpPath48 }; 
+  
     return profile;
 }
 
@@ -220,5 +214,3 @@ export async function getByUUID(db: DatabaseConnection, options: ProfileGetByUUI
         return;
     }
 }
-
-

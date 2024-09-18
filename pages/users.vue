@@ -19,10 +19,8 @@ function addNewProfile() {
         uuid: "",
         name: "",
         email: "",
-        password: "",
         pfpPath48: "",
-        pfpPath256: "",
-        sessionToken: ""
+        pfpPath256: ""
     } as Profile; 
     toggleEdit();
 }

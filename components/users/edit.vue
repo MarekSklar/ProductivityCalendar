@@ -11,7 +11,7 @@ const props = defineProps({
 const pUuid = ref(props.editedProfile?.uuid ? props.editedProfile?.uuid : "");
 const pName = ref(props.editedProfile?.name ? props.editedProfile?.name : "");
 const pEmail = ref(props.editedProfile?.email ? props.editedProfile?.email : "") as globalThis.Ref<string, string>;
-const pPassword = ref(props.editedProfile?.password ? props.editedProfile?.password : null);
+const pPassword = ref("");
 const pRole = ref(props.editedProfile?.role === "admin");
 const files = ref();
 const pFailed = ref("");
@@ -92,7 +92,7 @@ const changeProfile = async () => {
         </div>
 
         <div class="input-box">
-          <label for="password">Password<span class="requiredAsterisk">*</span></label>
+          <label for="password">Password</label>
           <input v-model="pPassword" type="password">
         </div>
         
