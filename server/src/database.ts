@@ -24,7 +24,7 @@ export const getDatabase = (path: string) => {
                     let profileAddOptions: ProfileAddOptions = {
                         name: "admin",
                         email: "admin@admin.com",
-                        password: "kompanAdmin@132!",
+                        password: "admin@132!",
                         role: "admin",
                         pfpPath256: "default",
                         pfpPath48: "default",
