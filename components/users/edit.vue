@@ -105,12 +105,12 @@ const changeProfile = async () => {
           <label for="adminRole">Admin role</label>
           <label class="w-1/2 inline-flex items-center cursor-pointer">
             <input v-model="pRole" type="checkbox" class="sr-only peer">
-            <div class="relative w-11 h-6 bg-gray-200 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:size-5 after:transition-all peer-checked:bg-red-600"></div>
+            <div class="relative w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:size-5 after:transition-all peer-checked:bg-red-600"></div>
           </label>
         </div>
 
         <!-- fail message -->
-        <p class="text-center text-red-600 dark:text-red-200 dark:font-semibold">{{ pFailed }}</p>
+        <p class="text-center text-red-600">{{ pFailed }}</p>
 
         <!-- submit button -->
         <div class="flex justify-center w-full">

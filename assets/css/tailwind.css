@@ -3,13 +3,9 @@
 @tailwind utilities;
 
 @layer base {
-    
-    h1, h2, h3, h4, h5, h6, p, label, input {
-        @apply dark:text-white
-    }
 
     .background {
-        @apply bg-white dark:bg-gray-950;
+        @apply bg-white;
     }
 
     .header {
@@ -17,11 +13,11 @@
     }
 
     .simpleCardBox {
-        @apply flex items-center justify-center w-screen h-screen bg-gray-50 dark:bg-black;
+        @apply flex items-center justify-center w-screen h-screen bg-gray-50 ;
     }
 
     .card {
-        @apply flex flex-col items-center gap-8 px-20 py-12 rounded-xl shadow-lg bg-white dark:shadow-md;
+        @apply flex flex-col items-center gap-8 px-20 py-12 rounded-xl shadow-lg bg-white;
     }
 
     .primaryButton {
@@ -37,7 +33,7 @@
     }
 
     .requiredAsterisk {
-        @apply ml-1 font-semibold text-red-400 dark:text-red-300;
+        @apply ml-1 font-semibold text-red-400;
     }
 }
 

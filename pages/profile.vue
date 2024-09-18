@@ -16,15 +16,15 @@ const profileImage = await fetchProfileImage(profile ? profile.pfpPath256 : "");
                 <img :src="'data:image/' + profileImage.format + ';base64,' + profileImage.data" class="size-36 rounded-full object-cover"/>
                 <div class="flex flex-col gap-4">
                     <div class="info-box">
-                        <SvgPerson class="info-icon fill-gray-600 dark:fill-gray-100" />
+                        <SvgPerson class="info-icon fill-gray-600" />
                         <p class="info-text text-gray-600">{{ profile.name }}</p>
                     </div>
                     <div class="info-box">
-                        <SvgRole class="info-icon fill-gray-600 dark:fill-gray-100" />
+                        <SvgRole class="info-icon fill-gray-600" />
                         <p class="info-text text-gray-600">{{ profile.role }}</p>
                     </div>
                     <div class="info-box">
-                        <SvgMail class="info-icon fill-gray-600 dark:fill-gray-100" />
+                        <SvgMail class="info-icon fill-gray-60" />
                         <p class="info-text text-gray-600">{{ profile.email }}</p>
                     </div>
                 </div>
