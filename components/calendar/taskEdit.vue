@@ -128,6 +128,7 @@ const editName = async () => {
 
     if(editedTask) {
         updateEditedTask();
+        emit('taskEdited', editedTask);
     }
 
     if(nameTimerRunning)
@@ -145,9 +146,7 @@ const editName = async () => {
         nameTimerRunning = true;
         setTimeout(async () => {
             nameTimerRunning = false;
-            const dateFromFormat = tDateFrom.value.split('-');
-            const dateToFormat = tDateTo.value.split('-');       
-            
+
             updateEditedTask();
             emit('taskEdited', editedTask);
             
@@ -160,8 +159,8 @@ const editName = async () => {
                     row: editedTask!.row,
                     sectionIndex: editedTask!.sectionIndex,
                     status: tStatus.value,
-                    fromDate: { day: parseInt(dateFromFormat[2]), month: parseInt(dateFromFormat[1]), year: parseInt(dateFromFormat[0]) },
-                    toDate: { day: parseInt(dateToFormat[2]), month: parseInt(dateToFormat[1]), year: parseInt(dateToFormat[0]) },
+                    fromDate: editedTask!.fromDate,
+                    toDate: editedTask!.toDate,
                     createdBy: editedTask!.createdBy,
                     assignees: tAssignees.value,
                     description: tDescription.value
@@ -188,9 +187,6 @@ const editTask = async () => {
             });
         }
         else {
-            const dateFromFormat = tDateFrom.value.split('-');
-            const dateToFormat = tDateTo.value.split('-');       
-            
             updateEditedTask();
             emit('taskEdited', editedTask);
 
@@ -203,8 +199,8 @@ const editTask = async () => {
                     row: editedTask.row,
                     sectionIndex: editedTask.sectionIndex,
                     status: tStatus.value,
-                    fromDate: { day: parseInt(dateFromFormat[2]), month: parseInt(dateFromFormat[1]), year: parseInt(dateFromFormat[0]) },
-                    toDate: { day: parseInt(dateToFormat[2]), month: parseInt(dateToFormat[1]), year: parseInt(dateToFormat[0]) },
+                    fromDate: editedTask!.fromDate,
+                    toDate: editedTask!.toDate,
                     createdBy: editedTask.createdBy,
                     assignees: tAssignees.value,
                     description: tDescription.value

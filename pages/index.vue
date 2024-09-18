@@ -113,8 +113,7 @@ async function onDuplicateTask() {
         }
     });
 
-    sectionRefs.value.at(currentHoveredSection).onDuplicateTask(task);
-
+    sectionRefs.value.at(contextMenuTask.value.sectionIndex).onDuplicateTask(task);
     onCloseTaskContextMenu();
 }
 
@@ -128,6 +127,7 @@ async function onDeleteTask() {
         }
     });
 
+    taskEditor.value.hideEditor();
     onCloseTaskContextMenu();
 }
 
@@ -234,7 +234,7 @@ async function mouseMoveEvent(event: MouseEvent) {
     // disable default dragging
     event.preventDefault ? event.preventDefault() : event.returnValue = false;
     // move calendar on drag
-    if (!event.buttons) return;
+    if (!event.buttons || event.button !== 0) return;
 
     if(profile.role === "admin") {
         if(draggedTaskObject.value) {
@@ -301,9 +301,11 @@ async function mouseMoveEvent(event: MouseEvent) {
     }
 }
 
-async function mouseUpEvent() {
-    for(let i = 0; i < sections.value.length; i++)
-        sectionRefs.value.at(i).mouseUpEvent(currentHoveredSection);
+async function mouseUpEvent(e: MouseEvent) {
+    if(e.button === 0) {
+        for(let i = 0; i < sections.value.length; i++)
+            sectionRefs.value.at(i).mouseUpEvent(currentHoveredSection);
+    }
 
     if(draggingCalendar.value) {
         relativeDragPos.value = calendarDragPos.value;

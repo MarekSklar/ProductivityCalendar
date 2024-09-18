@@ -449,6 +449,16 @@ function checkSwitchRow(switchTask: Task) {
                 });    
 
                 if(canSwap && thisRowTasks.length === 1) {
+                    let tasksAbove: Task[] = [];
+                    if(switchTask.row > currentHoveredRow) {
+                        findTasksInRow(switchTask.row + 1, switchTask.fromDate, switchTask.toDate).forEach((taskAboveUUID) => {
+                            let taskAbove: Task | undefined = findTaskByUUID(switchTask.row + 1, taskAboveUUID);
+
+                            if(taskAbove)
+                                tasksAbove.push(taskAbove);
+                        })
+                    }
+
                     targetTasks.forEach((task) => {
                         changeRow(task.uuid, currentHoveredRow, switchTask.row);
                         taskIntervals[currentHoveredRow].delete(task.uuid);
@@ -467,10 +477,11 @@ function checkSwitchRow(switchTask: Task) {
 
                         if(!arrayIncludesTask(changedTasks, task))
                             changedTasks.push(task);
-                    });
-
+                    });             
+                    
                     fixRow(switchTask);
                     changedTasks.forEach((changedTask) => fixRow(changedTask));
+                    tasksAbove.forEach((taskAbove) => fixRow(taskAbove));
                 }
                 else if(canSwap) {
                     if(currentHoveredRow !== 0 && invalidRow(currentHoveredRow - 1, switchTask.uuid, switchTask.fromDate, switchTask.toDate)) {
@@ -656,7 +667,7 @@ async function onDuplicateTask(task: Task) {
         addRow();
 
     onCreateTask(task);
-    checkSwitchRow(task);
+    resizeCheckRow(task);
 
     if(!arrayIncludesTask(changedTasks, task))
         changedTasks.push(task);
@@ -746,7 +757,8 @@ async function onEditTask(task: Task) {
             i = index;
     });
 
-    rows.value[task.row][i] = task;
+    rows.value[task.row].splice(i, 1); // wouldnt update otherwise for some reason
+    rows.value[task.row].push(task);
 }
 
 async function onCreateTask(task: Task) {
@@ -802,6 +814,7 @@ async function mousePressedEvent(e: MouseEvent, ignoreTaskCreation: boolean) {
         editing = false;
         emit('taskEdit', undefined);
         inactiveTask.value = {}
+        deleteEmptyRows();
     }
     else if(!ignoreTaskCreation) {
         if(inactiveTask) 
@@ -832,8 +845,7 @@ async function mousePressedEvent(e: MouseEvent, ignoreTaskCreation: boolean) {
         if(row === -1) {
             row = 0;
         }        
-        else if(row === currentHoveredRow && rows.value.length - 1 === row)
-        {
+        else if(currentHoveredRow === row && row >= rows.value.length - 1) {
             addRow();
         }
 
@@ -886,7 +898,6 @@ async function startTaskResizeDragging(side: Side, e: MouseEvent, task: Task) {
 }
 
 async function mouseMoveEvent(mousePageX: number, mousePageY: number) { // TODO: experiment with datespos for threshold
-
     function resizeNew(invertor: number) {
         inactiveTask.value.toDate = changeDays(inactiveTask.value.toDate, invertor);
         startDragPosX = mousePageX!;
@@ -986,7 +997,7 @@ async function mouseMoveEvent(mousePageX: number, mousePageY: number) { // TODO:
 }
 
 async function mouseUpEvent() {
-    if(dragStatus === DragStatus.None) {
+    if(dragStatus === DragStatus.None && inactiveTask.value) {
         inactiveTask.value = {};
         editing = false;
         return;
@@ -996,17 +1007,17 @@ async function mouseUpEvent() {
         emit('inactiveTaskEdit', inactiveTask.value);
         editing = true;
     }
-    else if(dragStatus === DragStatus.TaskDrag) {
+    else if(dragStatus === DragStatus.TaskDrag && selectedTask) {
         draggedTaskObject.value = undefined;
         emit('onDraggedTaskChange', draggedTaskObject.value);
         
         if(!arrayIncludesTask(changedTasks, selectedTask))
             changedTasks.push(selectedTask);
-
+;
         saveTasks(changedTasks);
         changedTasks = [];
     }
-    else {
+    else if(selectedTask) {
         emit('taskEdit', undefined);
         editing = false;
         
