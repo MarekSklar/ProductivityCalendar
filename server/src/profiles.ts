@@ -27,11 +27,11 @@ const profileEditOptionsSchema = z.object({
     uuid: z.string(),
     name: z.string(),
     email: z.string().email(),
-    password: z.string().optional(),
+    password: z.any().optional(),
     role: z.string(),
     pfpPath256: z.string(),
     pfpPath48: z.string(),
-    sessionToken: z.string().optional()
+    sessionToken: z.any().optional()
 });
 
 const profileGetByUUIDOptionsSchema = z.object({

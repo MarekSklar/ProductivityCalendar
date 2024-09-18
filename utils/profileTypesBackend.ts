@@ -32,11 +32,11 @@ interface ProfileEditOptions {
     uuid: string,
     name: string,
     email: string
-    password?: string,
+    password?: string | null,
     role: string,
     pfpPath256: string,
     pfpPath48: string,
-    sessionToken?: string
+    sessionToken?: string | null
 }
 
 interface ProfileGetByUUIDOptions {
