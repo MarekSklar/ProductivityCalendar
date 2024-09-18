@@ -3,7 +3,7 @@
 const emit = defineEmits(['taskEdit', 'onDraggedTaskChange', 'inactiveTaskEdit', 'showSectionContextMenu', 'showTaskContextMenu']);
 
 defineExpose({
-    loadTasks, mousePressedEvent, mouseMoveEvent, mouseUpEvent, onEditTask, onCreateTask, onCloseEdit, onEditResizeTask, onDuplicateTask, onDeleteTask, onDeleteTaskAndGetValues, onChangeTaskSection, findClosestAvailableRow
+    loadTasks, mousePressedEvent, mouseMoveEvent, mouseMoveOverCalendar, mouseUpEvent, onEditTask, onCreateTask, onCloseEdit, onEditResizeTask, onDuplicateTask, onDeleteTask, onDeleteTaskAndGetValues, onChangeTaskSection, findClosestAvailableRow
 });
 
 const props = defineProps({
@@ -27,6 +27,7 @@ let inactiveTask = ref();
 let differenceOfDays: number;
 
 let startDragPosX: number;
+let startDragging: boolean = false;
 let draggedTaskObject = ref();
 let currentHoveredRow: number;
 let prevHoveredRow: number = -1;
@@ -824,7 +825,7 @@ async function mousePressedEvent(e: MouseEvent, ignoreTaskCreation: boolean) {
         mouseButtonDown = true;
         startDragPosX = e.pageX;
         const todayDate = new Date();
-        const val = e.pageX / props.columnWidth! < 0 ? Math.ceil(e.pageX / props.columnWidth!) : Math.floor(e.pageX / props.columnWidth!)
+        const val = e.pageX / props.columnWidth! < 0 ? Math.ceil(e.pageX / props.columnWidth!) : Math.floor(e.pageX / props.columnWidth!);
         const currentDate = changeDays({ day: todayDate.getDate(), month: todayDate.getMonth() + 1, year: todayDate.getFullYear() }, val - props.datesPos! - 3); // TODO: investigate, is buggy
 
         inactiveTask.value = {
@@ -860,12 +861,14 @@ async function startTaskDragging(e: MouseEvent, task: Task) {
     selectedTask = task;
     inactiveTask.value = undefined;
     mouseButtonDown = true;
+    startDragging = true;
 
     if(props.profile!.role === "admin") {
         dragStatus = DragStatus.TaskDrag;
 
         setTimeout(() => {
-            if (mouseButtonDown && props.profile!.role === "admin") {
+            if (mouseButtonDown && props.profile!.role === "admin" && startDragging) {
+                startDragging = false;
                 draggedTaskObject.value = { uuid: selectedTask.uuid, name: selectedTask.name, status: selectedTask.status, color: selectedTask.color, width: taskPlacementPos(task).taskLength * props.columnWidth!, sectionIndex: props.section!.sectionIndex };
                 draggedTaskObject.value.left = e.pageX - e.offsetX;
                 draggedTaskObject.value.top = e.pageY - e.offsetY;
@@ -877,7 +880,7 @@ async function startTaskDragging(e: MouseEvent, task: Task) {
                 emit('taskEdit', undefined);
                 editing = false;
             }
-            else {
+            else if(startDragging) {
                 emit('taskEdit', selectedTask);
                 editing = true;
             }        
@@ -897,10 +900,10 @@ async function startTaskResizeDragging(side: Side, e: MouseEvent, task: Task) {
     differenceOfDays = getDifferenceOfDays(selectedTask.fromDate, selectedTask.toDate);
 }
 
-async function mouseMoveEvent(mousePageX: number, mousePageY: number) { // TODO: experiment with datespos for threshold
+async function mouseMoveEvent(e: MouseEvent) { // TODO: experiment with datespos for threshold
     function resizeNew(invertor: number) {
         inactiveTask.value.toDate = changeDays(inactiveTask.value.toDate, invertor);
-        startDragPosX = mousePageX!;
+        startDragPosX = e.pageX!;
         differenceOfDays = getDifferenceOfDays(inactiveTask.value.fromDate, inactiveTask.value.toDate);
     }
 
@@ -910,7 +913,7 @@ async function mouseMoveEvent(mousePageX: number, mousePageY: number) { // TODO:
 
         if (side === Side.Left) selectedTask.fromDate = changeDays(selectedTask.fromDate, invertor);
         else selectedTask.toDate = changeDays(selectedTask.toDate, invertor);
-        startDragPosX = mousePageX;
+        startDragPosX = e.pageX;
         differenceOfDays = getDifferenceOfDays(selectedTask.fromDate, selectedTask.toDate);
         taskIntervals[selectedTask.row].set(selectedTask.uuid, { from: CDateToDate(selectedTask.fromDate).getTime(), to: CDateToDate(selectedTask.toDate).getTime() });
 
@@ -936,7 +939,7 @@ async function mouseMoveEvent(mousePageX: number, mousePageY: number) { // TODO:
 
     // moving
     function move(invertor: number) {
-        const moveBy = -Math.round((startDragPosX - mousePageX - 8) / 49);
+        const moveBy = -Math.round((startDragPosX - e.pageX - 8) / 49);
 
         let prevFromDate: CDate = selectedTask.fromDate;
         let prevToDate: CDate = selectedTask.toDate; 
@@ -967,33 +970,53 @@ async function mouseMoveEvent(mousePageX: number, mousePageY: number) { // TODO:
     switch(dragStatus) {
         // task create resize event
         case DragStatus.TaskCreate:
-            if (startDragPosX - mousePageX! > 49 && differenceOfDays > 0) resizeNew(-1);
-            else if (startDragPosX - mousePageX! < -49 && !invalidRow(inactiveTask.value.row, "", inactiveTask.value.fromDate, changeDays(inactiveTask.value.toDate, 1))) resizeNew(1);
+            if (startDragPosX - e.pageX! > 49 && differenceOfDays > 0) resizeNew(-1);
+            else if (startDragPosX - e.pageX! < -49 && !invalidRow(inactiveTask.value.row, "", inactiveTask.value.fromDate, changeDays(inactiveTask.value.toDate, 1))) resizeNew(1);
             break;
 
         // task drag event
-        case DragStatus.TaskDrag: // TODO: add temporary row when out of bounds of rows
+        case DragStatus.TaskDrag:
             if (!draggedTaskObject.value) return;
-            
+
             checkSwitchRow(selectedTask);
 
-            if ((startDragPosX - mousePageX - 8) > 49) move(-1);
-            else if ((startDragPosX - mousePageX - 8) < -49) move(1);
+            if ((startDragPosX - e.pageX - 8) > 49) move(-1);
+            else if ((startDragPosX - e.pageX - 8) < -49) move(1);
             break;
 
         // resize left
         case DragStatus.TaskLeftResize:
-            if (startDragPosX - mousePageX > 49) resize(Side.Left, -1);
-            else if (startDragPosX - mousePageX < -49 && differenceOfDays > 0) resize(Side.Left, 1);
+            if (startDragPosX - e.pageX > 49) resize(Side.Left, -1);
+            else if (startDragPosX - e.pageX < -49 && differenceOfDays > 0) resize(Side.Left, 1);
             break;
 
         // resize right
         case DragStatus.TaskRightResize:
-            if (mousePageX - startDragPosX > 49) resize(Side.Right, 1);
-            else if (mousePageX - startDragPosX < -49 && differenceOfDays > 0) resize(Side.Right, -1);
+            if (e.pageX - startDragPosX > 49) resize(Side.Right, 1);
+            else if (e.pageX - startDragPosX < -49 && differenceOfDays > 0) resize(Side.Right, -1);
             break;
     }
 
+}
+
+async function mouseMoveOverCalendar(e: MouseEvent) {
+    if(dragStatus === DragStatus.TaskDrag) {
+        if (!draggedTaskObject.value) return;
+        
+        if(startDragging) {
+            startDragging = false;
+            draggedTaskObject.value = { uuid: selectedTask.uuid, name: selectedTask.name, status: selectedTask.status, color: selectedTask.color, width: taskPlacementPos(selectedTask).taskLength * props.columnWidth!, sectionIndex: props.section!.sectionIndex };
+            draggedTaskObject.value.left = e.pageX - e.offsetX;
+            draggedTaskObject.value.top = e.pageY - e.offsetY;
+            draggedTaskObject.value.clickOffsetX = e.offsetX;
+            draggedTaskObject.value.clickOffsetY = e.offsetY;
+            mouseButtonDown = false;
+            startDragPosX = e.pageX;
+            emit('onDraggedTaskChange', draggedTaskObject.value);
+            emit('taskEdit', undefined);
+            editing = false;
+        }
+    }
 }
 
 async function mouseUpEvent() {

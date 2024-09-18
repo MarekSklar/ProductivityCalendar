@@ -277,7 +277,10 @@ async function mouseMoveEvent(event: MouseEvent) {
             }
         }
 
-        sectionRefs.value.at(currentHoveredSection).mouseMoveEvent(event.pageX, event.pageY);
+        sectionRefs.value.at(currentHoveredSection).mouseMoveEvent(event);
+
+        for(let i = 0; i < sections.value.length; i++)
+            sectionRefs.value.at(i).mouseMoveOverCalendar(event);
     }
     
     if(draggingCalendar.value) {
