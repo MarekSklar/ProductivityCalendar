@@ -12,7 +12,7 @@ const pUuid = ref(props.editedProfile?.uuid ? props.editedProfile?.uuid : "");
 const pName = ref(props.editedProfile?.name ? props.editedProfile?.name : "");
 const pEmail = ref(props.editedProfile?.email ? props.editedProfile?.email : "") as globalThis.Ref<string, string>;
 const pPassword = ref(props.editedProfile?.password ? props.editedProfile?.password : null);
-const pRole = ref(false);
+const pRole = ref(props.editedProfile?.role === "admin");
 const files = ref();
 const pFailed = ref("");
 

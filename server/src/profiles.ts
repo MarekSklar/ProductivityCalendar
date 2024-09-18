@@ -162,31 +162,36 @@ export async function get(db: DatabaseConnection, options: ProfileGetOptions) {
 export async function edit(db: DatabaseConnection, options: ProfileEditOptions) {
     const params = profileEditOptionsSchema.parse(options);
     
-    
     let profileData = await db.query(sql`SELECT * FROM profiles WHERE uuid = ${params.uuid}`);
     let profile: Profile = profileData.at(0);
     
     if(!profile)
         return;
 
-    let query = 
-        `UPDATE profiles SET
-            name = ${params.name},
-            email = ${params.email},
-            role = ${params.role},
-            pfpPath256 = ${params.pfpPath256},
-            pfpPath48 = ${params.pfpPath48}`;
+    if (params.pfpPath256 === 'default') {
+        params.pfpPath256 = profile.pfpPath256;
+        params.pfpPath48 = profile.pfpPath48;
+    }
 
-    if(params.password && (params.password !== null || params.password !== "null"))
-        query += `, password = ${params.password}`;
-    if(params.sessionToken && (params.sessionToken !== null || params.sessionToken !== "null"))
-        query += `, sessionToken = ${params.sessionToken}`;
+    await db.query(sql`UPDATE profiles SET
+        name = ${params.name},
+        email = ${params.email},
+        role = ${params.role},
+        pfpPath256 = ${params.pfpPath256},
+        pfpPath48 = ${params.pfpPath48}
+    WHERE uuid = ${params.uuid}`);
 
-    query += ` WHERE uuid = ${params.uuid}`
+    if(params.password && params.password !== "null") {
+        await db.query(sql`UPDATE profiles SET
+            password = ${params.password}
+        WHERE uuid = ${params.uuid}`);
+    }
 
-    console.log("PARAMS: ", params);
-    console.log("QUERY: ", query);
-    await db.query(sql`${query}`);
+    if(params.sessionToken && params.sessionToken !== "null") {
+        await db.query(sql`UPDATE profiles SET
+            sessionToken = ${params.sessionToken}
+        WHERE uuid = ${params.uuid}`);
+    }
 
     profileData = await db.query(sql`SELECT * FROM profiles WHERE uuid = ${params.uuid}`);
     profile = profileData.at(0);

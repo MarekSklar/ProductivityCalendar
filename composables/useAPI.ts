@@ -19,7 +19,6 @@ export async function fetchAllProfiles() {
  - returns: object with data and format of image
 */
 export async function fetchProfileImage(path: any) {
-    
     const pfp = await $fetch('/api/getImage', { method: 'post', body: { path }});
     const pfpFormat: string = path.split('.').pop();
 
