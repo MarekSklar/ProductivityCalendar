@@ -374,6 +374,9 @@ async function editResizeTask(task: Task, dateFrom: string, dateTo: string) {
     if(task) {
         const dateFromFormat = dateFrom.split('-');
         const dateToFormat = dateTo.split('-');
+
+        // if value was cleared in edit calendar
+        if (dateFrom.length < 1 || dateTo.length < 1) return;
         
         let prevFromDate = task.fromDate;
         let prevToDate = task.toDate;
