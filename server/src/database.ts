@@ -1,4 +1,5 @@
 import connect, { DatabaseConnection, sql } from "@databases/sqlite"
+import * as Profiles from '~/server/src/profiles'
 
 let db: DatabaseConnection;
 let initalized = false;
@@ -9,7 +10,7 @@ export const getDatabase = (path: string) => {
     if(!initalized) {
         db.query(sql`CREATE TABLE IF NOT EXISTS profiles (
                 uuid TEXT PRIMARY KEY,
-                name TEXT NOT NULL,                
+                name TEXT NOT NULL,
                 email TEXT NOT NULL,
                 password TEXT NOT NULL,
                 role TEXT NOT NULL,
@@ -17,7 +18,23 @@ export const getDatabase = (path: string) => {
                 pfpPath48 TEXT NOT NULL,
                 sessionToken TEXT NOT NULL
             );`            
-        );
+        ).then(() => {
+            db.query(sql`SELECT COUNT(*) AS count FROM profiles`).then((rows) => {
+                if(rows[0].count === 0) { 
+                    let profileAddOptions: ProfileAddOptions = {
+                        name: "admin",
+                        email: "admin@admin.com",
+                        password: "kompanAdmin@132!",
+                        role: "admin",
+                        pfpPath256: "default",
+                        pfpPath48: "default",
+                        sessionToken: "null"
+                    }
+
+                    Profiles.add(db, profileAddOptions);
+                }
+            });
+        });
 
         db.query(sql`CREATE TABLE IF NOT EXISTS sections (
                 uuid TEXT PRIMARY KEY,
