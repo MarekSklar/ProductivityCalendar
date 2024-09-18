@@ -170,9 +170,9 @@ export async function edit(db: DatabaseConnection, options: ProfileEditOptions) 
 
     let passwordString = ``;
     let sessionTokenString = ``;
-    if(params.password)
+    if(params.password && params.password !== "null")
         passwordString = `password = ${params.password},`
-    if(params.sessionToken)
+    if(params.sessionToken && params.sessionToken !== "null")
         sessionTokenString = `sessionToken = ${params.sessionToken}`
 
     await db.query(sql`UPDATE profiles SET
