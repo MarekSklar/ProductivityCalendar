@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 
-const emit = defineEmits(['toggleEdit']);
+const emit = defineEmits(['toggleEdit', 'refetchProfiles']);
 
 const props = defineProps({
   editedProfile: Object,
@@ -55,7 +55,7 @@ const changeProfile = async () => {
     );
 
     if (profile === undefined) pFailed.value = "This E-Mail is already registered.";
-    else emit('toggleEdit');
+    else {emit('toggleEdit'); emit('refetchProfiles');}
 
   } else if (props.editStatus === EditUserStatus.Edit) {
     console.log({uuid: pUuid.value, name: pName.value, email: pEmail.value, password: pPassword.value, role: pRole.value ? "admin" : "user", upload0: upload[0], upload1:upload[1]});
@@ -71,7 +71,7 @@ const changeProfile = async () => {
     );
 
     if (profile === undefined) pFailed.value = "This E-Mail is already registered.";
-    else emit('toggleEdit');
+    else {emit('toggleEdit'); emit('refetchProfiles');}
   }
 };
 </script>
