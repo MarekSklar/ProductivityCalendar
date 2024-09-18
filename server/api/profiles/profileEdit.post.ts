@@ -6,6 +6,7 @@ export default defineEventHandler(async (event) => {
         const { databaseFilePath } = useRuntimeConfig();
         const db = await getDatabase(databaseFilePath);
         const body = await readBody(event);
+        
         return Profiles.edit(db, body);
     } catch(err) {
         return;

@@ -4,17 +4,19 @@ const emit = defineEmits(['toggleEdit']);
 
 const props = defineProps({
   editedProfile: Object,
-  profiles: Object
+  profiles: Object,
+  editStatus: Number
 });
 
+const pUuid = ref(props.editedProfile?.uuid ? props.editedProfile?.uuid : "");
 const pName = ref(props.editedProfile?.name ? props.editedProfile?.name : "");
 const pEmail = ref(props.editedProfile?.email ? props.editedProfile?.email : "") as globalThis.Ref<string, string>;
-const pPassword = ref(props.editedProfile?.password ? props.editedProfile?.password : "");
-const pRole = ref(false); // TODO in profile is no admin role
+const pPassword = ref(props.editedProfile?.password ? props.editedProfile?.password : null);
+const pRole = ref(false);
 const files = ref();
 const pFailed = ref("");
 
-const addProfile = async () => {
+const changeProfile = async () => {
   const firstEmailPart = pEmail.value.split("@")[0];
   const SecondEmailPart = pEmail.value.split("@")[1]?.split(".")[0] === undefined ? "" : pEmail.value.split("@")[1]?.split(".")[0];
   const ThirdEmailPart = pEmail.value.split("@")[1]?.split(".")[1] === undefined ? "" : pEmail.value.split("@")[1]?.split(".")[1];
@@ -41,20 +43,41 @@ const addProfile = async () => {
     upload[1] = 'default';
   }    
   
-  const profile = await fetchRegister(
-    pName.value,
-    pEmail.value,
-    pPassword.value,
-    upload[0],
-    upload[1]
-  );
+  if (props.editStatus === EditUserStatus.Add) {
 
-  if (profile === undefined) pFailed.value = "Your E-Mail is already registered.";
+    const profile = await fetchRegister(
+      pName.value,
+      pEmail.value,
+      pPassword.value,
+      pRole.value ? "admin" : "user",
+      upload[0],
+      upload[1]
+    );
+
+    if (profile === undefined) pFailed.value = "This E-Mail is already registered.";
+    else emit('toggleEdit');
+
+  } else if (props.editStatus === EditUserStatus.Edit) {
+    console.log({uuid: pUuid.value, name: pName.value, email: pEmail.value, password: pPassword.value, role: pRole.value ? "admin" : "user", upload0: upload[0], upload1:upload[1]});
+    
+    const profile = await fetchEditProfile(
+      pUuid.value,
+      pName.value,
+      pEmail.value,
+      pPassword.value,
+      pRole.value ? "admin" : "user",
+      upload[0],
+      upload[1]
+    );
+
+    if (profile === undefined) pFailed.value = "This E-Mail is already registered.";
+    else emit('toggleEdit');
+  }
 };
 </script>
 
 <template>
-  <div @click="emit('toggleEdit')" class="absolute w-screen h-screen bg-gray-600 bg-opacity-20"></div>
+  <div @click="emit('toggleEdit')" class="absolute w-screen h-screen bg-black bg-opacity-20"></div>
   <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
     <div class="card background">
       <form @submit.prevent class="flex flex-col gap-3">
@@ -79,10 +102,10 @@ const addProfile = async () => {
         </div>
 
         <div class="input-box">
-          <label for="adimRole">Admin role</label>
+          <label for="adminRole">Admin role</label>
           <label class="w-1/2 inline-flex items-center cursor-pointer">
             <input v-model="pRole" type="checkbox" class="sr-only peer">
-            <div class="relative w-11 h-6 bg-gray-200 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:size-5 after:transition-all peer-checked:bg-red-400"></div>
+            <div class="relative w-11 h-6 bg-gray-200 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:size-5 after:transition-all peer-checked:bg-red-600"></div>
           </label>
         </div>
 
@@ -91,7 +114,7 @@ const addProfile = async () => {
 
         <!-- submit button -->
         <div class="flex justify-center w-full">
-          <button @click="addProfile" class="primaryButton w-4/5 mt-4 px-4 py-2">Save changes</button>
+          <button @click="changeProfile()" class="primaryButton w-4/5 mt-4 px-4 py-2">Save changes</button>
         </div>
       </form>
     </div>

@@ -162,6 +162,7 @@ export async function get(db: DatabaseConnection, options: ProfileGetOptions) {
 export async function edit(db: DatabaseConnection, options: ProfileEditOptions) {
     const params = profileEditOptionsSchema.parse(options);
     
+    
     let profileData = await db.query(sql`SELECT * FROM profiles WHERE uuid = ${params.uuid}`);
     let profile: Profile = profileData.at(0);
     
@@ -172,21 +173,24 @@ export async function edit(db: DatabaseConnection, options: ProfileEditOptions) 
         `UPDATE profiles SET
             name = ${params.name},
             email = ${params.email},
-            role = ${params.role}
+            role = ${params.role},
             pfpPath256 = ${params.pfpPath256},
-            pfpPath48 = ${params.pfpPath48},`;
+            pfpPath48 = ${params.pfpPath48}`;
 
-    if(params.password && params.password !== "null")
+    if(params.password && (params.password !== null || params.password !== "null"))
         query += `, password = ${params.password}`;
-    if(params.sessionToken && params.sessionToken !== "null")
+    if(params.sessionToken && (params.sessionToken !== null || params.sessionToken !== "null"))
         query += `, sessionToken = ${params.sessionToken}`;
 
     query += ` WHERE uuid = ${params.uuid}`
 
-    await db.query(sql`${query}`);        
+    console.log("PARAMS: ", params);
+    console.log("QUERY: ", query);
+    await db.query(sql`${query}`);
 
     profileData = await db.query(sql`SELECT * FROM profiles WHERE uuid = ${params.uuid}`);
     profile = profileData.at(0);
+
      
     return profile;
 }

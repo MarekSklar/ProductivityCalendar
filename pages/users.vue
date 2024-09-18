@@ -10,7 +10,11 @@ const profileImages = await fetchAllProfileImages();
 const editedProfile = ref({} as Profile);
 const showEdit = ref(false);
 
+const editStatus = ref(EditUserStatus.None);
+
 function addNewProfile() {
+    editStatus.value = EditUserStatus.Add;
+
     editedProfile.value = {
         uuid: "",
         name: "",
@@ -24,18 +28,23 @@ function addNewProfile() {
 }
 
 function editProfile(profile: Profile) {
+    editStatus.value = EditUserStatus.Edit;
+
     editedProfile.value = profile; 
     toggleEdit();
 }
 
-function toggleEdit() {   
+function toggleEdit() {
     showEdit.value = !showEdit.value;
 }
 
+function refetchProfiles() {
+    
+}
 </script>
 
 <template>
-    <UsersEdit v-if="showEdit" :editedProfile="editedProfile" :profiles="profiles" @toggleEdit="toggleEdit" />
+    <UsersEdit v-if="showEdit" :editedProfile="editedProfile" :profiles="profiles" :editStatus="editStatus" @toggleEdit="toggleEdit" />
     <div class="simpleCardBox py-10">
         <div class="card background gap-4 w-5/6 max-h-[100%] h-fit px-6 py-6">
             <div class="flex w-full px-3">
