@@ -161,6 +161,23 @@ async function onRenameSection(name: string) {
 }
 
 async function onDeleteSection() {
+    sectionRefs.value.splice(contextMenuSection.value.sectionIndex, 1);
+    sections.value.splice(contextMenuSection.value.sectionIndex, 1);
+
+    for(let i = 0; i < sections.value.length; i++) {
+        if(sections.value[i].sectionIndex !== i) {
+            sections.value[i].sectionIndex = i;
+            await $fetch('/api/sections/sectionEdit', {
+                method: 'post',
+                body: {
+                    uuid: sections.value[i].uuid,
+                    name: sections.value[i].name,
+                    sectionIndex: sections.value[i].sectionIndex
+                }
+            });
+        }
+    }
+
     onCloseSectionContextMenu();
 }
 
@@ -184,7 +201,7 @@ async function mouseDownEvent(event: MouseEvent) {
             return;
         }
 
-        if(inactiveTaskCreateSectionIndex === -2 || inactiveTaskCreateSectionIndex === currentHoveredSection) {
+        if((inactiveTaskCreateSectionIndex === -2 || inactiveTaskCreateSectionIndex === currentHoveredSection)) {
             inactiveTaskCreateSectionIndex = currentHoveredSection
             sectionRefs.value.at(currentHoveredSection).mousePressedEvent(event, false);
         }

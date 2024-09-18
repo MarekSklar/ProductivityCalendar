@@ -32,7 +32,7 @@ let currentHoveredRow: number;
 let prevHoveredRow: number = -1;
 let editing: boolean = false;
 let changedTasks: Task[] = [];
-
+let mouseOverSectionBox = ref(false);
 
 enum DragStatus {
     None, TaskCreate, TaskDrag, TaskLeftResize, TaskRightResize
@@ -786,7 +786,7 @@ async function onRowChangeEvent(index: number) {
 
 
 async function mousePressedEvent(e: MouseEvent, ignoreTaskCreation: boolean) {
-    if (dragStatus !== DragStatus.None || e.button !== 0)
+    if (dragStatus !== DragStatus.None || e.button !== 0 || mouseOverSectionBox.value)
         return;
     
     if(editing) {
@@ -1012,7 +1012,7 @@ async function mouseUpEvent() {
 
 <template>
     <div v-if="!pending" class="relative mt-4 overflow-hidden select-none">
-        <div @contextmenu.prevent="emit('showSectionContextMenu', $event, props.section!)" class="absolute top-1/2 z-30" style="height: calc(100% - 1rem);">
+        <div @contextmenu.prevent="emit('showSectionContextMenu', $event, props.section!)" @mouseover="mouseOverSectionBox = true" @mouseleave="mouseOverSectionBox = false" class="absolute top-1/2 z-30" style="height: calc(100% - 1rem);">
             <div class="relative -top-1/2 flex justify-center items-center w-40 h-full px-4 text-left bg-white rounded-r-lg shadow-[0_0px_20px_-10px_rgba(0,0,0,0.3)]">{{ props.section!.name }}</div>
         </div>
 
