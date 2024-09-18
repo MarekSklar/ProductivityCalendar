@@ -435,7 +435,7 @@ onMounted(() => {
             <div class="size-full">
                 <div class="absolute size-full p-1 pl-2">
                     <div class="relative size-full">
-                        <div class="flex items-center h-full">
+                        <div class="flex items-center gap-1 h-full">
                             <div v-if="draggedTaskObject.status !== 'No status'">{{ draggedTaskObject.status.slice(0,2) }}</div>
                             <h3 class="font-semibold leading-none select-none" :class="{'text-white': !(parseInt(draggedTaskObject.color.substring(1), 16) > 0xffffff / 2)}">{{ draggedTaskObject.name }}</h3>
                         </div>

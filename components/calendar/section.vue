@@ -1075,7 +1075,7 @@ async function mouseUpEvent() {
                 <div v-if="draggedTaskObject !== undefined && draggedTaskObject.uuid === task.uuid" class="size-full rounded-md overflow-hidden" :style="{ backgroundColor: draggedTaskObject.color, opacity: 0.6 }">
                     <div class="size-full p-1 pl-2">
                         <div class="relative size-full">
-                            <div class="flex items-center h-full">
+                            <div class="flex items-center gap-1 h-full">
                                 <div v-if="draggedTaskObject.status !== 'No status'">{{ draggedTaskObject.status.slice(0,2) }}</div>
                                     <h3 class="font-semibold leading-none select-none" :class="{'text-white': !(parseInt(task.color.substring(1), 16) > 0xffffff / 2)}">{{ draggedTaskObject.name }}</h3>
                                 </div>
@@ -1093,7 +1093,7 @@ async function mouseUpEvent() {
                     <div @mousedown="startTaskResizeDragging(Side.Right, $event, task)" class="absolute right-0 z-20 w-3 h-full cursor-e-resize"></div>
                     <div class="size-full p-1 pl-2">
                         <div class="relative size-full">
-                            <div class="flex items-center h-full">
+                            <div class="flex items-center gap-1 h-full">
                                 <div v-if="task.status !== 'No status'">{{ task.status.slice(0,2) }}</div>
                                 <h3 class="font-semibold leading-none select-none" :class="{'text-white': !(parseInt(task.color.substring(1), 16) > 0xffffff / 2)}">{{ task.name }}</h3>
                             </div>

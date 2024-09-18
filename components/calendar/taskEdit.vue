@@ -240,40 +240,42 @@ function addProfile(profile: Profile) {
                 | {{ uuid }}
             </div>
             <div @click="editorVisibility = false; inactiveTask = undefined; emit('closeEdit');">
-                <SvgClose class="cursor-pointer"/>
+                <SvgClose class="fill-gray-400 hover:fill-black cursor-pointer"/>
             </div>
         </div>
         <div>
             <form @submit.prevent class="w-2/3">
                 <div class="flex gap-2 mt-3 mb-8">
                     <div class="relative size-7 rounded-full" :style="{backgroundColor: tColor}">
-                        <input v-model="tColor" type="color" @input="editTask" :disabled="props.profile!.role !== 'admin'" class="size-full opacity-0 cursor-pointer">
+                        <input v-model="tColor" type="color" @input="editTask" :disabled="props.profile!.role !== 'admin'" class="!size-full opacity-0 cursor-pointer">
                     </div>
                     <input v-model="tName" type="text" placeholder="Enter task name..." @input="editName" :disabled="props.profile!.role !== 'admin'" class="text-lg font-semibold text-gray-400 border-none outline-none">
                 </div>
 
                 <div class="flex flex-col gap-4">
-                    <div>
+                    <div class="flex justify-between gap-2">
                         <label for="status">Status:</label>
-                        <select v-model="tStatus" @change="editTask" :disabled="props.profile!.role !== 'admin'">
-                            <option v-for="status in Object.values(TaskStatus)">{{ status }}</option>
-                        </select>
+                        <div>
+                            <select v-model="tStatus" @change="editTask" :disabled="props.profile!.role !== 'admin'">
+                                <option v-for="status in Object.values(TaskStatus)">{{ status }}</option>
+                            </select>
+                        </div>
                     </div>
 
                     <div class="flex flex-col gap-2 w-full">
                         <div class="flex justify-between gap-2">
                             <label for="dateFrom">From:</label>
-                            <input v-model="tDateFrom" type="date" @input="emit('editResizeTask', editedTask, tDateFrom, tDateTo)" :disabled="props.profile!.role !== 'admin'">
+                            <input v-model="tDateFrom" type="date" @input="emit('editResizeTask', editedTask, tDateFrom, tDateTo)" :disabled="props.profile!.role !== 'admin'" required>
                         </div>
                         <div class="flex justify-between gap-2">
                             <label for="dateTo">To:</label>
-                            <input v-model="tDateTo" type="date" @input="emit('editResizeTask', editedTask, tDateFrom, tDateTo)" :disabled="props.profile!.role !== 'admin'">
+                            <input v-model="tDateTo" type="date" @input="emit('editResizeTask', editedTask, tDateFrom, tDateTo)" :disabled="props.profile!.role !== 'admin'" required>
                         </div>
                     </div>
 
                     <div class="flex flex-col gap-1">
                         <label>Assignees</label>
-                        <div class="w-full border-2 border-gray-100 rounded-md">
+                        <div class="w-full border-2 border-gray-200 rounded-md">
                             <div class="w-full p-2 rounded-md">
                                 <div class="w-full max-h-44 overflow-auto select-none custom-scrollbar">
                                     <ul :class="{ hidden: !profilesActive.length }" class="flex flex-col gap-1">
@@ -300,7 +302,7 @@ function addProfile(profile: Profile) {
 
                     <div class="flex flex-col gap-1">
                         <label for="description">Description:</label>
-                        <input v-model="tDescription" type="text" @input="editTask" :disabled="props.profile!.role !== 'admin'">
+                        <textarea v-model="tDescription" @input="editTask" :disabled="props.profile!.role !== 'admin'" class="min-h-20"></textarea>
                     </div>
                 </div>
             </form>
@@ -325,5 +327,13 @@ label {
 
 .custom-scrollbar::-webkit-scrollbar-track {
     @apply hidden;
+}
+
+input, textarea, select {
+    @apply px-2 border-2 border-gray-200 rounded-md;
+}
+
+input, select {
+    @apply w-40;
 }
 </style>
