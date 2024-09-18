@@ -3,7 +3,7 @@
 const emit = defineEmits(['taskEdit', 'onDraggedTaskChange', 'inactiveTaskEdit', 'showSectionContextMenu', 'showTaskContextMenu']);
 
 defineExpose({
-    mousePressedEvent, mouseMoveEvent, mouseUpEvent, onEditTask, onCreateTask, onCloseEdit, onEditResizeTask, onDuplicateTask, onDeleteTask, onDeleteTaskAndGetValues, onChangeTaskSection, findClosestAvailableRow
+    loadTasks, mousePressedEvent, mouseMoveEvent, mouseUpEvent, onEditTask, onCreateTask, onCloseEdit, onEditResizeTask, onDuplicateTask, onDeleteTask, onDeleteTaskAndGetValues, onChangeTaskSection, findClosestAvailableRow
 });
 
 const props = defineProps({
@@ -47,30 +47,40 @@ enum Side {
 
 // database functions
 
-// do this in index for each section and then passing it through props
-await $fetch('/api/tasks/tasksList', { method: 'post', body: { sectionIndex: props.section!.sectionIndex }}).then((value) => {
-    pending = false; 
-    let tasks = value as Task[];
+async function loadTasks(leftOffset: number, rightOffset: number) {
+    await $fetch('/api/tasks/tasksList', { method: 'post', 
+    body: { 
+        sectionIndex: props.section!.sectionIndex,
+        leftOffset: leftOffset + 30,
+        rightOffset: rightOffset + 30
+    }}).then((value) => {
+        pending = false; 
+        let tasks = value as Task[];
 
-    let maxRow: number = 2;
-    tasks.forEach((task) => { if(task.row > maxRow) { maxRow = task.row }});
+        let maxRow: number = 2;
+        tasks.forEach((task) => { if(task.row > maxRow) { maxRow = task.row }});
 
-    for(let i = 3; i < maxRow + 1; i++) {
-        addRow();
-    }
-
-    tasks.forEach((task: Task) => {
-        rows.value[task.row].push(task);
-        taskIntervals[task.row].set(
-            task.uuid,
-            { 
-                from: new Date(task.fromDate.year, task.fromDate.month - 1, task.fromDate.day).getTime(), 
-                to: new Date(task.toDate.year, task.toDate.month - 1, task.toDate.day).getTime() 
+        for(let i = 3; i < maxRow + 1; i++) {
+            addRow();
+        }
+        tasks.forEach((task: Task) => {
+            if(!arrayIncludesTask(rows.value[task.row], task)) {
+                console.log(task);
+                rows.value[task.row].push(task);
+                taskIntervals[task.row].set(
+                    task.uuid,
+                    { 
+                        from: new Date(task.fromDate.year, task.fromDate.month - 1, task.fromDate.day).getTime(), 
+                        to: new Date(task.toDate.year, task.toDate.month - 1, task.toDate.day).getTime() 
+                    }
+                );
             }
-        );
-        
+        });
     });
-});
+}
+
+// initial load
+await loadTasks(60, 60);
 
 async function saveTasks(tasks: Task[]) {
     $fetch('/api/tasks/tasksEdit', {

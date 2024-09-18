@@ -23,6 +23,8 @@ let sectionRefs = useTemplateRefsList<CalendarSection>();
 let taskEditor = ref<any>(null);
 let draggedTaskObject = ref();
 let draggingCalendar = ref(false);
+let leftTaskOffset = 60;
+let rightTaskOffset = 60; // right values are in neg
 
 // time vatiables
 const datesOffset = ref(0);
@@ -58,7 +60,7 @@ if(profiles && profiles.length > 0) {
     });
 
     if(sections.value.length === 0)
-        addNewSection();
+        addNewSection();    
 }
 
 async function addNewSection() {
@@ -281,7 +283,18 @@ async function mouseMoveEvent(event: MouseEvent) {
         datesOffset.value = calendarDragPos.value % columnWidth;
         weekOffset.value = calendarDragPos.value % (columnWidth*7);
         weekendOffset.value = weekOffset.value - (todayWeekDay.value - 2) * columnWidth;
-        datesPos.value = calendarDragPos.value / columnWidth < 0 ? Math.ceil(calendarDragPos.value / columnWidth) : Math.floor(calendarDragPos.value / columnWidth);        
+        datesPos.value = calendarDragPos.value / columnWidth < 0 ? Math.ceil(calendarDragPos.value / columnWidth) : Math.floor(calendarDragPos.value / columnWidth);
+
+        if(datesPos.value > leftTaskOffset) {
+            leftTaskOffset += 60;
+            for(let i = 0; i < sections.value.length; i++)
+                sectionRefs.value.at(i).loadTasks(leftTaskOffset, rightTaskOffset);
+        }
+        else if(datesPos.value < -rightTaskOffset) {
+            rightTaskOffset += 60;
+            for(let i = 0; i < sections.value.length; i++)
+                sectionRefs.value.at(i).loadTasks(leftTaskOffset, rightTaskOffset);
+        }
     }
 }
 

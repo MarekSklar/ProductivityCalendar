@@ -1,9 +1,11 @@
-import { boolean, z } from 'zod';
+import { z } from 'zod';
 import { DatabaseConnection, sql } from "@databases/sqlite";
 import { randomUUID } from 'node:crypto';
 
 const tasksListOptionsSchema = z.object({
-    sectionIndex: z.number()
+    sectionIndex: z.number(),
+    leftOffset: z.number(),
+    rightOffset: z.number()
 });
 
 const taskAddOptionsSchema = z.object({
@@ -43,7 +45,16 @@ const taskDeleteOptionsSchema = z.object({
 
 export async function list(db: DatabaseConnection, options: TasksListOptions) {
     const params = tasksListOptionsSchema.parse(options);
-    let tasks = db.query(sql`SELECT * FROM tasks WHERE sectionIndex=${params.sectionIndex}`);
+
+    let leftOffsetDate: Date = new Date();
+    leftOffsetDate.setDate(leftOffsetDate.getDate() - params.leftOffset);
+    const sqlLeftOffsetDate = leftOffsetDate.getFullYear() + "-" + ((leftOffsetDate.getMonth() + 1) < 10 ? "0" + (leftOffsetDate.getMonth() + 1) : (leftOffsetDate.getMonth() + 1)) + "-" + (leftOffsetDate.getDate() < 10 ? "0" + leftOffsetDate.getDate() : leftOffsetDate.getDate()); 
+
+    let rightOffsetDate: Date = new Date();
+    rightOffsetDate.setDate(rightOffsetDate.getDate() + params.rightOffset);
+    const sqlRightOffsetDate = rightOffsetDate.getFullYear() + "-" + ((rightOffsetDate.getMonth() + 1) < 10 ? "0" + (rightOffsetDate.getMonth() + 1) : (rightOffsetDate.getMonth() + 1)) + "-" + (rightOffsetDate.getDate() < 10 ? "0" + rightOffsetDate.getDate() : rightOffsetDate.getDate()); 
+
+    let tasks = db.query(sql`SELECT * FROM tasks WHERE sectionIndex = ${params.sectionIndex} AND toDate BETWEEN ${sqlLeftOffsetDate} AND ${sqlRightOffsetDate}`);
     (await tasks).forEach((task) => {
         const fromDates = task.fromDate.split('-');
         task.fromDate = { day: parseInt(fromDates[2]), month: parseInt(fromDates[1]), year: parseInt(fromDates[0]) };
@@ -132,8 +143,7 @@ export async function edit(db: DatabaseConnection, options: TaskEditOptions) {
             description = ${params.description},
             createdBy = ${params.createdBy}
         WHERE uuid = ${params.uuid}
-    `);
-        
+    `);       
 
     taskData = await db.query(sql`SELECT * FROM tasks WHERE uuid = ${params.uuid}`);
     task = taskData.at(0);

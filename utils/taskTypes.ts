@@ -45,7 +45,9 @@ declare global {
     }
     
     interface TasksListOptions {
-        sectionIndex: number
+        sectionIndex: number,
+        leftOffset: number,
+        rightOffset: number
     }
 
     interface TaskAddOptions {
