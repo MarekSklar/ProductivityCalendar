@@ -168,24 +168,22 @@ export async function edit(db: DatabaseConnection, options: ProfileEditOptions) 
     if(!profile)
         return;
 
-    let passwordString = ``;
-    let sessionTokenString = ``;
-    if(params.password && params.password !== "null")
-        passwordString = `password = ${params.password},`
-    if(params.sessionToken && params.sessionToken !== "null")
-        sessionTokenString = `sessionToken = ${params.sessionToken}`
-
-    await db.query(sql`UPDATE profiles SET
+    let query = 
+        `UPDATE profiles SET
             name = ${params.name},
             email = ${params.email},
-            ${passwordString}
             role = ${params.role}
             pfpPath256 = ${params.pfpPath256},
-            pfpPath48 = ${params.pfpPath48},
-            ${sessionTokenString}
-        WHERE uuid = ${params.uuid}
-    `);
-        
+            pfpPath48 = ${params.pfpPath48},`;
+
+    if(params.password && params.password !== "null")
+        query += `, password = ${params.password}`;
+    if(params.sessionToken && params.sessionToken !== "null")
+        query += `, sessionToken = ${params.sessionToken}`;
+
+    query += ` WHERE uuid = ${params.uuid}`
+
+    await db.query(sql`${query}`);        
 
     profileData = await db.query(sql`SELECT * FROM profiles WHERE uuid = ${params.uuid}`);
     profile = profileData.at(0);
