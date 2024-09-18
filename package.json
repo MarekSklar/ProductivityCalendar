@@ -1,5 +1,9 @@
 {
-  "name": "calendar",
+  "name": "productivitycalendar",
+  "version": "1.0.0",
+  "description": "Useful application for management.",
+  "author": "Marek Sklář & David Cetl",
+  "license": "MIT",
   "private": true,
   "type": "module",
   "scripts": {
