@@ -4,8 +4,8 @@
 const sessionToken = getSessionToken();
 navigateToInvalidSessionPage(sessionToken);
 
-const profiles = await fetchAllProfiles();
-const profileImages = await fetchAllProfileImages();
+const profiles = ref(await fetchAllProfiles());
+const profileImages = ref(await fetchAllProfileImages());
 
 const editedProfile = ref({} as Profile);
 const showEdit = ref(false);
@@ -38,13 +38,14 @@ function toggleEdit() {
     showEdit.value = !showEdit.value;
 }
 
-function refetchProfiles() {
-    
+async function refetchProfiles() {
+    profiles.value = await fetchAllProfiles();
+    profileImages.value = await fetchAllProfileImages();
 }
 </script>
 
 <template>
-    <UsersEdit v-if="showEdit" :editedProfile="editedProfile" :profiles="profiles" :editStatus="editStatus" @toggleEdit="toggleEdit" />
+    <UsersEdit v-if="showEdit" :editedProfile="editedProfile" :profiles="profiles" :editStatus="editStatus" @toggleEdit="toggleEdit" @refetchProfiles="refetchProfiles" />
     <div class="simpleCardBox py-10">
         <div class="card background gap-4 w-5/6 max-h-[100%] h-fit px-6 py-6">
             <div class="flex w-full px-3">

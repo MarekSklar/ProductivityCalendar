@@ -9,9 +9,9 @@ export async function fetchProfile(sessionToken: string) {
 }
 
 export async function fetchAllProfiles() {
-    const { data: profiles } = await useFetch('/api/profiles/profilesList', { method: 'post' })
+    const profiles = await $fetch('/api/profiles/profilesList', { method: 'post' })
     
-    return profiles.value;
+    return profiles;
 }
 
 /**
@@ -26,9 +26,9 @@ export async function fetchProfileImage(path: any) {
 }
 
 export async function fetchAllProfileImages() {
-    const { data: pfps } = await useFetch('/api/getAllImages', { method: 'post' });
+    const pfps = await $fetch('/api/getAllImages', { method: 'post' });
     
-    return pfps.value;
+    return pfps;
 }
 
 export async function fetchLogin(email: string, password: string) {
