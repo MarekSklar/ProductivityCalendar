@@ -418,7 +418,7 @@ onMounted(() => {
                 <div v-for="(section, index) in sections">
                     <CalendarSection @mouseover="onSectionChange(index)" :ref="sectionRefs.set" @onDraggedTaskChange="onDraggedTaskChange" @taskEdit="taskEdit" @inactiveTaskEdit="inactiveTaskEdit" @showSectionContextMenu="onShowSectionContextMenu" @showTaskContextMenu="onShowTaskContextMenu" :section="section" :columnWidth="columnWidth" :datesPos="datesPos" :calendarDragPos="calendarDragPos" :profile="profile"/>            
                 </div>
-                <button v-if="sections.length < 4" @click="addNewSection" class="flex justify-center items-center w-40 mt-2 p-4 text-white font-bold bg-red-400 hover:bg-red-500 rounded-r-lg shadow-[0_0px_20px_-10px_rgba(0,0,0,0.3)]">New section</button> <!--TODO: marek, predelat treba na plusko nebo neco (v-if viz addNewSection)-->
+                <button v-if="sections.length < 4" @click="addNewSection" class="flex justify-center items-center w-40 mt-2 p-4 text-white font-bold bg-red-400 hover:bg-red-500 rounded-r-lg select-none shadow-[0_0px_20px_-10px_rgba(0,0,0,0.3)]">New section</button> <!--TODO: marek, predelat treba na plusko nebo neco (v-if viz addNewSection)-->
             </div>
         </div>
 
