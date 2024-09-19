@@ -63,7 +63,7 @@ async function loadTasks(leftOffset: number, rightOffset: number) {
         let maxRow: number = 2;
         tasks.forEach((task) => { if(task.row > maxRow) { maxRow = task.row }});
 
-        for(let i = 3; i < maxRow + 1; i++) {
+        for(let i = rows.value.length; i < maxRow + 1; i++) {
             addRow();
         }
         tasks.forEach((task: Task) => {
@@ -462,12 +462,23 @@ function checkSwitchRow(switchTask: Task) {
                         })
                     }
 
+                    let fixTasks: Task[] = [];
                     targetTasks.forEach((task) => {
                         changeRow(task.uuid, currentHoveredRow, switchTask.row);
                         taskIntervals[currentHoveredRow].delete(task.uuid);
                         taskIntervals[switchTask.row].set(task.uuid, { from: CDateToDate(task.fromDate).getTime(), to: CDateToDate(task.toDate).getTime() });
                         task.row = switchTask.row;
 
+                        if(currentHoveredRow > switchTask.row && currentHoveredRow != rows.value.length - 1) {
+                            findTasksInRow(currentHoveredRow + 1, task.fromDate, task.toDate).forEach((fixTaskUUID) => {
+                                let fixTask: Task | undefined = findTaskByUUID(currentHoveredRow + 1, fixTaskUUID);
+
+                                if(fixTask) {
+                                    fixTasks.push(fixTask);
+                                }
+                            });
+                        }
+                        
                         if(!arrayIncludesTask(changedTasks, task))
                             changedTasks.push(task);
                     });
@@ -482,9 +493,10 @@ function checkSwitchRow(switchTask: Task) {
                             changedTasks.push(task);
                     });             
                     
-                    fixRow(switchTask);
-                    changedTasks.forEach((changedTask) => fixRow(changedTask));
+                    fixTasks.forEach((fixTask) => fixRow(fixTask));
                     tasksAbove.forEach((taskAbove) => fixRow(taskAbove));
+                    changedTasks.forEach((changedTask) => fixRow(changedTask));
+                    fixRow(switchTask);
                 }
                 else if(canSwap) {
                     if(currentHoveredRow !== 0 && invalidRow(currentHoveredRow - 1, switchTask.uuid, switchTask.fromDate, switchTask.toDate)) {
