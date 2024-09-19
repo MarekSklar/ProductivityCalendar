@@ -118,7 +118,7 @@ async function onDuplicateTask() {
 }
 
 async function onDeleteTask() {
-    sectionRefs.value.at(currentHoveredSection).onDeleteTask(contextMenuTask.value);
+    sectionRefs.value.at(contextMenuTask.value.sectionIndex).onDeleteTask(contextMenuTask.value);
     
     await $fetch('/api/tasks/taskDelete', {
         method: 'post',
@@ -309,7 +309,7 @@ async function mouseMoveEvent(event: MouseEvent) {
 async function mouseUpEvent(e: MouseEvent) {
     if(e.button === 0) {
         for(let i = 0; i < sections.value.length; i++)
-            sectionRefs.value.at(i).mouseUpEvent(currentHoveredSection);
+            sectionRefs.value.at(i).mouseUpEvent();
     }
 
     if(draggingCalendar.value) {
@@ -340,7 +340,10 @@ async function onCreatedTask(task: Task) {
 }
 
 async function onCloseEdit() {
-    sectionRefs.value.at(currentHoveredSection).onCloseEdit();
+    if(contextMenuTask.value)
+        sectionRefs.value.at(contextMenuTask.value.sectionIndex).onCloseEdit();
+    else
+        sectionRefs.value.at(currentHoveredSection).onCloseEdit();
 }
 
 async function taskEdit(task: Task) {
@@ -394,7 +397,7 @@ async function editResizeTask(task: Task, dateFrom: string, dateTo: string) {
         task.toDate = toDate;
     }
 
-    sectionRefs.value.at(currentHoveredSection).onEditResizeTask(task, prevFromDate, prevToDate);
+    sectionRefs.value.at(task.sectionIndex).onEditResizeTask(task, prevFromDate, prevToDate);
 }
 
 async function onDraggedTaskChange(draggedTask: DraggedTask) {
