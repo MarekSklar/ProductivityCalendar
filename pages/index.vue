@@ -429,19 +429,19 @@ onMounted(() => {
                     <div v-for="(section, index) in sections">
                         <CalendarSection @mouseover="onSectionChange(index)" :ref="sectionRefs.set" @onDraggedTaskChange="onDraggedTaskChange" @taskEdit="taskEdit" @inactiveTaskEdit="inactiveTaskEdit" @showSectionContextMenu="onShowSectionContextMenu" @showTaskContextMenu="onShowTaskContextMenu" :section="section" :columnWidth="columnWidth" :datesPos="datesPos" :calendarDragPos="calendarDragPos" :profile="profile" :datesOffset="datesOffset"/>            
                     </div>
-                    <button v-if="sections.length < 4" @click="addNewSection" @mouseover="disableCreatingTasks = true" @mouseleave="disableCreatingTasks = false" class="flex justify-center items-center w-40 mt-2 mb-8 p-4 text-white font-bold bg-red-400 hover:bg-red-500 rounded-r-lg select-none shadow-[0_0px_20px_-10px_rgba(0,0,0,0.3)]">New section</button>
+                    <button v-if="sections.length < 4 && profile.role === 'admin'" @click="addNewSection" @mouseover="disableCreatingTasks = true" @mouseleave="disableCreatingTasks = false" class="flex justify-center items-center w-40 mt-2 mb-8 p-4 text-white font-bold bg-red-400 hover:bg-red-500 rounded-r-lg select-none shadow-[0_0px_20px_-10px_rgba(0,0,0,0.3)]">New section</button>
                 </div>
             </div>
         </div>
 
         <!-- Dragged ghost task -->
-        <div v-if="draggedTaskObject !== undefined" class="absolute z-10 pointer-events-none h-11 mb-0.5 rounded-md overflow-hidden" :style="{ backgroundColor: draggedTaskObject.color, left: draggedTaskObject.left + 'px', top: draggedTaskObject.top + 'px', width: draggedTaskObject.width + 'px' }">
+        <div v-if="draggedTaskObject !== undefined" class="absolute z-20 pointer-events-none h-11 mb-0.5 rounded-md overflow-hidden" :style="{ backgroundColor: draggedTaskObject.color, left: draggedTaskObject.left + 'px', top: draggedTaskObject.top + 'px', width: draggedTaskObject.width + 'px' }">
             <div class="size-full">
                 <div class="absolute size-full p-1 pl-2">
                     <div class="relative size-full">
                         <div class="flex items-center gap-1 h-full">
                             <div v-if="draggedTaskObject.status !== 'No status'">{{ draggedTaskObject.status.slice(0,2) }}</div>
-                            <h3 class="font-semibold leading-none select-none" :class="{'text-white': !(parseInt(draggedTaskObject.color.substring(1), 16) > 0xffffff / 2)}">{{ draggedTaskObject.name }}</h3>
+                            <h3 class="font-semibold leading-none whitespace-nowrap select-none" :class="{'text-white': !(parseInt(draggedTaskObject.color.substring(1), 16) > 0xffffff / 2)}">{{ draggedTaskObject.name }}</h3>
                         </div>
                         <div class="absolute flex items-center h-full right-1 top-0">
                             <div class="relative size-8 select-none">

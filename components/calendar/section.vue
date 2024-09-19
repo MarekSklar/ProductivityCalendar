@@ -35,6 +35,7 @@ let prevHoveredRow: number = -1;
 let editing: boolean = false;
 let changedTasks: Task[] = [];
 let mouseOverSectionBox = ref(false);
+let userEdit: boolean = false;
 
 enum DragStatus {
     None, TaskCreate, TaskDrag, TaskLeftResize, TaskRightResize
@@ -599,15 +600,26 @@ function resizeCheckRow(resizeTask: Task) {
 
     if(invalidRow(resizeTask.row, resizeTask.uuid, resizeTask.fromDate, resizeTask.toDate)) {
         let taskUUIDs: string[] = findTasksInRow(resizeTask.row, tempFromDate, tempToDate);
-        let intersectedTask: Task | undefined = undefined;
-        for(const taskUUID of taskUUIDs) {
-            if(taskUUID !== resizeTask.uuid)
-            intersectedTask = findTaskByUUID(resizeTask.row, taskUUID);
-        }
+        let intersectedTasks: Task[] = [];
+
+        taskUUIDs.forEach((targetTaskUUID) => {
+            let foundTask: Task | undefined = findTaskByUUID(resizeTask.row, targetTaskUUID);
+
+            if(foundTask && resizeTask.uuid !== foundTask.uuid) {
+                if(!tempFromDate || !tempToDate) {
+                    tempFromDate = foundTask.fromDate;
+                    tempToDate = foundTask.toDate;
+                }
+                else {
+                    tempFromDate = CDateToTimestamp(foundTask.fromDate) < CDateToTimestamp(tempFromDate) ? foundTask.fromDate : tempFromDate;
+                    tempToDate = CDateToTimestamp(foundTask.toDate) > CDateToTimestamp(tempToDate) ? foundTask.toDate : tempToDate;
+                }
+
+                intersectedTasks.push(foundTask);
+            }
+        });
             
-        if(intersectedTask) {
-            tempFromDate = intersectedTask.fromDate;
-            tempToDate = intersectedTask.toDate;
+        if(intersectedTasks.length > 0) {
             let alreadyChangedTaskUUIDs: string[] = [];
 
             for(let i = resizeTask.row + 1; i < rows.value.length; i++) {
@@ -897,6 +909,7 @@ async function startTaskDragging(e: MouseEvent, task: Task) {
         }, 200);
     }
     else {
+        userEdit = false;
         emit('taskEdit', selectedTask);
         editing = true;
     }
@@ -1035,42 +1048,51 @@ async function mouseMoveOverCalendar(e: MouseEvent) {
 }
 
 async function mouseUpEvent() {
-    if(dragStatus === DragStatus.None && inactiveTask.value) {
-        inactiveTask.value = {};
-        editing = false;
-        return;
-    }
+    if(props.profile!.role === "admin") {
+        if(dragStatus === DragStatus.None && inactiveTask.value) {
+            inactiveTask.value = {};
+            editing = false;
+            return;
+        }
 
-    if(dragStatus === DragStatus.TaskCreate && inactiveTask) {
-        emit('inactiveTaskEdit', inactiveTask.value);
-        editing = true;
-    }
-    else if(dragStatus === DragStatus.TaskDrag && selectedTask) {
-        draggedTaskObject.value = undefined;
-        emit('onDraggedTaskChange', draggedTaskObject.value);
-        
-        if(!arrayIncludesTask(changedTasks, selectedTask))
-            changedTasks.push(selectedTask);
-;
-        saveTasks(changedTasks);
-        changedTasks = [];
-    }
-    else if(selectedTask) {
-        emit('taskEdit', undefined);
-        editing = false;
-        
-        draggedTaskObject.value = undefined;
-        emit('onDraggedTaskChange', draggedTaskObject.value);
-        
-        if(!arrayIncludesTask(changedTasks, selectedTask))
-            changedTasks.push(selectedTask);
+        if(dragStatus === DragStatus.TaskCreate && inactiveTask) {
+            emit('inactiveTaskEdit', inactiveTask.value);
+            editing = true;
+        }
+        else if(dragStatus === DragStatus.TaskDrag && selectedTask) {
+            draggedTaskObject.value = undefined;
+            emit('onDraggedTaskChange', draggedTaskObject.value);
+            
+            if(!arrayIncludesTask(changedTasks, selectedTask))
+                changedTasks.push(selectedTask);
+    ;
+            saveTasks(changedTasks);
+            changedTasks = [];
+        }
+        else if(selectedTask) {
+            emit('taskEdit', undefined);
+            editing = false;
 
-        saveTasks(changedTasks);
-        changedTasks = [];
+            draggedTaskObject.value = undefined;
+            emit('onDraggedTaskChange', draggedTaskObject.value);
+            
+            if(!arrayIncludesTask(changedTasks, selectedTask))
+                changedTasks.push(selectedTask);
+
+            saveTasks(changedTasks);
+            changedTasks = [];
+        }
+        
+        dragStatus = DragStatus.None;
+        mouseButtonDown = false;
+    } else if(editing) {
+        if(userEdit) {
+            emit('taskEdit', undefined);
+            editing = false;
+            userEdit = false;
+        }
+        else userEdit = true;
     }
-    
-    dragStatus = DragStatus.None;
-    mouseButtonDown = false;
 }
 
 </script>
@@ -1092,7 +1114,7 @@ async function mouseUpEvent() {
                         <div class="relative size-full">
                             <div class="flex items-center gap-1 h-full">
                                 <div v-if="draggedTaskObject.status !== 'No status'">{{ draggedTaskObject.status.slice(0,2) }}</div>
-                                    <h3 class="font-semibold leading-none select-none" :class="{'text-white': !(parseInt(task.color.substring(1), 16) > 0xffffff / 2)}">{{ draggedTaskObject.name }}</h3>
+                                    <h3 class="font-semibold leading-none whitespace-nowrap select-none" :class="{'text-white': !(parseInt(task.color.substring(1), 16) > 0xffffff / 2)}">{{ draggedTaskObject.name }}</h3>
                                 </div>
                             <div class="absolute flex items-center h-full right-1 top-0">
                                 <div class="relative size-8 select-none">
@@ -1110,7 +1132,7 @@ async function mouseUpEvent() {
                         <div class="relative size-full">
                             <div class="flex items-center gap-1 h-full">
                                 <div v-if="task.status !== 'No status'">{{ task.status.slice(0,2) }}</div>
-                                <h3 class="font-semibold leading-none select-none" :class="{'text-white': !(parseInt(task.color.substring(1), 16) > 0xffffff / 2)}">{{ task.name }}</h3>
+                                <h3 class="font-semibold leading-none whitespace-nowrap select-none" :class="{'text-white': !(parseInt(task.color.substring(1), 16) > 0xffffff / 2)}">{{ task.name }}</h3>
                             </div>
                             <div class="absolute flex items-center h-full right-1 top-0">
                                 <div class="relative size-8 select-none">
@@ -1129,7 +1151,7 @@ async function mouseUpEvent() {
                     <div class="size-full p-1 pl-2">
                         <div class="relative size-full">
                             <div class="flex items-center h-full">
-                                <h3 class="font-semibold leading-none select-none">New</h3>
+                                <h3 class="font-semibold leading-none whitespace-nowrap select-none">New</h3>
                             </div>
                             <div class="absolute flex items-center h-full right-1 top-0">
                                 <div class="relative size-8 select-none">
