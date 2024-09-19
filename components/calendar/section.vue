@@ -867,7 +867,7 @@ async function mousePressedEvent(e: MouseEvent, ignoreTaskCreation: boolean) {
 async function startTaskDragging(e: MouseEvent, task: Task) {
     if (dragStatus !== DragStatus.None || e.button !== 0)
         return;
-    
+
     selectedTask = task;
     inactiveTask.value = undefined;
     mouseButtonDown = true;
@@ -903,11 +903,13 @@ async function startTaskDragging(e: MouseEvent, task: Task) {
 }
 
 async function startTaskResizeDragging(side: Side, e: MouseEvent, task: Task) {
-    selectedTask = task;
-    dragStatus = side === Side.Left ? DragStatus.TaskLeftResize : DragStatus.TaskRightResize;
-    startDragPosX = e.pageX;
-    mouseButtonDown = true;
-    differenceOfDays = getDifferenceOfDays(selectedTask.fromDate, selectedTask.toDate);
+    if(e.button === 0) {
+        selectedTask = task;
+        dragStatus = side === Side.Left ? DragStatus.TaskLeftResize : DragStatus.TaskRightResize;
+        startDragPosX = e.pageX;
+        mouseButtonDown = true;
+        differenceOfDays = getDifferenceOfDays(selectedTask.fromDate, selectedTask.toDate);
+    }
 }
 
 async function mouseMoveEvent(e: MouseEvent) { // TODO: experiment with datespos for threshold
@@ -1015,7 +1017,7 @@ async function mouseMoveOverCalendar(e: MouseEvent) {
     if(dragStatus === DragStatus.TaskDrag) {
         if (draggedTaskObject.value) 
             return;
-
+        
         if(startDragging) {
             startDragging = false;
             draggedTaskObject.value = { uuid: selectedTask.uuid, name: selectedTask.name, status: selectedTask.status, color: selectedTask.color, width: taskPlacementPos(selectedTask).taskLength * props.columnWidth!, sectionIndex: props.section!.sectionIndex };
