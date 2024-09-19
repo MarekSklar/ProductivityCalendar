@@ -29,7 +29,7 @@
     }
 
     .secondaryButton {
-
+        @apply px-6 py-3 rounded-md bg-gray-100 hover:bg-gray-200 font-semibold;
     }
 
     .requiredAsterisk {

@@ -3,6 +3,7 @@
 const emit = defineEmits(['toggleEdit', 'refetchProfiles']);
 
 const props = defineProps({
+  profile: Object,
   editedProfile: Object,
   profiles: Object,
   editStatus: Number
@@ -11,7 +12,7 @@ const props = defineProps({
 const pUuid = ref(props.editedProfile?.uuid ? props.editedProfile?.uuid : "");
 const pName = ref(props.editedProfile?.name ? props.editedProfile?.name : "");
 const pEmail = ref(props.editedProfile?.email ? props.editedProfile?.email : "") as globalThis.Ref<string, string>;
-const pPassword = ref("");
+const pPassword = ref(props.editStatus === EditUserStatus.Add ? props.editedProfile?.password : "null");
 const pRole = ref(props.editedProfile?.role === "admin");
 const files = ref();
 const pFailed = ref("");
@@ -27,6 +28,7 @@ const changeProfile = async () => {
   else if (pEmail.value === "") {pFailed.value = "E-mail is required."; return}
   else if (pPassword.value === "") {pFailed.value = "Password is required."; return}
   
+  if (props.profile?.uuid === pUuid.value && !pRole.value) {pFailed.value = "You can't remove your own admin role."; return;}
 
   let upload;
   // set custom profile image
@@ -58,8 +60,7 @@ const changeProfile = async () => {
     else {emit('toggleEdit'); emit('refetchProfiles');}
 
   } else if (props.editStatus === EditUserStatus.Edit) {
-    console.log({uuid: pUuid.value, name: pName.value, email: pEmail.value, password: pPassword.value, role: pRole.value ? "admin" : "user", upload0: upload[0], upload1:upload[1]});
-    
+   
     const profile = await fetchEditProfile(
       pUuid.value,
       pName.value,
@@ -92,7 +93,7 @@ const changeProfile = async () => {
         </div>
 
         <div class="input-box">
-          <label for="password">Password</label>
+          <label for="password">Password<span class="requiredAsterisk">*</span></label>
           <input v-model="pPassword" type="password">
         </div>
         

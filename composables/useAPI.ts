@@ -78,6 +78,17 @@ export async function fetchEditProfile(uuid: string ,name: string, email: string
     return profile;
 }
 
+export async function fetchDeleteProfile(uuid: string) {
+    const profile = await $fetch('/api/profiles/profileDelete', {
+        method: 'post',
+        body: {
+            uuid
+        }
+    });
+
+    return profile;
+}
+
 export async function fetchUploadProfileImages(files: any) {
     const fd = new FormData();
     Array.from(files).map((file, index) => {
