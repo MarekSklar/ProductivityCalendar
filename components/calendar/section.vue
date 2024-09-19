@@ -28,6 +28,9 @@ let inactiveTask = ref();
 let differenceOfDays: number;
 
 let startDragPosX: number;
+let startDragPosY: number;
+let clickOffsetX: number;
+let clickOffsetY: number;
 let startDragging: boolean = false;
 let draggedTaskObject = ref();
 let currentHoveredRow: number;
@@ -352,7 +355,7 @@ function checkSwitchRow(switchTask: Task) {
             });
         }
     }
-    else if(switchTask.row !== currentHoveredRow) { // TODO: somehow implement currentHoveredRow !== prevHoveredRow
+    else if(switchTask.row !== currentHoveredRow) {
         if(invalidRow(currentHoveredRow, switchTask.uuid, switchTask.fromDate, switchTask.toDate)) {
             if(currentHoveredRow > 0 && invalidRow(currentHoveredRow - 1, switchTask.uuid, switchTask.fromDate, switchTask.toDate)) {
                 let taskUUIDs: string[] = findTasksInRow(currentHoveredRow, tempFromDate, tempToDate);
@@ -843,8 +846,10 @@ async function mousePressedEvent(e: MouseEvent, ignoreTaskCreation: boolean) {
         deleteEmptyRows();
     }
     else if(!ignoreTaskCreation) {
-        if(inactiveTask) 
-            inactiveTask.value = {};       
+        if(inactiveTask) {
+            inactiveTask.value = {};
+            deleteEmptyRows();  
+        }
 
         dragStatus = DragStatus.TaskCreate;
         mouseButtonDown = true;
@@ -870,17 +875,19 @@ async function mousePressedEvent(e: MouseEvent, ignoreTaskCreation: boolean) {
             }
         }
 
-        for (let i = currentHoveredRow; i >= 0; i--) {
-            if (invalidRow(i, "", currentDate, currentDate)) {
-                row = i + 1;
-                break;
+        if(row === -1) {
+            for (let i = currentHoveredRow; i >= 0; i--) {
+                if (invalidRow(i, "", currentDate, currentDate)) {
+                    row = i + 1;
+                    break;
+                }
             }
         }
 
         if(row === -1) {
             row = 0;
         }        
-        else if(currentHoveredRow === row && row >= rows.value.length - 1) {
+        else if(row >= rows.value.length - 1) {
             addRow();
         }
 
@@ -896,6 +903,10 @@ async function startTaskDragging(e: MouseEvent, task: Task) {
     inactiveTask.value = undefined;
     mouseButtonDown = true;
     startDragging = true;
+    startDragPosX = e.pageX;
+    startDragPosY = e.pageY;
+    clickOffsetX = e.offsetX;
+    clickOffsetY = e.offsetY;
 
     if(props.profile!.role === "admin") {
         dragStatus = DragStatus.TaskDrag;
@@ -918,7 +929,7 @@ async function startTaskDragging(e: MouseEvent, task: Task) {
                 emit('taskEdit', selectedTask);
                 editing = true;
             }        
-        }, 200);
+        }, 1000);
     }
     else {
         userEdit = false;
@@ -1040,16 +1051,13 @@ async function mouseMoveEvent(e: MouseEvent) { // TODO: experiment with datespos
 
 async function mouseMoveOverCalendar(e: MouseEvent) {
     if(dragStatus === DragStatus.TaskDrag) {
-        if (draggedTaskObject.value) 
-            return;
-        
-        if(startDragging) {
+        if(startDragging && Math.pow((startDragPosX - e.pageX), 2) + Math.pow((startDragPosY - e.pageY), 2) > 100) { // dst from click in px > 10
             startDragging = false;
             draggedTaskObject.value = { uuid: selectedTask.uuid, name: selectedTask.name, status: selectedTask.status, color: selectedTask.color, width: taskPlacementPos(selectedTask).taskLength * props.columnWidth!, sectionIndex: props.section!.sectionIndex };
-            draggedTaskObject.value.left = e.pageX - e.offsetX;
-            draggedTaskObject.value.top = e.pageY - e.offsetY;
-            draggedTaskObject.value.clickOffsetX = e.offsetX;
-            draggedTaskObject.value.clickOffsetY = e.offsetY;
+            draggedTaskObject.value.left = e.pageX - clickOffsetX;
+            draggedTaskObject.value.top = e.pageY - clickOffsetY;
+            draggedTaskObject.value.clickOffsetX = clickOffsetX;
+            draggedTaskObject.value.clickOffsetY = clickOffsetY;
             mouseButtonDown = false;
             startDragPosX = e.pageX;
             emit('onDraggedTaskChange', draggedTaskObject.value);
@@ -1072,14 +1080,21 @@ async function mouseUpEvent() {
             editing = true;
         }
         else if(dragStatus === DragStatus.TaskDrag && selectedTask) {
-            draggedTaskObject.value = undefined;
-            emit('onDraggedTaskChange', draggedTaskObject.value);
-            
-            if(!arrayIncludesTask(changedTasks, selectedTask))
-                changedTasks.push(selectedTask);
-    ;
-            saveTasks(changedTasks);
-            changedTasks = [];
+            if(startDragging) {
+                userEdit = false;
+                emit('taskEdit', selectedTask);
+                editing = true;
+            }
+            else {
+                draggedTaskObject.value = undefined;
+                emit('onDraggedTaskChange', draggedTaskObject.value);
+                
+                if(!arrayIncludesTask(changedTasks, selectedTask))
+                    changedTasks.push(selectedTask);
+        
+                saveTasks(changedTasks);
+                changedTasks = [];
+            }
         }
         else if(selectedTask) {
             emit('taskEdit', undefined);
