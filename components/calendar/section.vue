@@ -894,7 +894,7 @@ async function startTaskDragging(e: MouseEvent, task: Task) {
                 emit('taskEdit', selectedTask);
                 editing = true;
             }        
-        }, 2000);
+        }, 200);
     }
     else {
         emit('taskEdit', selectedTask);
@@ -1015,7 +1015,7 @@ async function mouseMoveOverCalendar(e: MouseEvent) {
     if(dragStatus === DragStatus.TaskDrag) {
         if (draggedTaskObject.value) 
             return;
-        
+
         if(startDragging) {
             startDragging = false;
             draggedTaskObject.value = { uuid: selectedTask.uuid, name: selectedTask.name, status: selectedTask.status, color: selectedTask.color, width: taskPlacementPos(selectedTask).taskLength * props.columnWidth!, sectionIndex: props.section!.sectionIndex };
