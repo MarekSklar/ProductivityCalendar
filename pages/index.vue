@@ -25,6 +25,7 @@ let draggedTaskObject = ref();
 let draggingCalendar = ref(false);
 let leftTaskOffset = 60;
 let rightTaskOffset = 60; // right values are in neg
+let leftCalendar: boolean = false;
 
 // time vatiables
 const datesOffset = ref(0);
@@ -228,13 +229,17 @@ async function mouseDownEvent(event: MouseEvent) {
             inactiveTaskCreateSectionIndex = -2;
         }
     }
+
+    leftCalendar = false;
 }
 
 async function mouseMoveEvent(event: MouseEvent) {
     // disable default dragging
     event.preventDefault ? event.preventDefault() : event.returnValue = false;
     // move calendar on drag
-    if (!event.buttons || event.button !== 0) return;
+
+    if (event.button !== 0)
+        return;
 
     if(profile.role === "admin") {
         if(draggedTaskObject.value) {
@@ -315,6 +320,16 @@ async function mouseUpEvent(e: MouseEvent) {
         draggingCalendar.value = false;     
     }
 }
+
+async function mouseLeaveEvent(e: MouseEvent) {
+    leftCalendar = true;
+
+    setTimeout(() => {
+        if(leftCalendar)
+            mouseUpEvent(e);
+    }, 200);
+}
+
 
 // task events
 
@@ -412,14 +427,13 @@ onMounted(() => {
 <template>
     <div v-if="sessionToken && sessionToken !== 'null' && pfps && profiles && profile && sections && sections.length > 0" class="relative flex flex-col w-full h-screen overflow-x-hidden"
     :style="{backgroundImage: `repeating-linear-gradient(to right, ${tw.colors.white} ${weekendOffset}px, ${tw.colors.white} ${2+weekendOffset}px, ${tw.colors.gray[50]} ${2+weekendOffset}px, ${tw.colors.gray[50]} ${112+weekendOffset}px, ${tw.colors.white} ${112+weekendOffset}px, ${tw.colors.white} ${392+weekendOffset}px)`}">
-        <div class="flex flex-col h-screen">
+        <div @mousedown="mouseDownEvent" @mousemove="mouseMoveEvent" @mouseup="mouseUpEvent" @mouseover="leftCalendar = false" @mouseleave="mouseLeaveEvent" class="flex flex-col h-screen">
             <!-- Top date panel -->
             <CalendarDates :datesOffset = "datesOffset" :columnWidth = "columnWidth" :screenSizeWidth = "screenSize.width" :datesPos = "datesPos" />
             <!-- Task edit menu -->
             <CalendarTaskEdit ref="taskEditor" @taskEdited="onEditTask" @createdTask="onCreatedTask" @closeEdit="onCloseEdit" @editResizeTask="editResizeTask" :session-token="sessionToken" :profiles="profiles!" :profile="profile" :pfps="pfps"/>
 
             <div class="relative flex-grow w-full overflow-y-auto cursor-grab"
-                @mousedown="mouseDownEvent" @mousemove="mouseMoveEvent" @mouseup="mouseUpEvent"
                 :class="{ 'cursor-grabbing': draggingCalendar || draggedTaskObject }">
                 <!-- Calendar -->
                 <div class="w-full overflow-x-hidden">

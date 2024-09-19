@@ -12,7 +12,15 @@ const renamedTo = ref("");
 
 function handleRenaming() {
   renaming.value = true;
+
+  // nenasel jsem lepsi zpusob
+  nextTick(() => {
+    let inputDoc = document.getElementById("renameInput");
+    if(inputDoc)
+      inputDoc.focus();
+  });
 }
+
 </script>
 
 <template>
@@ -20,7 +28,7 @@ function handleRenaming() {
     <div v-if="renaming" @keydown.enter="emit('onRenameSection', renamedTo)" @keydown.esc="emit('onCloseSectionContextMenu')" class="flex flex-col items-left gap-4 p-2">
       <div class="flex flex-col gap-1">
         <label class="text-sm text-gray-500">New section name</label>
-        <input v-model="renamedTo" class="px-2 border-2 border-gray-200 rounded-md w-36">
+        <input v-model="renamedTo" id="renameInput" class="px-2 border-2 border-gray-200 rounded-md w-36">
       </div>
       <div>
         <button @click="emit('onRenameSection', renamedTo)" class="line w-full">

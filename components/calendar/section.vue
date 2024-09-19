@@ -811,7 +811,7 @@ async function onRowChangeEvent(index: number) {
 async function mousePressedEvent(e: MouseEvent, ignoreTaskCreation: boolean) {
     if (dragStatus !== DragStatus.None || e.button !== 0 || mouseOverSectionBox.value)
         return;
-    console.log(currentHoveredRow);
+
     if(editing) {
         editing = false;
         emit('taskEdit', undefined);
@@ -894,7 +894,7 @@ async function startTaskDragging(e: MouseEvent, task: Task) {
                 emit('taskEdit', selectedTask);
                 editing = true;
             }        
-        }, 200);
+        }, 2000);
     }
     else {
         emit('taskEdit', selectedTask);
@@ -1013,7 +1013,8 @@ async function mouseMoveEvent(e: MouseEvent) { // TODO: experiment with datespos
 
 async function mouseMoveOverCalendar(e: MouseEvent) {
     if(dragStatus === DragStatus.TaskDrag) {
-        if (!draggedTaskObject.value) return;
+        if (draggedTaskObject.value) 
+            return;
         
         if(startDragging) {
             startDragging = false;
