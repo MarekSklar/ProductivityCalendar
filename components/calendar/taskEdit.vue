@@ -245,11 +245,11 @@ function addProfile(profile: Profile) {
         </div>
         <div>
             <form @submit.prevent class="w-2/3">
-                <div class="flex gap-2 mt-3 mb-8">
+                <div class="flex gap-4 mt-3 mb-8">
                     <div class="relative size-7 rounded-full" :style="{backgroundColor: tColor}">
                         <input v-model="tColor" type="color" @input="editTask" :disabled="props.profile!.role !== 'admin'" class="!size-full opacity-0 cursor-pointer">
                     </div>
-                    <input v-model="tName" type="text" placeholder="Enter task name..." @input="editName" :disabled="props.profile!.role !== 'admin'" class="text-lg font-semibold text-gray-400 border-none outline-none">
+                    <input v-model="tName" type="text" placeholder="Enter task name..." @input="editName" :disabled="props.profile!.role !== 'admin'" class="!w-full !px-0 text-lg font-semibold text-gray-400 border-none outline-none">
                 </div>
 
                 <div class="flex flex-col gap-4">
