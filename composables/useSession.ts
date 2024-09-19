@@ -8,5 +8,5 @@ export function editSessionToken(value: string) {
 }
 
 export function navigateToInvalidSessionPage(sessionToken: string) {
-    if (!sessionToken || sessionToken === null) navigateTo('/invalidSession');
+    if (!sessionToken || sessionToken === null || sessionToken === "null") navigateTo('/invalidSession');
 }

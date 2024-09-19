@@ -494,8 +494,8 @@ function checkSwitchRow(switchTask: Task) {
                     });             
                     
                     fixTasks.forEach((fixTask) => fixRow(fixTask));
-                    tasksAbove.forEach((taskAbove) => fixRow(taskAbove));
                     changedTasks.forEach((changedTask) => fixRow(changedTask));
+                    tasksAbove.forEach((taskAbove) => fixRow(taskAbove));
                     fixRow(switchTask);
                 }
                 else if(canSwap) {

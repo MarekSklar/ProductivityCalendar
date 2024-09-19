@@ -166,7 +166,7 @@ const editName = async () => {
                     description: tDescription.value
                 }
             }).catch(err => {});
-        }, 2000);
+        }, 50);
     }
 }
 
