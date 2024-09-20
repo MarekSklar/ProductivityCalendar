@@ -1,5 +1,7 @@
 <script setup lang="ts">
 
+defineExpose({ openSidebar })
+
 // session token
 const sessionToken = getSessionToken();
 
@@ -15,15 +17,14 @@ function logout() {
     useCookie('sessionToken').value = null;
     navigateTo('/invalidSession');
 }
+
+function openSidebar() {
+  sidebarIsActive.value = true;
+}
+
 </script>
 <template>
-    <div v-if="sessionToken && sessionToken !== 'null'">
-
-        <!-- open sidebar -->
-        <div v-if="currentRoute.fullPath !== '/'" @click="sidebarIsActive = true" class="absolute top-1/2 left-3 z-[100] rounded-full bg-gray-100  cursor-pointer">
-            <SvgChevronRight class="size-10 fill-gray-600" />
-        </div>
-        
+    <div v-if="sessionToken && sessionToken !== 'null'">        
         <!-- backdrop -->
         <div v-if="sidebarIsActive" @click="sidebarIsActive = false" class="absolute z-[90] w-screen h-screen bg-black bg-opacity-20"></div>
         

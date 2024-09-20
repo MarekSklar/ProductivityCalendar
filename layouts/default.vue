@@ -3,7 +3,7 @@
 </script>
 
 <template>
-    <DefaultSidebar />
+    <DefaultSidebar @openSidebar="console.log('werW')" />
     <slot />
 </template>
 

@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 
-const emit = defineEmits(["changeShowSections"]);
+const emit = defineEmits(["changeShowSections", "openSidebar"]);
 
 const props = defineProps({
   Title: String,
@@ -49,7 +49,7 @@ Date.prototype.getWeek = function() {
 <template>
   <div class="relative w-full shadow-md bg-white select-none">
     <div class="absolute bottom-0 z-[60] translate-y-full flex gap-2 h-12 p-3 bg-white rounded-br-xl shadow-md">
-      <button @click="changeShowSections" class="size-full bg-white-400">
+      <button @click="emit('openSidebar')" class="size-full bg-white-400">
         <SvgNavigation class="size-full fill-gray-600 hover:fill-black" />
       </button>
       <button @click="changeShowSections" class="size-full bg-white-400">
