@@ -427,7 +427,21 @@ onMounted(() => {
 
 <template>
     <div v-if="sessionToken && sessionToken !== 'null' && pfps && profiles && profile && sections && sections.length > 0" class="relative flex flex-col w-full h-screen overflow-x-hidden"
-    :style="{backgroundImage: `repeating-linear-gradient(to right, ${tw.colors.white} ${weekendOffset}px, ${tw.colors.white} ${2+weekendOffset}px, ${tw.colors.gray[50]} ${2+weekendOffset}px, ${tw.colors.gray[50]} ${112+weekendOffset}px, ${tw.colors.white} ${112+weekendOffset}px, ${tw.colors.white} ${392+weekendOffset}px)`}">
+    :style="{backgroundImage: `repeating-linear-gradient(to right, 
+        ${tw.colors.white} ${weekendOffset}px, ${tw.colors.white} ${2+weekendOffset}px,
+        ${tw.colors.gray[50]} ${2+weekendOffset}px, ${tw.colors.gray[50]} ${56+weekendOffset}px,
+        ${tw.colors.white} ${56+weekendOffset}px, ${tw.colors.white} ${58+weekendOffset}px,
+        ${tw.colors.gray[50]} ${58+weekendOffset}px, ${tw.colors.gray[50]} ${112+weekendOffset}px,
+        ${tw.colors.white} ${112+weekendOffset}px, ${tw.colors.white} ${168+weekendOffset}px,
+        ${tw.colors.gray[50]} ${168+weekendOffset}px, ${tw.colors.gray[50]} ${170+weekendOffset}px,
+        ${tw.colors.white} ${170+weekendOffset}px, ${tw.colors.white} ${224+weekendOffset}px,
+        ${tw.colors.gray[50]} ${224+weekendOffset}px, ${tw.colors.gray[50]} ${226+weekendOffset}px,
+        ${tw.colors.white} ${226+weekendOffset}px, ${tw.colors.white} ${280+weekendOffset}px,
+        ${tw.colors.gray[50]} ${280+weekendOffset}px, ${tw.colors.gray[50]} ${282+weekendOffset}px,
+        ${tw.colors.white} ${282+weekendOffset}px, ${tw.colors.white} ${336+weekendOffset}px,
+        ${tw.colors.gray[50]} ${336+weekendOffset}px, ${tw.colors.gray[50]} ${338+weekendOffset}px,
+        ${tw.colors.white} ${338+weekendOffset}px, ${tw.colors.white} ${392+weekendOffset}px
+    )`}">
         <div class="flex flex-col h-screen">
             <!-- Top date panel -->
             <CalendarDates @changeShowSections="(show) => showSections = show" :datesOffset="datesOffset" :columnWidth="columnWidth" :screenSizeWidth="screenSize.width" :datesPos="datesPos" :showSectionsCookieValue="showSectionsCookie"/>
