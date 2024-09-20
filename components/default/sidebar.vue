@@ -8,17 +8,20 @@ const profileImage = await fetchProfileImage(profile ? profile.pfpPath48 : "");
 
 const sidebarIsActive = ref(false);
 
+const router = useRouter();
+const currentRoute = router.currentRoute;
+
 function logout() {
     useCookie('sessionToken').value = null;
     navigateTo('/invalidSession');
 }
-</script>
 
+</script>
 <template>
     <div v-if="sessionToken && sessionToken !== 'null'">
 
         <!-- open sidebar -->
-        <div @click="sidebarIsActive = true" class="absolute top-1/2 left-3 z-[100] rounded-full bg-gray-100  cursor-pointer">
+        <div v-if="currentRoute.fullPath !== '/'" @click="sidebarIsActive = true" class="absolute top-1/2 left-3 z-[100] rounded-full bg-gray-100  cursor-pointer">
             <SvgChevronRight class="size-10 fill-gray-600" />
         </div>
         
