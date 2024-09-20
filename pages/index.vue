@@ -6,7 +6,7 @@ const sessionToken = getSessionToken();
 navigateToInvalidSessionPage(sessionToken);
 
 let showSectionsCookie = useCookie<boolean>("showSections").value;
-if(!showSectionsCookie) {
+if(showSectionsCookie === undefined) {
     useCookie<boolean>("showSections").value = true;
     showSectionsCookie = true;
 }
