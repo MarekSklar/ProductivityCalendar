@@ -12,7 +12,8 @@ const props = defineProps({
     datesPos: Number,
     calendarDragPos: Number,
     profile: Object as PropType<Profile>,
-    datesOffset: Number
+    datesOffset: Number,
+    showSections: Boolean
 });
 
 const prps = toRef(props);
@@ -1126,7 +1127,7 @@ async function mouseUpEvent() {
 
 <template>
     <div v-if="!pending" class="relative overflow-hidden select-none">
-        <div @contextmenu.prevent="emit('showSectionContextMenu', $event, props.section!)" @mouseover="mouseOverSectionBox = true" @mouseleave="mouseOverSectionBox = false" class="absolute top-1/2 z-30" style="height: calc(100% - 1rem);">
+        <div v-if="props.showSections" @contextmenu.prevent="emit('showSectionContextMenu', $event, props.section!)" @mouseover="mouseOverSectionBox = true" @mouseleave="mouseOverSectionBox = false" class="absolute top-1/2 z-30" style="height: calc(100% - 1rem);">
             <div class="relative -top-1/2 flex justify-left items-center w-40 h-full px-4 bg-white rounded-r-lg shadow-[0_0px_20px_-10px_rgba(0,0,0,0.3)]">
                 <div class="w-full overflow-hidden">{{ props.section!.name }}</div>
             </div>

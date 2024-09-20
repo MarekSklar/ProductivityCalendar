@@ -5,11 +5,14 @@ import { useTemplateRefsList } from '@vueuse/core/index.cjs';
 const sessionToken = getSessionToken();
 navigateToInvalidSessionPage(sessionToken);
 
+let showSectionsCookie = useCookie<boolean>("showSections").value;
+
 // tailwind config
 const tw = getTwConfig();
 const profiles = await fetchAllProfiles();
 const profile = await fetchProfile(sessionToken);
 const pfps = await fetchAllProfileImages();
+const showSections = ref(showSectionsCookie);
 
 const startDragPosX = ref(0);
 const relativeDragPos = ref(0);
@@ -78,6 +81,9 @@ async function addNewSection() {
         disableCreatingTasks.value = false;
     }).catch(err => {});
 }
+
+//
+
 
 // context menu events
 
@@ -420,7 +426,7 @@ onMounted(() => {
     :style="{backgroundImage: `repeating-linear-gradient(to right, ${tw.colors.white} ${weekendOffset}px, ${tw.colors.white} ${2+weekendOffset}px, ${tw.colors.gray[50]} ${2+weekendOffset}px, ${tw.colors.gray[50]} ${112+weekendOffset}px, ${tw.colors.white} ${112+weekendOffset}px, ${tw.colors.white} ${392+weekendOffset}px)`}">
         <div class="flex flex-col h-screen">
             <!-- Top date panel -->
-            <CalendarDates :datesOffset = "datesOffset" :columnWidth = "columnWidth" :screenSizeWidth = "screenSize.width" :datesPos = "datesPos" />
+            <CalendarDates @changeShowSections="(show) => showSections = show" :datesOffset="datesOffset" :columnWidth="columnWidth" :screenSizeWidth="screenSize.width" :datesPos="datesPos" :showSectionsCookieValue="showSectionsCookie"/>
             <!-- Task edit menu -->
             <CalendarTaskEdit ref="taskEditor" @taskEdited="onEditTask" @createdTask="onCreatedTask" @closeEdit="onCloseEdit" @editResizeTask="editResizeTask" :session-token="sessionToken" :profiles="profiles!" :profile="profile" :pfps="pfps"/>
 
@@ -430,9 +436,9 @@ onMounted(() => {
                 <!-- Calendar -->
                 <div class="w-full mt-4 overflow-x-hidden">
                     <div v-for="(section, index) in sections">
-                        <CalendarSection @mouseover="onSectionChange(index)" :ref="sectionRefs.set" @onDraggedTaskChange="onDraggedTaskChange" @taskEdit="taskEdit" @inactiveTaskEdit="inactiveTaskEdit" @showSectionContextMenu="onShowSectionContextMenu" @showTaskContextMenu="onShowTaskContextMenu" :section="section" :columnWidth="columnWidth" :datesPos="datesPos" :calendarDragPos="calendarDragPos" :profile="profile" :datesOffset="datesOffset"/>            
+                        <CalendarSection @mouseover="onSectionChange(index)" :ref="sectionRefs.set" @onDraggedTaskChange="onDraggedTaskChange" @taskEdit="taskEdit" @inactiveTaskEdit="inactiveTaskEdit" @showSectionContextMenu="onShowSectionContextMenu" @showTaskContextMenu="onShowTaskContextMenu" :section="section" :columnWidth="columnWidth" :datesPos="datesPos" :calendarDragPos="calendarDragPos" :profile="profile" :datesOffset="datesOffset" :showSections="showSections"/>            
                     </div>
-                    <button v-if="sections.length < 4 && profile.role === 'admin'" @click="addNewSection" @mouseover="disableCreatingTasks = true" @mouseleave="disableCreatingTasks = false" class="flex justify-center items-center w-40 mt-2 mb-8 p-4 text-white font-bold bg-red-400 hover:bg-red-500 rounded-r-lg select-none shadow-[0_0px_20px_-10px_rgba(0,0,0,0.3)]">New section</button>
+                    <button v-if="sections.length < 4 && profile.role === 'admin' && showSections" @click="addNewSection" @mouseover="disableCreatingTasks = true" @mouseleave="disableCreatingTasks = false" class="flex justify-center items-center w-40 mt-2 mb-8 p-4 text-white font-bold bg-red-400 hover:bg-red-500 rounded-r-lg select-none shadow-[0_0px_20px_-10px_rgba(0,0,0,0.3)]">New section</button>
                 </div>
             </div>
         </div>

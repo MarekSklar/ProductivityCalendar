@@ -1,11 +1,17 @@
 <script lang="ts" setup>
+
+const emit = defineEmits(["changeShowSections"]);
+
 const props = defineProps({
   Title: String,
   datesOffset: Number,
   columnWidth: Number,
   screenSizeWidth: Number,
-  datesPos: Number
+  datesPos: Number,
+  showSectionsCookieValue: Boolean
 });
+
+const showSections = ref(props.showSectionsCookieValue);
 
 function getDate(dateNum: number) {
   return new Date(new Date().getTime() + dateNum * 86400000);
@@ -24,16 +30,31 @@ function generateDate(dateNum: number) {
   return day + " " + newDateNum;
 }
 
+function changeShowSections() {
+  let showSectionsCookie = useCookie<boolean>("showSections");
+  showSectionsCookie.value = !showSectionsCookie.value;
+  showSections.value = showSectionsCookie.value;
+  emit("changeShowSections", showSections.value);
+}
+
 Date.prototype.getWeek = function() {
   var onejan = new Date(this.getFullYear(),0,1);
   var today = new Date(this.getFullYear(),this.getMonth(),this.getDate());
   var dayOfYear = ((today.getTime() - onejan.getTime() + 86400000)/86400000);
   return Math.ceil(dayOfYear/7);
 };
+
 </script>
 
 <template>
   <div class="z-40 w-full shadow-md bg-white select-none">
+    <div class="absolute z-10">
+      <button @click="changeShowSections" class="bg-red-400">
+        <span v-if="showSections === true">Close</span>
+        <span v-else-if="showSections === false">Open</span>
+      </button>
+    </div>
+
     <div class="relative flex justify-center w-full pt-10 pb-12 overflow-hidden">
       <div class="absolute z-10 flex" :style="{left: props.datesOffset! - 5 * props.columnWidth! + 'px'}">
         <div v-for="date in Math.ceil(props.screenSizeWidth! / props.columnWidth! + 20)" class="relative w-14 text-center text-gray-500 font-bold">
