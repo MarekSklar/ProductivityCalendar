@@ -6,6 +6,10 @@ const sessionToken = getSessionToken();
 navigateToInvalidSessionPage(sessionToken);
 
 let showSectionsCookie = useCookie<boolean>("showSections").value;
+if(!showSectionsCookie) {
+    useCookie<boolean>("showSections").value = true;
+    showSectionsCookie = true;
+}
 
 // tailwind config
 const tw = getTwConfig();
