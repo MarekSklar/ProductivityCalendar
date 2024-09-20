@@ -4,11 +4,7 @@ import { env } from 'node:process';
 export default defineNuxtConfig({
   devtools: { enabled: true },
   modules: ['radix-vue/nuxt'],
-
-  runtimeConfig: {
-    databaseFilePath: env.DATABASE_PATH
-  },
-
+  
   postcss: {
     plugins: {
       'tailwindcss/nesting': {},

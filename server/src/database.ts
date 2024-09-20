@@ -1,11 +1,17 @@
 import connect, { DatabaseConnection, sql } from "@databases/sqlite"
 import * as Profiles from '~/server/src/profiles'
+import path from 'path'
 
 let db: DatabaseConnection;
 let initalized = false;
+let dbPath = "";
 
-export const getDatabase = (path: string) => {
-    db = db || connect(path);
+export const getDatabase = () => {
+    if(!db) {
+        dbPath = path.join(process.cwd(), "database/db.sqlite");
+    }
+    
+    db = db || connect(dbPath);
 
     if(!initalized) {
         db.query(sql`CREATE TABLE IF NOT EXISTS profiles (

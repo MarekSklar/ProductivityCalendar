@@ -8,8 +8,7 @@ import * as Profiles from '~/server/src/profiles'
 export default defineEventHandler(async (event) => {
     const pfps: AllPfps = {};
 
-    const { databaseFilePath } = useRuntimeConfig();
-    const db = getDatabase(databaseFilePath);
+    const db = getDatabase();
     const profiles = await Profiles.list(db);
     
     profiles.forEach(async (profile) => {
