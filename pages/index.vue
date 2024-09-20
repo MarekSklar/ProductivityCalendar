@@ -470,7 +470,7 @@ onMounted(() => {
         </div>
 
         <!-- Dragged ghost task -->
-        <div v-if="draggedTaskObject !== undefined" class="absolute z-20 pointer-events-none h-11 mb-0.5 rounded-md overflow-hidden" :style="{ backgroundColor: draggedTaskObject.color, left: draggedTaskObject.left + 'px', top: draggedTaskObject.top + 'px', width: draggedTaskObject.width + 'px' }">
+        <div v-if="draggedTaskObject !== undefined" class="absolute z-20 pointer-events-none h-11 mb-0.5 rounded-md overflow-hidden border-solid border-[1px] border-opacity-15 border-black" :style="{ backgroundColor: draggedTaskObject.color, left: draggedTaskObject.left + 'px', top: draggedTaskObject.top + 'px', width: draggedTaskObject.width + 'px' }">
             <div class="size-full">
                 <div class="absolute size-full p-1 pl-2">
                     <div class="relative size-full">
