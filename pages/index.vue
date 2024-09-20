@@ -428,7 +428,7 @@ onMounted(() => {
                 @mousedown="mouseDownEvent" @mousemove="mouseMoveEvent" @mouseup="mouseUpEvent"
                 :class="{ 'cursor-grabbing': draggingCalendar || draggedTaskObject }">
                 <!-- Calendar -->
-                <div class="w-full overflow-x-hidden">
+                <div class="w-full mt-4 overflow-x-hidden">
                     <div v-for="(section, index) in sections">
                         <CalendarSection @mouseover="onSectionChange(index)" :ref="sectionRefs.set" @onDraggedTaskChange="onDraggedTaskChange" @taskEdit="taskEdit" @inactiveTaskEdit="inactiveTaskEdit" @showSectionContextMenu="onShowSectionContextMenu" @showTaskContextMenu="onShowTaskContextMenu" :section="section" :columnWidth="columnWidth" :datesPos="datesPos" :calendarDragPos="calendarDragPos" :profile="profile" :datesOffset="datesOffset"/>            
                     </div>

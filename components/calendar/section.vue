@@ -1125,14 +1125,14 @@ async function mouseUpEvent() {
 </script>
 
 <template>
-    <div v-if="!pending" class="relative mt-4 overflow-hidden select-none">
+    <div v-if="!pending" class="relative overflow-hidden select-none">
         <div @contextmenu.prevent="emit('showSectionContextMenu', $event, props.section!)" @mouseover="mouseOverSectionBox = true" @mouseleave="mouseOverSectionBox = false" class="absolute top-1/2 z-30" style="height: calc(100% - 1rem);">
             <div class="relative -top-1/2 flex justify-left items-center w-40 h-full px-4 bg-white rounded-r-lg shadow-[0_0px_20px_-10px_rgba(0,0,0,0.3)]">
                 <div class="w-full overflow-hidden">{{ props.section!.name }}</div>
             </div>
         </div>
 
-        <div v-for="(row, index) in rows" @mouseover="onRowChangeEvent(index)" class="relative h-11 mb-0.5">
+        <div v-for="(row, index) in rows" @mouseover="onRowChangeEvent(index)" class="relative h-11 mt-0.5">
             <div v-for="task in row.filter((task: Task) => task.row === index)" :id="task.uuid" @mousedown="startTaskDragging($event, task)" class="absolute flex h-full left-5 px-px"
             :style="{ left: prps.calendarDragPos! + (taskPlacementPos(task).from)*prps.columnWidth! + 'px', width: taskPlacementPos(task).taskLength * prps.columnWidth! + 'px' }"> <!--TODO: precalculate-->
                 <!-- dragged task -->
@@ -1190,6 +1190,6 @@ async function mouseUpEvent() {
                 </div>
             </div>
         </div>
-        <div class="relative h-11 mb-0.5" @mouseover="onRowChangeEvent(rows.length)"></div>
+        <div class="relative h-6" @mouseover="onRowChangeEvent(rows.length)"></div>
     </div>
 </template>
