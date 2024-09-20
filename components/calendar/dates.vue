@@ -47,11 +47,14 @@ Date.prototype.getWeek = function() {
 </script>
 
 <template>
-  <div class="z-40 w-full shadow-md bg-white select-none">
-    <div class="absolute z-10">
-      <button @click="changeShowSections" class="bg-red-400">
-        <span v-if="showSections === true">Close</span>
-        <span v-else-if="showSections === false">Open</span>
+  <div class="relative w-full shadow-md bg-white select-none">
+    <div class="absolute bottom-0 z-[60] translate-y-full flex gap-2 h-12 p-3 bg-white rounded-br-xl shadow-md">
+      <button @click="changeShowSections" class="size-full bg-white-400">
+        <SvgNavigation class="size-full fill-gray-600 hover:fill-black" />
+      </button>
+      <button @click="changeShowSections" class="size-full bg-white-400">
+        <SvgSidebar v-if="showSections" class="size-full fill-black hover:fill-gray-600" />
+        <SvgSidebar v-else class="size-full fill-gray-600 hover:fill-black" />
       </button>
     </div>
 
