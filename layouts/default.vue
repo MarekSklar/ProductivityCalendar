@@ -1,9 +1,15 @@
 <script setup lang="ts">
+function toggleSidebar() {
+    sidebarIsActive.value = !sidebarIsActive.value;
+}
 
+const sidebarIsActive = ref(false);
+
+provide('toggleSidebar', toggleSidebar);
 </script>
 
 <template>
-    <DefaultSidebar @openSidebar="console.log('werW')" />
+    <DefaultSidebar @toggleSidebar = 'toggleSidebar' :sidebarIsActive="sidebarIsActive" />
     <slot />
 </template>
 

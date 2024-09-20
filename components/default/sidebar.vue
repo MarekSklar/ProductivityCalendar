@@ -1,12 +1,16 @@
 <script setup lang="ts">
 
+const emit = defineEmits(['toggleSidebar']);
+
+const props = defineProps({
+    sidebarIsActive: Boolean
+});
+
 // session token
 const sessionToken = getSessionToken();
 
 const profile = await fetchProfile(sessionToken);
 const profileImage = await fetchProfileImage(profile ? profile.pfpPath48 : "");
-
-const sidebarIsActive = ref(false);
 
 const router = useRouter();
 const currentRoute = router.currentRoute;
@@ -20,15 +24,15 @@ function logout() {
     <div v-if="sessionToken && sessionToken !== 'null'">
 
         <!-- open sidebar -->
-        <div v-if="currentRoute.fullPath !== '/'" @click="sidebarIsActive = true" class="absolute top-1/2 left-3 z-[100] rounded-full bg-gray-100  cursor-pointer">
+        <div v-if="currentRoute.fullPath !== '/'" @click="emit('toggleSidebar')" class="absolute top-1/2 left-3 z-[100] rounded-full bg-gray-100  cursor-pointer">
             <SvgChevronRight class="size-10 fill-gray-600" />
         </div>
         
         <!-- backdrop -->
-        <div v-if="sidebarIsActive" @click="sidebarIsActive = false" class="absolute z-[90] w-screen h-screen bg-black bg-opacity-20"></div>
+        <div v-if="props.sidebarIsActive" @click="emit('toggleSidebar')" class="absolute z-[90] w-screen h-screen bg-black bg-opacity-20"></div>
         
         <!-- sidebar -->
-        <div v-if="sidebarIsActive" class="background absolute z-[100] w-56 h-full">
+        <div v-if="props.sidebarIsActive" class="background absolute z-[100] w-56 h-full">
             <div class="relative size-full p-5">
                 <div class="flex flex-col justify-between h-full">
 
@@ -36,15 +40,15 @@ function logout() {
                     <div>
                         <h2 class="mb-7 font-bold text-gray-500">Productivity calendar</h2>
                         <div class="flex flex-col gap-5">
-                            <NuxtLink to="/" @click="sidebarIsActive = false" class="group link-box">
+                            <NuxtLink to="/" @click="emit('toggleSidebar')" class="group link-box">
                                 <SvgCalendar class="icon" />
                                 <p class="link-text">Calendar</p>
                             </NuxtLink>
-                            <NuxtLink v-if="profile.role === 'admin'" to="/users" @click="sidebarIsActive = false" class="group link-box">
+                            <NuxtLink v-if="profile.role === 'admin'" to="/users" @click="emit('toggleSidebar')" class="group link-box">
                                 <SvgGroup class="icon" />
                                 <p class="link-text">Users</p>
                             </NuxtLink>
-                            <NuxtLink to="/" @click="sidebarIsActive = false; logout()" class="group link-box">
+                            <NuxtLink to="/" @click="emit('toggleSidebar'); logout()" class="group link-box">
                                 <SvgLogout class="icon" />
                                 <p class="link-text">Logout</p>
                             </NuxtLink>
@@ -53,7 +57,7 @@ function logout() {
 
                     <!-- profile -->
                     <div>
-                        <NuxtLink to="/profile" @click="sidebarIsActive = false" class="group link-box">
+                        <NuxtLink to="/profile" @click="emit('toggleSidebar')" class="group link-box">
                             <img class="size-10 rounded-full object-cover" :src="'data:image/' + profileImage.format + ';base64,' + profileImage.data">
                             <p class="link-text">{{ profile.name }}</p>
                         </NuxtLink>
@@ -61,7 +65,7 @@ function logout() {
                 </div>
 
                 <!-- close sidebar -->
-                <div @click="sidebarIsActive = false" class="absolute top-1/2 -right-14 z-30 rounded-full bg-gray-50 cursor-pointer">
+                <div @click="emit('toggleSidebar')" class="absolute top-1/2 -right-14 z-30 rounded-full bg-gray-50 cursor-pointer">
                     <SvgChevronRight class="size-10 rotate-180 fill-gray-500" />
                 </div>
             </div>

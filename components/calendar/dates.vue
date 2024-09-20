@@ -11,8 +11,6 @@ const props = defineProps({
   showSectionsCookieValue: Boolean
 });
 
-const showSections = ref(props.showSectionsCookieValue);
-
 function getDate(dateNum: number) {
   return new Date(new Date().getTime() + dateNum * 86400000);
 }
@@ -30,13 +28,6 @@ function generateDate(dateNum: number) {
   return day + " " + newDateNum;
 }
 
-function changeShowSections() {
-  let showSectionsCookie = useCookie<boolean>("showSections");
-  showSectionsCookie.value = !showSectionsCookie.value;
-  showSections.value = showSectionsCookie.value;
-  emit("changeShowSections", showSections.value);
-}
-
 Date.prototype.getWeek = function() {
   var onejan = new Date(this.getFullYear(),0,1);
   var today = new Date(this.getFullYear(),this.getMonth(),this.getDate());
@@ -44,12 +35,23 @@ Date.prototype.getWeek = function() {
   return Math.ceil(dayOfYear/7);
 };
 
+const showSections = ref(props.showSectionsCookieValue);
+
+function changeShowSections() {
+  let showSectionsCookie = useCookie<boolean>("showSections");
+  showSectionsCookie.value = !showSectionsCookie.value;
+  showSections.value = showSectionsCookie.value;
+  emit("changeShowSections", showSections.value);
+}
+
+const toggleSidebar = inject("toggleSidebar") as () => void;
+
 </script>
 
 <template>
   <div class="relative w-full shadow-md bg-white select-none">
     <div class="absolute bottom-0 z-[60] translate-y-full flex gap-2 h-12 p-3 bg-white rounded-br-xl shadow-md">
-      <button @click="emit('openSidebar')" class="size-full bg-white-400">
+      <button @click="toggleSidebar()" class="size-full bg-white-400">
         <SvgNavigation class="size-full fill-gray-600 hover:fill-black" />
       </button>
       <button @click="changeShowSections" class="size-full bg-white-400">

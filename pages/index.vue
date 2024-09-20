@@ -449,10 +449,9 @@ onMounted(() => {
         ${tw.colors.gray[50]} ${336+weekendOffset}px, ${tw.colors.gray[50]} ${338+weekendOffset}px,
         ${tw.colors.white} ${338+weekendOffset}px, ${tw.colors.white} ${392+weekendOffset}px
     )`}">
-        <CalendarIndexSidebar ref="sidebar"/>
         <div class="flex flex-col h-screen">
             <!-- Top date panel -->
-            <CalendarDates @openSidebar="sidebar.openSidebar()" @changeShowSections="(show) => showSections = show" :datesOffset="datesOffset" :columnWidth="columnWidth" :screenSizeWidth="screenSize.width" :datesPos="datesPos" :showSectionsCookieValue="showSectionsCookie"/>
+            <CalendarDates @changeShowSections="(show) => showSections = show" :datesOffset="datesOffset" :columnWidth="columnWidth" :screenSizeWidth="screenSize.width" :datesPos="datesPos" :showSectionsCookieValue="showSectionsCookie"/>
             <!-- Task edit menu -->
             <CalendarTaskEdit ref="taskEditor" @taskEdited="onEditTask" @createdTask="onCreatedTask" @closeEdit="onCloseEdit" @editResizeTask="editResizeTask" :session-token="sessionToken" :profiles="profiles!" :profile="profile" :pfps="pfps"/>
 
