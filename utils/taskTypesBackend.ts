@@ -36,6 +36,7 @@ interface DraggedTask {
     name: string,
     status: string,
     color: string,
+    assignees: string,
     left: number,
     top: number,
     width: number,

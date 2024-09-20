@@ -472,8 +472,9 @@ onMounted(() => {
                         </div>
                         <div class="absolute flex items-center h-full right-1 top-0">
                             <div class="relative size-8 select-none">
-                                <div v-for="num in 3">
-                                    <!--add icons-->
+                                <div v-for="num in Math.min(draggedTaskObject.assignees!.length, 3)">
+                                    <div v-if="draggedTaskObject.assignees!.length > 3 && num === 1" class="absolute flex justify-center items-center size-full rounded-full object-cover bg-sky text-center" :style="{ right: (num-1)*1.4 + 'rem', 'z-index': 13-num }" draggable="false"><span>+{{ draggedTaskObject.assignees!.length - 2 }}</span></div>
+                                    <img v-else-if="draggedTaskObject.assignees![num-1]" :src="'data:image/jpg;base64,' + pfps![draggedTaskObject.assignees![num-1]]" class="absolute size-full rounded-full object-cover" :style="{ right: (num-1)*1.4 + 'rem', 'z-index': 13-num }" draggable="false">
                                 </div>
                             </div>
                         </div>                

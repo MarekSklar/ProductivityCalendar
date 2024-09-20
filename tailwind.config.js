@@ -37,7 +37,7 @@ export default {
       },
       "white": "#FFF",
       "black": "#000",
-      "transparent": "transparent"
+      "transparent": "transparent",
     },
     extend: {
       width: {
@@ -49,6 +49,9 @@ export default {
         128: "32rem",
         160: "40rem",
         192: "48rem"
+      },
+      colors: {
+        sky: "rgb(240 249 255)"
       }
     },
   },

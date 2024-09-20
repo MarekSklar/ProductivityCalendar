@@ -915,7 +915,7 @@ async function startTaskDragging(e: MouseEvent, task: Task) {
         setTimeout(() => {
             if (mouseButtonDown && props.profile!.role === "admin" && startDragging) {
                 startDragging = false;
-                draggedTaskObject.value = { uuid: selectedTask.uuid, name: selectedTask.name, status: selectedTask.status, color: selectedTask.color, width: taskPlacementPos(task).taskLength * props.columnWidth!, sectionIndex: props.section!.sectionIndex };
+                draggedTaskObject.value = { uuid: selectedTask.uuid, name: selectedTask.name, status: selectedTask.status, color: selectedTask.color, assignees: selectedTask.assignees, width: taskPlacementPos(task).taskLength * props.columnWidth!, sectionIndex: props.section!.sectionIndex };
                 draggedTaskObject.value.left = e.pageX - e.offsetX;
                 draggedTaskObject.value.top = e.pageY - e.offsetY;
                 draggedTaskObject.value.clickOffsetX = e.offsetX;
@@ -1054,7 +1054,7 @@ async function mouseMoveOverCalendar(e: MouseEvent) {
     if(dragStatus === DragStatus.TaskDrag) {
         if(startDragging && Math.pow((startDragPosX - e.pageX), 2) + Math.pow((startDragPosY - e.pageY), 2) > 100) { // dst from click in px > 10
             startDragging = false;
-            draggedTaskObject.value = { uuid: selectedTask.uuid, name: selectedTask.name, status: selectedTask.status, color: selectedTask.color, width: taskPlacementPos(selectedTask).taskLength * props.columnWidth!, sectionIndex: props.section!.sectionIndex };
+            draggedTaskObject.value = { uuid: selectedTask.uuid, name: selectedTask.name, status: selectedTask.status, color: selectedTask.color, assignees: selectedTask.assignees, width: taskPlacementPos(selectedTask).taskLength * props.columnWidth!, sectionIndex: props.section!.sectionIndex };
             draggedTaskObject.value.left = e.pageX - clickOffsetX;
             draggedTaskObject.value.top = e.pageY - clickOffsetY;
             draggedTaskObject.value.clickOffsetX = clickOffsetX;
@@ -1146,7 +1146,10 @@ async function mouseUpEvent() {
                                 </div>
                             <div class="absolute flex items-center h-full right-1 top-0">
                                 <div class="relative size-8 select-none">
-                                    <div v-for="num in 3"></div>
+                                    <div v-for="num in Math.min(task.assignees!.length, 3)">
+                                        <div v-if="task.assignees!.length > 3 && num === 1" class="absolute flex justify-center items-center size-full rounded-full object-cover bg-sky text-center" :style="{ right: (num-1)*1.4 + 'rem', 'z-index': 13-num }" draggable="false"><span>+{{ task.assignees!.length - 2 }}</span></div>
+                                        <img v-else-if="task.assignees![num-1]" :src="'data:image/jpg;base64,' + pfps![task.assignees![num-1]]" class="absolute size-full rounded-full object-cover" :style="{ right: (num-1)*1.4 + 'rem', 'z-index': 13-num }" draggable="false">
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1165,7 +1168,8 @@ async function mouseUpEvent() {
                             <div class="absolute flex items-center h-full right-1 top-0">
                                 <div class="relative size-8 select-none">
                                     <div v-for="num in Math.min(task.assignees!.length, 3)">
-                                        <img v-if="task.assignees![num-1]" :src="'data:image/jpg;base64,' + pfps![task.assignees![num-1]]" class="absolute size-full rounded-full object-cover" :style="{ right: (num-1)*1.4 + 'rem', 'z-index': num+10 }" draggable="false">
+                                        <div v-if="task.assignees!.length > 3 && num === 1" class="absolute flex justify-center items-center size-full rounded-full object-cover bg-sky text-center" :style="{ right: (num-1)*1.4 + 'rem', 'z-index': 13-num }" draggable="false"><span>+{{ task.assignees!.length - 2 }}</span></div>
+                                        <img v-else-if="task.assignees![num-1]" :src="'data:image/jpg;base64,' + pfps![task.assignees![num-1]]" class="absolute size-full rounded-full object-cover" :style="{ right: (num-1)*1.4 + 'rem', 'z-index': 13-num }" draggable="false">
                                     </div>
                                 </div>
                             </div>
