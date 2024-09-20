@@ -211,6 +211,8 @@ async function onDeleteSection() {
 
 async function mouseDownEvent(event: MouseEvent) {
     if (event.button === 1) {
+        event.preventDefault();
+
         startDragPosX.value = event.screenX;
         draggingCalendar.value = true;
     }
